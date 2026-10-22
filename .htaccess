@@ -1,0 +1,26 @@
+# Redirect all traffic to index.html for SPA handling (except the blog)
+Options -Indexes
+
+# Serve /blog without Apache adding a trailing slash
+DirectorySlash Off
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Canonical blog URL is /blog: send old /blog/ links there
+  RewriteCond %{THE_REQUEST} \s/blog/(\?\S*)?\s
+  RewriteRule ^blog/$ /blog [R=301,L]
+
+  # Serve the blog index at /blog
+  RewriteRule ^blog$ blog/index.html [L]
+
+  # Don't redirect actual files or directories
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Don't redirect /blog/ - allow it to serve static files
+  RewriteCond %{REQUEST_URI} !^/blog/
+
+  # Redirect everything else to index.html
+  RewriteRule ^ index.html [L]
+</IfModule>

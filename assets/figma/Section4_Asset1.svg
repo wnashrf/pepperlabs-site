@@ -1,0 +1,23 @@
+<svg width="988" height="357" viewBox="0 0 988 357" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path opacity="0.3" d="M912.874 58.2139C913.803 61.6802 912.042 66.0695 907.11 71.4012C902.227 76.681 894.465 82.6294 884.059 89.1234C863.258 102.103 832.103 117.135 792.886 133.261C714.466 165.507 603.958 202.069 479.955 235.296C355.952 268.522 241.969 292.112 157.931 303.396C115.906 309.039 81.4084 311.599 56.9049 310.759C44.6456 310.338 34.9493 309.067 28.0803 306.937C21.1438 304.785 17.4239 301.864 16.4951 298.398C15.5663 294.932 17.3275 290.542 22.2589 285.211C27.1422 279.931 34.9042 273.982 45.3108 267.488C66.111 254.509 97.2664 239.477 136.483 223.351C214.904 191.105 325.411 154.543 449.414 121.316C573.417 88.0898 687.401 64.4994 771.438 53.2153C813.464 47.5723 847.961 45.0125 872.464 45.8533C884.724 46.274 894.42 47.5444 901.289 49.6752C908.226 51.8269 911.945 54.7476 912.874 58.2139Z" stroke="#EC6C0C" stroke-width="2"/>
+<g filter="url(#filter0_b_399_24092)">
+<circle cx="943" cy="129.701" r="45" fill="#EA9B00"/>
+</g>
+<g opacity="0.8" filter="url(#filter1_b_399_24092)">
+<circle cx="41" cy="268.701" r="18" fill="#EC6C0C"/>
+</g>
+<defs>
+<filter id="filter0_b_399_24092" x="890" y="76.7012" width="106" height="106" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feGaussianBlur in="BackgroundImageFix" stdDeviation="4"/>
+<feComposite in2="SourceAlpha" operator="in" result="effect1_backgroundBlur_399_24092"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_backgroundBlur_399_24092" result="shape"/>
+</filter>
+<filter id="filter1_b_399_24092" x="15" y="242.701" width="52" height="52" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feGaussianBlur in="BackgroundImageFix" stdDeviation="4"/>
+<feComposite in2="SourceAlpha" operator="in" result="effect1_backgroundBlur_399_24092"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_backgroundBlur_399_24092" result="shape"/>
+</filter>
+</defs>
+</svg>
