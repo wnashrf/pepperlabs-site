@@ -2471,3 +2471,14 @@ a[data-pl-ai-label="Our Blog"]:focus-visible {
 .pl-impact-partner {
   color: #827775;
 }
+
+/* Main site: hide React's flat link list until nav-ai-dropdown.js has grouped it, so it doesn't flash on load.
+   The delayed reveal shows the plain links anyway if the script never runs. */
+nav > header:not([data-pl-commercialisation-ready]) ul {
+  visibility: hidden;
+  animation: pl-nav-reveal 0s 2s forwards;
+}
+
+@keyframes pl-nav-reveal {
+  to { visibility: visible; }
+}

@@ -207,9 +207,8 @@
   scan();
   
   // Watch for React updates
-  new MutationObserver(function() {
-    setTimeout(scan, 100);
-  }).observe(root, { childList: true, subtree: true });
+  // Scan synchronously: observer callbacks run before paint, so React's ungrouped nav never shows.
+  new MutationObserver(scan).observe(root, { childList: true, subtree: true });
   
   // Also run on document ready
   if (document.readyState === 'loading') {
