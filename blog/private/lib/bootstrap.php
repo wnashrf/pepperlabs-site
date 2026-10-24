@@ -37,7 +37,7 @@ function config(): array
     if ($config === null) {
         $file = __DIR__ . '/../config.local.php';
         if (!is_file($file)) {
-            fail('The blog database is not set up yet. Copy blog/api/config.example.php to config.local.php.', 503);
+            fail('The blog database is not set up yet. Copy blog/private/config.example.php to config.local.php.', 503);
         }
         $config = require $file;
         // MySQL stores times in the server's local time, so PHP must read them in the same zone.

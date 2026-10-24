@@ -18,8 +18,8 @@ return [
     // Left empty, the address the page was opened at is used.
     'site_url' => '',
 
-    // false on any copy that is not the live site (mock, your laptop), so search engines skip it:
-    // robots.txt then blocks everything, pages say noindex, and there is no sitemap.
+    // false on any copy that is not the live site (mock, your laptop), so search engines skip the blog:
+    // article pages say noindex and there is no sitemap. (The main site's robots.txt is not the blog's.)
     'allow_indexing' => true,
 
     // The time zone MySQL records times in. Change it only if the server is not on Malaysian time.

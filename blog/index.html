@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- seo:start: blog/index.php replaces these with full tags for search engines and link previews. -->
     <title>Blog - Pepper Labs</title>
     <meta name="description" content="Read the latest insights and articles from Pepper Labs">
+    <!-- Link previews and search engines need full addresses. They name the live site, so copies such as mock point Google there. -->
+    <link rel="canonical" href="https://pepperlabs.my/blog/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Pepper Labs">
     <meta property="og:title" content="Blog - Pepper Labs">
     <meta property="og:description" content="Read the latest insights and articles from Pepper Labs">
-    <meta property="og:type" content="website">
-    <!-- seo:end -->
+    <meta property="og:url" content="https://pepperlabs.my/blog/">
+    <meta property="og:image" content="https://pepperlabs.my/meta-images/og_thumbnail.png">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" href="/favicon.ico">
@@ -1706,7 +1710,7 @@
                             <a class="site-nav__link" href="https://aireadymalaysia.pepperlabs.my/" target="_blank" rel="noopener"><span>AI Campaign</span></a>
                             <a class="site-nav__link" href="https://dapurdigital.pepperlabs.my/" target="_blank" rel="noopener"><span>Dapur Digital</span></a>
                             <a class="site-nav__link" href="/our-impact"><span>Our Impact</span></a>
-                            <a class="site-nav__link" href="/blog" data-pl-ai-label="Blog"><span>Our Blog</span></a>
+                            <a class="site-nav__link" href="/blog/" data-pl-ai-label="Blog"><span>Our Blog</span></a>
                             <a class="site-nav__link" href="/work-with-us"><span>Work With Us</span></a>
                         </nav>
                     </div>
@@ -1798,7 +1802,7 @@
                         <li><a href="https://campaign-staging.vercel.app/" target="_blank" rel="noopener">AI Campaign</a></li>
                         <li><a href="https://dapur-digital-staging.vercel.app/" target="_blank" rel="noopener">Dapur Digital</a></li>
                         <li><a href="/our-impact">Our Impact</a></li>
-                        <li><a href="/blog">Blog</a></li>
+                        <li><a href="/blog/">Blog</a></li>
                     </ul>
                 </div>
                 <div>
@@ -1915,6 +1919,11 @@
 
     <script src="/blog/media.js?v=20261024-1"></script>
     <script>
+        // A server that ignores blog/.htaccess (plain php -S) answers an article address such as /blog/x with this page.
+        // Open the article instead; post.html still reads ?slug= on its own.
+        const strayArticle = location.pathname.match(/^\/blog\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
+        if (strayArticle) location.replace(`/blog/post.html?slug=${strayArticle[1]}`);
+
         // Published posts come from the blog database through /blog/api/posts.php (loaded at the bottom of this script).
         const posts = [];
         let loadFailed = false;

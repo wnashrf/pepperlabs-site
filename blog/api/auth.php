@@ -6,7 +6,7 @@
 //   POST {action: "logout"}
 
 declare(strict_types=1);
-require __DIR__ . '/lib/bootstrap.php';
+require __DIR__ . '/../private/lib/bootstrap.php';
 
 const MAX_FAILED_LOGINS = 5;
 const LOCKOUT_MINUTES = 15;

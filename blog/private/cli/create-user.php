@@ -1,7 +1,7 @@
 <?php
 // Creates a blog account from the command line. Use it for the first admin; add everyone else from the admin page.
 //
-//   php blog/cli/create-user.php admin "Your Name" you@pepperlabs.my
+//   php blog/private/cli/create-user.php admin "Your Name" you@pepperlabs.my
 //
 // It asks for the password without showing it. On Windows the password is shown as you type.
 
@@ -20,9 +20,9 @@ function cli_fail(string $message): void
 }
 
 [$script, $role, $name, $email] = array_pad($argv, 4, null);
-if (!$role || !$name || !$email) cli_fail("Usage: php blog/cli/create-user.php <admin|author> \"Full Name\" email@example.com");
+if (!$role || !$name || !$email) cli_fail("Usage: php blog/private/cli/create-user.php <admin|author> \"Full Name\" email@example.com");
 
-$config = require __DIR__ . '/../api/config.local.php';
+$config = require __DIR__ . '/../config.local.php';
 $pdo = new PDO("mysql:host={$config['db_host']};dbname={$config['db_name']};charset=utf8mb4", $config['db_user'], $config['db_pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
 if (!in_array($role, ['admin', 'author'], true)) cli_fail('Role must be admin or author.');

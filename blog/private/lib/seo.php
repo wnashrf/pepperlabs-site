@@ -1,6 +1,6 @@
 <?php
-// Shared by the pages served through PHP for search engines and link previews:
-// blog/index.php, blog/post.php, blog/sitemap.php and blog/robots.php.
+// Shared by the blog pages served through PHP for search engines and link previews:
+// blog/post.php (each article) and blog/sitemap.php.
 //
 // Unlike the JSON API (bootstrap.php), these must still answer when the database is down,
 // so nothing here stops the page: problems are logged and the caller gets null instead.

@@ -1,10 +1,10 @@
 <?php
-// One article at /blog/<slug> (see .htaccess). The page itself is post.html; this fills in its <head>
+// One article at /blog/<slug> (see blog/.htaccess). The page itself is post.html; this fills in its <head>
 // with the article's title, summary and picture, so search engines and link previews (WhatsApp,
 // LinkedIn, Facebook), which do not run JavaScript, see the article and not a generic page.
 
 declare(strict_types=1);
-require __DIR__ . '/api/lib/seo.php';
+require __DIR__ . '/private/lib/seo.php';
 
 $slug = (string) ($_GET['slug'] ?? '');
 $posts = preg_match(SLUG_PATTERN, $slug) ? published_posts() : [];

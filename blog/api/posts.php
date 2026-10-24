@@ -10,7 +10,7 @@
 // The admin page decides what buttons to show, but every rule is checked again here.
 
 declare(strict_types=1);
-require __DIR__ . '/lib/bootstrap.php';
+require __DIR__ . '/../private/lib/bootstrap.php';
 
 const STATUSES = ['pending', 'published', 'returned', 'unpublished'];
 const ADMIN_ACTIONS = ['added', 'submitted', 'resubmitted', 'approved', 'returned', 'unpublished', 'republished', 'edited', 'pinned', 'unpinned', 'comments-on', 'comments-off'];

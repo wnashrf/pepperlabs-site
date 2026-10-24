@@ -7,7 +7,7 @@
 // Accounts are disabled rather than deleted, so their name stays on the articles and history they touched.
 
 declare(strict_types=1);
-require __DIR__ . '/lib/bootstrap.php';
+require __DIR__ . '/../private/lib/bootstrap.php';
 
 const MIN_PASSWORD = 10;
 

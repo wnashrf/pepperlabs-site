@@ -1,9 +1,10 @@
 <?php
-// /sitemap.xml (see .htaccess): the home page, the blog, and every published article,
-// so search engines find new articles without waiting to follow links.
+// /blog/sitemap.xml (see blog/.htaccess): the blog and every published article, so search engines
+// find new articles without waiting to follow links. Submit it in Google Search Console; the site's
+// robots.txt belongs to the main site, so it is not listed there.
 
 declare(strict_types=1);
-require __DIR__ . '/api/lib/seo.php';
+require __DIR__ . '/private/lib/seo.php';
 
 if (!indexing_allowed()) {
     http_response_code(404);
@@ -17,7 +18,7 @@ if ($posts === null) {
     exit;
 }
 
-$entries = [['loc' => site_url() . '/', 'lastmod' => null], ['loc' => site_url() . '/blog', 'lastmod' => null]];
+$entries = [['loc' => site_url() . '/blog/', 'lastmod' => null]];
 foreach ($posts as $post) {
     $updated = strtotime((string) $post['updatedAt']);
     $entries[] = ['loc' => post_url($post), 'lastmod' => $updated ? date('Y-m-d', $updated) : null];
