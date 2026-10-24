@@ -150,7 +150,7 @@ function slug_taken(string $slug, int $exceptId = 0): bool
 function document_of(array $post): string
 {
     foreach (OWN_COLUMNS as $field) unset($post[$field]);
-    return json_encode($post, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    return json_encode($post, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
 }
 
 // The page sends the whole history back with each save. Only the entries added since the last save are new.

@@ -1912,10 +1912,11 @@
         </section>
     </div>
 
-    <script src="/blog/media.js?v=20261011-1"></script>
+    <script src="/blog/media.js?v=20261024-1"></script>
     <script>
         // Published posts by slug, from the blog database through /blog/api/posts.php (loaded at the bottom of this script).
         const posts = {};
+        let loadFailed = false;
         
         const CATEGORY_LABELS = { 'ai': 'AI', 'avpn': 'AVPN', 'dapur-digital': 'Dapur Digital', 'youth': 'Youth', 'milestones': 'Milestones' };
         const ARROW_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
@@ -1955,11 +1956,14 @@
             const post = posts[slug];
 
             if (!post) {
-                document.title = 'Post not found - Pepper Labs';
+                // A post that could not be loaded is not the same as one that does not exist.
+                const title = loadFailed ? 'Post could not be loaded' : 'Post not found';
+                const body = loadFailed ? 'Something went wrong on our side. Please try again in a few minutes.' : 'This post doesn\'t exist, or it has been moved.';
+                document.title = `${title} - Pepper Labs`;
                 document.getElementById('post-container').innerHTML = `
                     <div class="empty-state">
-                        <h1>Post not found</h1>
-                        <p>This post doesn't exist, or it has been moved.</p>
+                        <h1>${title}</h1>
+                        <p>${body}</p>
                         <a href="/blog/" class="pl-btn pl-btn--primary">Back to all posts</a>
                     </div>
                 `;
@@ -2005,7 +2009,7 @@
                 <div class="post-body">
                     <div class="article-sheet">
                         <div class="article-body">
-                            ${post.content}
+                            ${BlogMedia.sanitize(post.content).html}
                         </div>
                     </div>
                 </div>
@@ -2328,6 +2332,7 @@
                     };
                 });
             } catch (error) {
+                loadFailed = true;
                 console.error('Blog posts could not be loaded.', error);
             }
             renderPost();

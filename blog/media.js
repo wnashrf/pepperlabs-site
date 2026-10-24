@@ -274,5 +274,35 @@ const BlogMedia = (() => {
         openViewer(buttons.map(each => ({ src: each.querySelector('img').src, caption: each.dataset.caption || '' })), buttons.indexOf(button));
     });
 
-    return { shrink, insertImages, tidy, prepare, list, galleryHtml, galleryEditor };
+    // Article bodies are inserted as HTML. This removes anything in them that could run code:
+    // the admin page cleans an article when it is approved, and the post page cleans it again before showing it.
+    const UNSAFE_TAGS = 'script, style, iframe, frame, object, embed, link, meta, base, form, input, button, textarea, select';
+    const URL_ATTRIBUTES = ['href', 'src', 'xlink:href', 'action', 'formaction', 'poster'];
+
+    function sanitize(html) {
+        const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
+        let removed = 0;
+        doc.body.querySelectorAll(UNSAFE_TAGS).forEach(element => {
+            element.remove();
+            removed += 1;
+        });
+        doc.body.querySelectorAll('*').forEach(element => {
+            [...element.attributes].forEach(attribute => {
+                const name = attribute.name.toLowerCase();
+                const value = attribute.value.replace(/[\u0000- ]/g, '').toLowerCase();
+                const badUrl = URL_ATTRIBUTES.includes(name)
+                    && (/^(javascript|vbscript):/.test(value) || (value.startsWith('data:') && !value.startsWith('data:image/')));
+                if (name.startsWith('on') || badUrl) {
+                    element.removeAttribute(attribute.name);
+                    removed += 1;
+                }
+            });
+            if (element.tagName === 'A' && element.getAttribute('target') === '_blank') {
+                element.setAttribute('rel', 'noopener');
+            }
+        });
+        return { html: doc.body.innerHTML.trim(), removed, body: doc.body };
+    }
+
+    return { shrink, insertImages, tidy, prepare, list, galleryHtml, galleryEditor, sanitize };
 })();
