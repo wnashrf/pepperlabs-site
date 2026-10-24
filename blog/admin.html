@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Moderation - Pepper Labs Blog</title>
+    <title>Admin - Pepper Labs Blog</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -174,12 +174,18 @@
             height: 100dvh;
         }
 
+        /* Row 2 is the filter bar, which only Articles has; every section's content keeps row 3. */
+        .desk__panes,
+        .panel {
+            grid-row: 3;
+        }
+
         .topbar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            padding: 0.6rem 1.25rem;
+            gap: 1.5rem;
+            min-height: 3.5rem;
+            padding: 0 1.25rem;
             border-top: 3px solid var(--pl-primary);
             border-bottom: 1px solid var(--pl-line);
             background: var(--pl-bg);
@@ -214,27 +220,278 @@
 
         .topbar__actions {
             display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
 
-        .notice {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.5rem;
-            padding: 0.5rem 1.25rem;
-            border-bottom: 1px solid var(--pl-line);
+        /* Icon only, so the tabs get the room; the full sentence is in its title and on the Settings page. */
+        .local-badge {
+            display: inline-grid;
+            place-items: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 1px solid var(--pl-line);
+            border-radius: 50%;
             background: var(--pl-panel);
             color: var(--pl-body);
-            font-size: 0.8rem;
         }
 
-        .notice svg {
-            margin-top: 0.1rem;
-        }
-
-        .notice strong {
+        .local-badge:hover {
+            border-color: var(--pl-control);
             color: var(--pl-heading);
+        }
+
+        .local-badge span {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+        }
+
+        /* ---------- Section tabs, inside the top bar ---------- */
+
+        .tabs {
+            display: flex;
+            flex: 1;
+            align-self: stretch;
+            gap: 0.25rem;
+            min-width: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tabs a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0 0.7rem;
+            color: var(--pl-body);
+            font-size: 0.8rem;
             font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .tabs a:hover {
+            color: var(--pl-heading);
+        }
+
+        .tabs a[aria-current="page"] {
+            box-shadow: inset 0 -2px 0 var(--pl-primary);
+            color: var(--pl-heading);
+        }
+
+        .tabs a:focus-visible {
+            outline-offset: -3px;
+        }
+
+        .tab__count {
+            min-width: 1.3rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 999px;
+            background: var(--pl-primary-dark);
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tab__soon {
+            color: var(--pl-body);
+            font-size: 0.68rem;
+            font-weight: 400;
+        }
+
+        .desk:not([data-tab="articles"]) .desk__panes,
+        .desk:not([data-tab="articles"]) .filterbar {
+            display: none;
+        }
+
+        /* ---------- Filter bar: status and search for the article list ---------- */
+
+        .filterbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--pl-line);
+            background: var(--pl-panel);
+        }
+
+        /* ---------- Placeholder and settings pages ---------- */
+
+        .panel {
+            min-height: 0;
+            overflow-y: auto;
+            background: var(--pl-canvas);
+        }
+
+        .panel__inner {
+            display: grid;
+            gap: 1rem;
+            max-width: 60rem;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+        }
+
+        .panel__head {
+            display: grid;
+            justify-items: start;
+            gap: 0.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .panel__head h2 {
+            font-size: 1.4rem;
+            letter-spacing: -0.02em;
+        }
+
+        .panel__lede {
+            max-width: 62ch;
+            color: var(--pl-body);
+            font-size: 0.9rem;
+        }
+
+        .panel__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+            gap: 1rem;
+        }
+
+        .panel__card {
+            padding: 1.1rem 1.25rem;
+            border: 1px solid var(--pl-line);
+            border-radius: var(--pl-radius);
+            background: var(--pl-bg);
+            box-shadow: var(--pl-shadow-card);
+        }
+
+        .panel__card h3 {
+            margin-bottom: 0.4rem;
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
+        }
+
+        .panel__card p,
+        .panel__card li {
+            color: var(--pl-body);
+        }
+
+        .panel__card ul {
+            display: grid;
+            gap: 0.3rem;
+            padding-left: 1.1rem;
+        }
+
+        .panel__card code {
+            font-size: 0.8rem;
+            overflow-wrap: anywhere;
+        }
+
+        .panel__card .pl-btn {
+            margin-top: 1rem;
+        }
+
+        .cat-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cat-table th,
+        .cat-table td {
+            padding: 0.6rem 0.25rem;
+            text-align: left;
+        }
+
+        .cat-table td {
+            border-top: 1px solid var(--pl-border);
+        }
+
+        .cat-table th {
+            color: var(--pl-body);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .cat-table .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---------- Fold-away panes ---------- */
+
+        .icon-btn {
+            display: inline-grid;
+            flex: none;
+            place-items: center;
+            width: 2rem;
+            height: 2rem;
+            border: 1px solid var(--pl-control);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-bg);
+            color: var(--pl-heading);
+            cursor: pointer;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--pl-heading);
+        }
+
+        .queue__expand {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 1rem 0;
+            border: 0;
+            background: none;
+            color: var(--pl-body);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .queue__expand:hover {
+            color: var(--pl-heading);
+        }
+
+        .queue__expand:focus-visible {
+            outline-offset: -3px;
+        }
+
+        .queue__expand-label {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+        }
+
+        /* Folding only applies side by side; on phones the list and the article take turns anyway. */
+        @media (min-width: 861px) {
+            .desk[data-queue="collapsed"] .desk__panes {
+                grid-template-columns: 3rem minmax(0, 1fr);
+            }
+
+            .desk[data-queue="collapsed"] .queue > :not(.queue__expand),
+            .desk[data-queue="collapsed"] .splitter--queue {
+                display: none;
+            }
+
+            .desk[data-queue="collapsed"] .queue__expand {
+                display: flex;
+            }
+
+            .desk[data-rail="collapsed"] .review__grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .desk[data-rail="collapsed"] .rail,
+            .desk[data-rail="collapsed"] .splitter--rail {
+                display: none;
+            }
         }
 
         .desk__panes {
@@ -303,17 +560,16 @@
 
         .queue {
             display: grid;
-            grid-template-rows: auto auto auto minmax(0, 1fr);
+            grid-template-rows: auto minmax(0, 1fr);
             min-height: 0;
             border-right: 1px solid var(--pl-line);
             background: var(--pl-panel);
         }
 
         .status-nav {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-wrap: wrap;
             gap: 0.4rem;
-            padding: 1rem 1rem 0.75rem;
         }
 
         .status-tab {
@@ -366,13 +622,13 @@
 
         .queue__search {
             position: relative;
-            padding: 0 1rem;
+            flex: 0 1 22rem;
         }
 
         .queue__search svg {
             position: absolute;
             top: 50%;
-            left: 1.75rem;
+            left: 0.75rem;
             color: var(--pl-body);
             transform: translateY(-50%);
             pointer-events: none;
@@ -394,10 +650,9 @@
 
         .queue__head {
             display: flex;
-            align-items: baseline;
-            justify-content: space-between;
+            align-items: center;
             gap: 0.75rem;
-            padding: 1.1rem 1rem 0.5rem;
+            padding: 0.9rem 1rem 0.5rem;
         }
 
         .queue__head h2 {
@@ -406,6 +661,7 @@
         }
 
         .queue__head span {
+            margin-left: auto;
             color: var(--pl-body);
             font-size: 0.75rem;
             text-align: right;
@@ -816,6 +1072,12 @@
             margin-bottom: 1.2rem;
         }
 
+        .article-body p,
+        .article-body li {
+            text-align: justify;
+            hyphens: auto;
+        }
+
         .article-body h2,
         .article-body h3 {
             color: var(--pl-heading);
@@ -891,20 +1153,50 @@
             min-width: 0;
         }
 
-        .rail > section {
-            padding: 1rem 1.1rem;
+        .rail > details {
+            padding: 0.85rem 1.1rem;
             border: 1px solid var(--pl-line);
             border-radius: var(--pl-radius);
             background: var(--pl-bg);
             box-shadow: var(--pl-shadow-card);
         }
 
+        .rail summary {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 1.75rem;
+            list-style: none;
+            cursor: pointer;
+        }
+
+        .rail summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .rail summary > svg {
+            color: var(--pl-body);
+            transition: transform 0.2s var(--pl-ease);
+        }
+
+        .rail details[open] > summary {
+            margin-bottom: 0.4rem;
+        }
+
+        .rail details[open] > summary > svg {
+            transform: rotate(180deg);
+        }
+
+        .rail summary:hover h3 {
+            color: var(--pl-heading);
+        }
+
         .rail h3 {
             display: flex;
+            flex: 1;
             align-items: baseline;
             justify-content: space-between;
             gap: 0.5rem;
-            margin-bottom: 0.6rem;
             color: var(--pl-body);
             font-size: 0.72rem;
             font-weight: 600;
@@ -1528,18 +1820,58 @@
             }
 
             .desk[data-view="detail"] .queue,
-            .desk[data-view="detail"] .notice,
+            .desk[data-view="detail"] .tabs,
+            .desk[data-view="detail"] .filterbar,
             .desk[data-view="list"] .review {
                 display: none;
             }
 
-            .topbar,
-            .notice {
-                padding-inline: 1rem;
+            /* Logo and buttons on one line, the tabs scrolling sideways under them. */
+            .topbar {
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 0 1rem;
+                padding: 0.5rem 1rem 0;
+            }
+
+            .tabs {
+                flex: 0 0 100%;
+                order: 1;
+                min-height: 2.75rem;
+                margin-inline: -0.7rem;
+            }
+
+            .filterbar {
+                display: grid;
+                gap: 0.6rem;
+                padding: 0.75rem 1rem;
+            }
+
+            .status-nav {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
             }
 
             .topbar__brand img {
                 height: 1.6rem;
+            }
+
+            [data-action="toggle-queue"],
+            [data-action="toggle-rail"] {
+                display: none;
+            }
+
+            .panel {
+                overflow: visible;
+            }
+
+            .panel__inner {
+                padding: 1.25rem 1rem 2rem;
+            }
+
+            .local-badge {
+                width: 2.75rem;
+                height: 2.75rem;
             }
 
             .topbar .pl-btn span {
@@ -1556,7 +1888,7 @@
                 padding: 0;
             }
 
-            /* No room beside the buttons; the tab title still says Moderation. */
+            /* No room beside the buttons; the tab title still says Admin. */
             .topbar__brand h1 {
                 display: none;
             }
@@ -1663,9 +1995,25 @@
         <header class="topbar">
             <div class="topbar__brand">
                 <a href="/blog"><img src="/assets/logos/pepperlabs.png" alt="Pepper Labs blog" width="4000" height="1600" draggable="false"></a>
-                <h1>Moderation</h1>
+                <h1>Admin</h1>
             </div>
+
+            <!-- Sections other than Articles are placeholders until sign-in and the database are connected. -->
+            <nav class="tabs" aria-label="Admin sections">
+                <a href="#articles">Articles<span class="tab__count" id="tab-pending" hidden></span></a>
+                <a href="#comments">Comments<span class="tab__soon">Soon</span></a>
+                <a href="#media">Media<span class="tab__soon">Soon</span></a>
+                <a href="#categories">Categories</a>
+                <a href="#subscribers">Subscribers<span class="tab__soon">Soon</span></a>
+                <a href="#team">Users and roles<span class="tab__soon">Soon</span></a>
+                <a href="#settings">Settings</a>
+            </nav>
+
             <div class="topbar__actions">
+                <a class="local-badge" href="#settings" title="Saved in this browser only. Sign-in and shared storage aren't connected yet, so other staff and blog visitors don't see what you decide here.">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>
+                    <span>Saved in this browser only</span>
+                </a>
                 <a class="pl-btn pl-btn--ghost" href="/blog">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
                     <span>View blog</span>
@@ -1674,28 +2022,30 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
                     <span>New article</span>
                 </button>
-                <button type="button" class="pl-btn pl-btn--ghost" data-action="export">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
-                    <span>Export backup</span>
-                </button>
             </div>
         </header>
 
-        <p class="notice">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>
-            <span><strong>Saved in this browser only.</strong> Sign-in and shared storage aren't connected yet, so other staff and blog visitors don't see what you decide here.</span>
-        </p>
+        <div class="filterbar">
+            <nav class="status-nav" id="status-nav" aria-label="Filter by status"></nav>
+            <div class="queue__search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+                <input type="search" id="queue-search" placeholder="Search title, author or source" aria-label="Search articles in this list" autocomplete="off">
+            </div>
+        </div>
 
         <div class="desk__panes">
             <aside class="queue" aria-label="Articles">
-                <nav class="status-nav" id="status-nav" aria-label="Filter by status"></nav>
-                <div class="queue__search">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
-                    <input type="search" id="queue-search" placeholder="Search title, author or source" aria-label="Search articles in this list" autocomplete="off">
-                </div>
+                <button type="button" class="queue__expand" data-action="toggle-queue" aria-expanded="false" title="Show the article list">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/></svg>
+                    <span class="queue__expand-label">Show article list</span>
+                    <span class="tab__count" id="queue-expand-count" hidden></span>
+                </button>
                 <div class="queue__head">
                     <h2 id="queue-title"></h2>
                     <span id="queue-count" role="status"></span>
+                    <button type="button" class="icon-btn" data-action="toggle-queue" aria-expanded="true" aria-label="Hide the article list" title="Hide the article list">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/></svg>
+                    </button>
                 </div>
                 <div class="queue__body">
                     <ul class="queue__list" id="queue-list" aria-labelledby="queue-title"></ul>
@@ -1705,6 +2055,148 @@
 
             <main class="review" id="review"></main>
         </div>
+
+        <section class="panel" data-tab="comments" aria-labelledby="panel-comments-title" hidden>
+            <div class="panel__inner">
+                <div class="panel__head">
+                    <span class="chip">Coming soon</span>
+                    <h2 id="panel-comments-title">Comments</h2>
+                    <p class="panel__lede">Comments are not live on the blog yet. Each article already keeps an Allow comments choice, so this page can pick up from there.</p>
+                </div>
+                <div class="panel__grid">
+                    <div class="panel__card">
+                        <h3>What this page will do</h3>
+                        <ul>
+                            <li>List new comments, oldest first, to approve or hide</li>
+                            <li>Filter by article, and reply as Pepper Labs</li>
+                            <li>Catch spam and block repeat senders</li>
+                        </ul>
+                    </div>
+                    <div class="panel__card">
+                        <h3>What it needs</h3>
+                        <p>A comments table in the database. There is a starting point in <code>/blog/api/comments.php</code>, but the post page doesn't use it yet.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" data-tab="media" aria-labelledby="panel-media-title" hidden>
+            <div class="panel__inner">
+                <div class="panel__head">
+                    <span class="chip">Coming soon</span>
+                    <h2 id="panel-media-title">Media</h2>
+                    <p class="panel__lede">For now, pictures are stored inside each article in this browser. Once there is a server to upload to, this page will be the one place to manage them.</p>
+                </div>
+                <div class="panel__grid">
+                    <div class="panel__card">
+                        <h3>What this page will do</h3>
+                        <ul>
+                            <li>Upload photos once and use them in any article</li>
+                            <li>See which articles use each picture</li>
+                            <li>Record photo credits and permission to use</li>
+                        </ul>
+                    </div>
+                    <div class="panel__card">
+                        <h3>What it needs</h3>
+                        <p>An upload folder on the server and a media table that stores each file's address, size and credit.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" data-tab="categories" aria-labelledby="panel-categories-title" hidden>
+            <div class="panel__inner">
+                <div class="panel__head">
+                    <h2 id="panel-categories-title">Categories</h2>
+                    <p class="panel__lede">The filters on the blog. Adding or renaming one is still a code change; it moves here once categories are stored in the database.</p>
+                </div>
+                <div class="panel__card">
+                    <table class="cat-table">
+                        <thead><tr><th scope="col">Category</th><th scope="col" class="num">Published</th><th scope="col" class="num">All articles</th></tr></thead>
+                        <tbody id="category-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" data-tab="subscribers" aria-labelledby="panel-subscribers-title" hidden>
+            <div class="panel__inner">
+                <div class="panel__head">
+                    <span class="chip">Coming soon</span>
+                    <h2 id="panel-subscribers-title">Subscribers</h2>
+                    <p class="panel__lede">The newsletter form under each article thanks people, but their email addresses aren't saved anywhere yet.</p>
+                </div>
+                <div class="panel__grid">
+                    <div class="panel__card">
+                        <h3>What this page will do</h3>
+                        <ul>
+                            <li>List everyone who signed up, and when</li>
+                            <li>Export the list for the mailing tool</li>
+                            <li>Remove people who ask to unsubscribe</li>
+                        </ul>
+                    </div>
+                    <div class="panel__card">
+                        <h3>What it needs</h3>
+                        <p>A subscribers table in the database, and a sign-up form that saves to it with consent recorded.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" data-tab="team" aria-labelledby="panel-team-title" hidden>
+            <div class="panel__inner">
+                <div class="panel__head">
+                    <span class="chip">Coming soon</span>
+                    <h2 id="panel-team-title">Users and roles</h2>
+                    <p class="panel__lede">Who can sign in to this page and what they can do. Until it is set up, anyone who opens this page can moderate, and each browser keeps its own copy of the blog.</p>
+                </div>
+                <div class="panel__grid">
+                    <div class="panel__card">
+                        <h3>Admin</h3>
+                        <p>Everything below, plus adding and removing people, changing roles and settings.</p>
+                    </div>
+                    <div class="panel__card">
+                        <h3>Editor</h3>
+                        <p>Reviews every article: approve, send back, edit, pin, unpublish and delete.</p>
+                    </div>
+                    <div class="panel__card">
+                        <h3>Author</h3>
+                        <p>Writes articles and sends them for review. Sees only their own, and can edit them while they are sent back.</p>
+                    </div>
+                </div>
+                <div class="panel__card panel__card--wide">
+                    <h3>What it needs</h3>
+                    <ul>
+                        <li>A MySQL database with users, articles and history tables, managed with phpMyAdmin</li>
+                        <li>A PHP sign-in page with hashed passwords and sessions</li>
+                        <li>Moderation actions on this page sent to the server instead of saved in this browser</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" data-tab="settings" aria-labelledby="panel-settings-title" hidden>
+            <div class="panel__inner">
+                <div class="panel__head">
+                    <h2 id="panel-settings-title">Settings</h2>
+                </div>
+                <div class="panel__grid">
+                    <div class="panel__card">
+                        <h3>Saved in this browser only</h3>
+                        <p>Sign-in and shared storage aren't connected yet, so other staff and blog visitors don't see what you decide here. Download a backup before clearing this browser's data.</p>
+                        <button type="button" class="pl-btn pl-btn--ghost" data-action="export">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
+                            <span>Export backup</span>
+                        </button>
+                    </div>
+                    <div class="panel__card">
+                        <h3>Layout</h3>
+                        <p>Puts the article list and the checks panel back to their usual width, opens both, and resets which check sections are folded.</p>
+                        <button type="button" class="pl-btn pl-btn--ghost" data-action="reset-layout">Reset layout</button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
@@ -1744,7 +2236,9 @@
             numbers: svg('<path d="M10 6h10M10 12h10M10 18h10M4 5l1.5-1v4M4 14.5c0-2 2.6-1.6 2.6-.2 0 1-2.6 2-2.6 3.2h2.8"/>'),
             undo: svg('<path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/>'),
             redo: svg('<path d="M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3"/>'),
-            picture: svg('<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>')
+            picture: svg('<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>'),
+            chevron: svg('<path d="M6 9l6 6 6-6"/>'),
+            panelRight: svg('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M14.5 4.5v15"/>')
         };
 
         const STATUSES = {
@@ -2115,6 +2609,24 @@
                         <span class="status-tab__count">${count}</span>
                     </button>`;
             }).join('');
+
+            // The Articles tab and the folded list both show how many articles are waiting.
+            const pending = state.posts.filter(post => statusOf(post) === 'pending').length;
+            ['tab-pending', 'queue-expand-count'].forEach(id => {
+                const badge = document.getElementById(id);
+                badge.textContent = pending;
+                badge.hidden = !pending;
+            });
+            document.getElementById('tab-pending').title = `${pending} waiting for review`;
+        }
+
+        function renderCategories() {
+            const keys = [...new Set([...Object.keys(CATEGORY_LABELS), ...state.posts.map(categoryKey)])];
+            document.getElementById('category-rows').innerHTML = keys.map(key => {
+                const posts = state.posts.filter(post => categoryKey(post) === key);
+                const live = posts.filter(post => statusOf(post) === 'published').length;
+                return `<tr><td>${esc(categoryLabel(key))}</td><td class="num">${live}</td><td class="num">${posts.length}</td></tr>`;
+            }).join('');
         }
 
         function renderQueue() {
@@ -2199,15 +2711,19 @@
             const history = Array.isArray(post.history) ? [...post.history].reverse() : [];
             const networks = Array.isArray(post.socialNetworks) ? post.socialNetworks.filter(Boolean) : [];
 
+            // Each section folds; layout.sections remembers which are open across articles and visits.
+            const section = (key, title, aside, body) => `
+                <details data-section="${key}" ${key === 'checks' ? 'id="checks"' : ''} ${layout.sections[key] ? 'open' : ''}>
+                    <summary><h3>${title}${aside ? ` <span>${aside}</span>` : ''}</h3>${ICON.chevron}</summary>
+                    ${body}
+                </details>`;
+            const blogState = [post.pinned ? 'Pinned' : '', post.allowComments === false ? 'Comments off' : ''].filter(Boolean).join(' · ');
+
             return `
                 <aside class="rail" aria-label="Checks and details">
-                    <section id="checks" tabindex="-1">
-                        <h3>Checks <span>${analysis.issues ? `${analysis.issues} to look at` : 'All passed'}</span></h3>
-                        <ul class="checks">${renderChecks(analysis)}</ul>
-                    </section>
+                    ${section('checks', 'Checks', analysis.issues ? `${analysis.issues} to look at` : 'All passed', `<ul class="checks">${renderChecks(analysis)}</ul>`)}
 
-                    <section>
-                        <h3>On the blog</h3>
+                    ${section('blog', 'On the blog', esc(blogState), `
                         <button type="button" class="setting" role="switch" aria-checked="${Boolean(post.pinned)}" data-action="toggle-pin">
                             <strong>Pin to the top</strong>
                             <span class="setting__track" aria-hidden="true"></span>
@@ -2217,11 +2733,9 @@
                             <strong>Allow comments</strong>
                             <span class="setting__track" aria-hidden="true"></span>
                             <small>Comments are not live on the blog yet. The choice is kept for when they are.</small>
-                        </button>
-                    </section>
+                        </button>`)}
 
-                    <section>
-                        <h3>Details</h3>
+                    ${section('details', 'Details', '', `
                         <dl class="details">
                             <div><dt>Author</dt><dd>${esc(post.author || 'Not given')}</dd></div>
                             ${post.moderator ? `<div><dt>Moderator</dt><dd>${esc(post.moderator)}</dd></div>` : ''}
@@ -2229,18 +2743,14 @@
                             <div><dt>Publish date</dt><dd>${esc(post.date || 'Not set')}</dd></div>
                             <div><dt>Address</dt><dd>${post.slug ? esc(postUrl(post)) : 'None'}</dd></div>
                             ${networks.length ? `<div><dt>Share to</dt><dd>${esc(networks.join(', '))}</dd></div>` : ''}
-                        </dl>
-                    </section>
+                        </dl>`)}
 
-                    <section>
-                        <h3>History</h3>
-                        ${history.length ? `<ol class="history">${history.map(entry => `
+                    ${section('history', 'History', history.length ? String(history.length) : '', history.length ? `<ol class="history">${history.map(entry => `
                             <li>
                                 <strong>${esc(HISTORY_LABELS[entry.action] || entry.action)}</strong>
                                 <time datetime="${esc(entry.at)}">${esc(dateAndTime(entry.at))}</time>
                                 ${entry.note ? `<p>${esc(entry.note)}</p>` : ''}
-                            </li>`).join('')}</ol>` : '<p class="rail__none">No decisions have been recorded for this article.</p>'}
-                    </section>
+                            </li>`).join('')}</ol>` : '<p class="rail__none">No decisions have been recorded for this article.</p>')}
                 </aside>`;
         }
 
@@ -2305,6 +2815,7 @@
                             ${analysis.issues ? `<button type="button" class="text-btn" data-action="jump-checks">${plural(analysis.issues, 'check')} to look at</button>` : '<span>All checks passed</span>'}
                             <span class="spacer"></span>
                             ${status === 'published' && post.slug ? `<a class="text-btn" href="${esc(postUrl(post))}" target="_blank" rel="noopener">Open on the blog${ICON.external}</a>` : ''}
+                            <button type="button" class="icon-btn" data-action="toggle-rail" aria-expanded="${layout.rail}" aria-label="Show checks and details" title="Show or hide checks and details">${ICON.panelRight}</button>
                         </div>
 
                         <div class="review__grid">
@@ -2486,7 +2997,7 @@
             const params = new URLSearchParams({ status: state.status });
             const post = selectedPost();
             if (post?.slug) params.set('post', post.slug);
-            history.replaceState(null, '', `${location.pathname}?${params}`);
+            history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
         }
 
         function render() {
@@ -2494,6 +3005,7 @@
             renderStatusNav();
             renderQueue();
             renderReview();
+            renderCategories();
             syncUrl();
         }
 
@@ -2720,9 +3232,34 @@
             },
 
             'jump-checks'() {
+                if (!layout.rail) actions['toggle-rail']();
                 const checks = document.getElementById('checks');
+                checks.open = true;
                 checks.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-                checks.focus({ preventScroll: true });
+                checks.querySelector('summary').focus({ preventScroll: true });
+            },
+
+            'toggle-queue'() {
+                layout.queue = !layout.queue;
+                saveLayout();
+                applyLayout();
+                desk.querySelector(layout.queue ? '.queue__head [data-action="toggle-queue"]' : '.queue__expand').focus();
+            },
+
+            'toggle-rail'() {
+                layout.rail = !layout.rail;
+                saveLayout();
+                applyLayout();
+            },
+
+            'reset-layout'() {
+                Object.keys(PANES).forEach(name => setPane(name, null));
+                savePanes();
+                Object.assign(layout, structuredClone(LAYOUT_DEFAULT));
+                saveLayout();
+                applyLayout();
+                renderReview();
+                toast('Layout reset.');
             },
 
             approve() {
@@ -2788,6 +3325,10 @@
 
             async 'new-article'() {
                 if (!(await leaveEdit())) return;
+                if (location.hash !== '#articles') {
+                    location.hash = 'articles';
+                    showTab();
+                }
                 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
                 draft = {
                     id: Math.max(0, ...state.posts.map(post => Number(post.id) || 0)) + 1,
@@ -3143,7 +3684,57 @@
         } catch (error) { /* No saved widths, so the panes start at their usual sizes. */ }
         desk.querySelector('.queue').insertAdjacentHTML('afterend', splitter('queue'));
 
+        /* ---------- Folding panes and sections ---------- */
+
+        const LAYOUT_KEY = 'blog_admin_layout';
+        const LAYOUT_DEFAULT = { queue: true, rail: true, sections: { checks: true, blog: true, details: false, history: false } };
+        const layout = structuredClone(LAYOUT_DEFAULT);
+
+        try {
+            const saved = JSON.parse(localStorage.getItem(LAYOUT_KEY)) || {};
+            if (typeof saved.queue === 'boolean') layout.queue = saved.queue;
+            if (typeof saved.rail === 'boolean') layout.rail = saved.rail;
+            Object.assign(layout.sections, saved.sections);
+        } catch (error) { /* Nothing saved, so everything starts open as usual. */ }
+
+        function saveLayout() {
+            try {
+                localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout));
+            } catch (error) { /* The layout still holds until the page is closed. */ }
+        }
+
+        function applyLayout() {
+            desk.dataset.queue = layout.queue ? 'open' : 'collapsed';
+            desk.dataset.rail = layout.rail ? 'open' : 'collapsed';
+            desk.querySelectorAll('[data-action="toggle-queue"]').forEach(button => button.setAttribute('aria-expanded', String(layout.queue)));
+            review.querySelector('[data-action="toggle-rail"]')?.setAttribute('aria-expanded', String(layout.rail));
+        }
+
+        // toggle does not bubble, so it is caught on the way down.
+        review.addEventListener('toggle', event => {
+            const key = event.target.dataset?.section;
+            if (!key) return;
+            layout.sections[key] = event.target.open;
+            saveLayout();
+        }, true);
+
+        /* ---------- Section tabs ---------- */
+
+        const TABS = ['articles', 'comments', 'media', 'categories', 'subscribers', 'team', 'settings'];
+
+        function showTab() {
+            const tab = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'articles';
+            desk.dataset.tab = tab;
+            document.querySelectorAll('.tabs a').forEach(link => link.setAttribute('aria-current', link.hash === `#${tab}` ? 'page' : 'false'));
+            document.querySelectorAll('.panel').forEach(panel => { panel.hidden = panel.dataset.tab !== tab; });
+        }
+
+        window.addEventListener('hashchange', showTab);
+
         /* ---------- Start ---------- */
+
+        applyLayout();
+        showTab();
 
         loadPosts();
         (() => {
