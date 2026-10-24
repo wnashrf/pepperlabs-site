@@ -1912,34 +1912,10 @@
         </section>
     </div>
 
-    <script src="/blog/data/posts.js?v=20261011-5"></script>
     <script src="/blog/media.js?v=20261011-1"></script>
     <script>
-        // Sample posts live in /blog/data/posts.js
-        const posts = Object.fromEntries(window.BLOG_SAMPLE_POSTS.map(post => [post.slug, { ...post }]));
-
-        try {
-            const savedPosts = localStorage.getItem('blog_posts');
-            if (savedPosts !== null) {
-                const publishedPosts = JSON.parse(savedPosts);
-                if (Array.isArray(publishedPosts)) {
-                    Object.keys(posts).forEach(slug => delete posts[slug]);
-                    blogFillSamplePictures(publishedPosts)
-                        .filter(post => post.status === 'published' && post.slug)
-                        .forEach(post => {
-                            posts[post.slug] = {
-                                ...post,
-                                date: post.date || post.publishDate || '',
-                                author: post.author || 'Pepper Labs',
-                                emoji: post.emoji || '📝',
-                                excerpt: post.excerpt || '',
-                                content: post.content || ''
-                            };
-                        });
-                }
-            }
-        } catch {
-        }
+        // Published posts by slug, from the blog database through /blog/api/posts.php (loaded at the bottom of this script).
+        const posts = {};
         
         const CATEGORY_LABELS = { 'ai': 'AI', 'avpn': 'AVPN', 'dapur-digital': 'Dapur Digital', 'youth': 'Youth', 'milestones': 'Milestones' };
         const ARROW_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
@@ -2337,7 +2313,25 @@
         });
         
         // Load post on page load
-        renderPost();
+        (async () => {
+            try {
+                const response = await fetch('/blog/api/posts.php');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                (await response.json()).posts.filter(post => post.slug).forEach(post => {
+                    posts[post.slug] = {
+                        ...post,
+                        date: post.date || post.publishDate || '',
+                        author: post.author || 'Pepper Labs',
+                        emoji: post.emoji || '📝',
+                        excerpt: post.excerpt || '',
+                        content: post.content || ''
+                    };
+                });
+            } catch (error) {
+                console.error('Blog posts could not be loaded.', error);
+            }
+            renderPost();
+        })();
     </script>
 </body>
 </html>

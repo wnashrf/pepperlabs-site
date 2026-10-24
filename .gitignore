@@ -22,3 +22,6 @@ blog/data/comments/
 
 # Archives and old snapshots
 *.zip
+
+# Blog database settings and password (copy blog/api/config.example.php)
+blog/api/config.local.php

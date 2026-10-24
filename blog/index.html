@@ -1911,22 +1911,10 @@
         </section>
     </div>
 
-    <script src="/blog/data/posts.js?v=20261011-5"></script>
     <script src="/blog/media.js?v=20261011-1"></script>
     <script>
-        // Sample posts live in /blog/data/posts.js
-        const posts = window.BLOG_SAMPLE_POSTS.map(post => ({ ...post }));
-
-        try {
-            const storedPosts = localStorage.getItem('blog_posts');
-            if (storedPosts !== null) {
-                const parsedPosts = JSON.parse(storedPosts);
-                if (Array.isArray(parsedPosts)) {
-                    posts.splice(0, posts.length, ...blogFillSamplePictures(parsedPosts).filter(post => post.status === 'published'));
-                }
-            }
-        } catch {
-        }
+        // Published posts come from the blog database through /blog/api/posts.php (loaded at the bottom of this script).
+        const posts = [];
         
         let currentFilter = '';
 
@@ -2258,7 +2246,16 @@
         });
         
         // Initial render
-        render();
+        (async () => {
+            try {
+                const response = await fetch('/blog/api/posts.php');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                posts.push(...(await response.json()).posts);
+            } catch (error) {
+                console.error('Blog posts could not be loaded.', error);
+            }
+            render();
+        })();
     </script>
 </body>
 </html>
