@@ -479,7 +479,7 @@
             font-family: var(--pl-font-display);
         }
 
-        /* The red band: the main site's accent red behind the title, the filters and the lead story. */
+        /* The red band: the main site's accent red behind the title and the filters. */
         .masthead {
             position: relative;
             overflow: hidden;
@@ -494,13 +494,14 @@
             margin-inline: auto;
         }
 
-        /* The logo mark, large and cropped off the right edge. Its red piece turns white so it reads on the red. */
+        /* The logo mark, large and cropped off the right edge, with a little of its top and bottom triangles showing. Its red piece turns white so it reads on the red. */
         .masthead > .masthead__mark {
             position: absolute;
-            top: clamp(-5rem, -3vw, -1.5rem);
+            /* Sized to the band's height, so the same slice of each triangle shows on every screen. */
+            top: -3%;
             right: max(-60px, -3vw);
-            width: clamp(220px, 24vw, 420px);
-            height: auto;
+            width: auto;
+            height: 115%;
             pointer-events: none;
             animation: pl-rise 1.4s 0.15s var(--pl-ease) backwards;
         }
@@ -786,46 +787,13 @@
             color: rgba(217, 52, 42, 0.5);
         }
 
-        /* The lead story sits on the red band, so everything in it turns white. */
+        /* The lead story opens the white page, under the red band. */
         .lead-stories {
-            margin-top: clamp(2.5rem, 5vw, 4rem);
-            padding-top: clamp(2.5rem, 5vw, 4rem);
-            border-top: 1px solid rgba(255, 255, 255, 0.35);
+            padding-top: clamp(3rem, 6vw, 5rem);
         }
 
         .lead-stories[hidden] {
             display: none;
-        }
-
-        .lead-stories :is(.post-meta, .featured-post__excerpt, .post-source, .post-source strong, .read-more) {
-            color: #fff;
-        }
-
-        .lead-stories .post-category {
-            background: #fff;
-            color: var(--pl-red);
-        }
-
-        .lead-stories .read-more svg {
-            color: var(--pl-amber);
-        }
-
-        .lead-stories .stretched-link:focus-visible::after {
-            outline-color: #fff;
-            outline-offset: 10px;
-        }
-
-        .lead-stories .post-media {
-            box-shadow: 0 40px 80px -30px rgba(70, 8, 4, 0.55);
-        }
-
-        .lead-stories .post-media--word {
-            background: var(--pl-red-dark);
-        }
-
-        .lead-stories .post-media__word,
-        .lead-stories .featured-post:hover .post-media__word {
-            color: rgba(255, 255, 255, 0.3);
         }
 
         /* ---------- Spotlights ---------- */
@@ -959,10 +927,6 @@
         .featured-post h2 a {
             background: linear-gradient(var(--pl-red), var(--pl-red)) 0 100% / 0 3px no-repeat;
             transition: background-size 0.42s var(--pl-ease);
-        }
-
-        .lead-stories .featured-post h2 a {
-            background-image: linear-gradient(#fff, #fff);
         }
 
         .post-card:hover .post-title a,
@@ -1742,13 +1706,13 @@
         </div>
 
         <div class="filter-bar" id="filter-bar" role="group" aria-label="Filter posts by category"></div>
-
-        <div class="lead-stories" id="lead-stories" hidden>
-            <article class="featured-post" id="featured-post"></article>
-        </div>
     </section>
 
     <main class="page">
+        <div class="lead-stories" id="lead-stories" hidden>
+            <article class="featured-post" id="featured-post"></article>
+        </div>
+
         <section class="spotlights" id="spotlights" aria-label="More stories" hidden></section>
 
         <section class="post-list" id="post-list" aria-labelledby="post-list-title" hidden>
