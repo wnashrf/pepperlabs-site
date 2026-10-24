@@ -184,6 +184,8 @@
             display: flex;
             align-items: center;
             gap: 1.5rem;
+            /* Lets the tabs scroll instead of pushing the page wider than the window. */
+            min-width: 0;
             min-height: 3.5rem;
             padding: 0 1.25rem;
             border-top: 3px solid var(--pl-primary);
@@ -224,29 +226,85 @@
             gap: 0.5rem;
         }
 
-        /* Icon only, so the tabs get the room; the full sentence is in its title and on the Settings page. */
-        .local-badge {
-            display: inline-grid;
-            place-items: center;
-            width: 2.5rem;
-            height: 2.5rem;
-            border: 1px solid var(--pl-line);
-            border-radius: 50%;
-            background: var(--pl-panel);
+        /* Who is signed in, beside Sign out. */
+        .account {
+            display: grid;
+            justify-items: end;
+            line-height: 1.2;
+        }
+
+        .account__name {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .account__role {
+            color: var(--pl-body);
+            font-size: 0.75rem;
+            text-transform: capitalize;
+        }
+
+        /* Admin page before sign-in is confirmed: nothing shows until the server says who this is. */
+        body.is-loading .desk {
+            visibility: hidden;
+        }
+
+        /* Users and roles table and form. */
+        .team-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .team-table th,
+        .team-table td {
+            padding: 0.6rem 0.5rem;
+            border-bottom: 1px solid var(--pl-line);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .team-table th {
+            color: var(--pl-body);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .team-table td small {
+            display: block;
             color: var(--pl-body);
         }
 
-        .local-badge:hover {
-            border-color: var(--pl-control);
-            color: var(--pl-heading);
+        .team-table select {
+            min-height: 2.25rem;
+            padding: 0.3rem 0.5rem;
+            border: 1px solid var(--pl-control);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-bg);
         }
 
-        .local-badge span {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            clip-path: inset(50%);
+        .team-table .pl-btn {
+            margin-top: 0;
+            min-height: 2.25rem;
+        }
+
+        .team-table tr.is-disabled td:not(:last-child) {
+            color: var(--pl-body);
+            text-decoration: line-through;
+        }
+
+        .team-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+            align-items: end;
+            gap: 0.75rem;
+        }
+
+        .team-form .pl-btn {
+            margin-top: 0;
+        }
+
+        .team-scroll {
+            overflow-x: auto;
         }
 
         /* ---------- Section tabs, inside the top bar ---------- */
@@ -1869,9 +1927,9 @@
                 padding: 1.25rem 1rem 2rem;
             }
 
-            .local-badge {
-                width: 2.75rem;
-                height: 2.75rem;
+            /* The name is on the Settings page; the top bar keeps its room for the buttons. */
+            .account {
+                display: none;
             }
 
             .topbar .pl-btn span {
@@ -1990,7 +2048,7 @@
     </style>
     <link rel="stylesheet" href="/blog/media.css?v=20261011-1">
 </head>
-<body>
+<body class="is-loading">
     <div class="desk" id="desk" data-view="list">
         <header class="topbar">
             <div class="topbar__brand">
@@ -1998,22 +2056,26 @@
                 <h1>Admin</h1>
             </div>
 
-            <!-- Sections other than Articles are placeholders until sign-in and the database are connected. -->
+            <!-- Comments, Media and Subscribers are placeholders. Users and roles is for admins only. -->
             <nav class="tabs" aria-label="Admin sections">
                 <a href="#articles">Articles<span class="tab__count" id="tab-pending" hidden></span></a>
                 <a href="#comments">Comments<span class="tab__soon">Soon</span></a>
                 <a href="#media">Media<span class="tab__soon">Soon</span></a>
                 <a href="#categories">Categories</a>
                 <a href="#subscribers">Subscribers<span class="tab__soon">Soon</span></a>
-                <a href="#team">Users and roles<span class="tab__soon">Soon</span></a>
+                <a href="#team" data-admin-only hidden>Users and roles</a>
                 <a href="#settings">Settings</a>
             </nav>
 
             <div class="topbar__actions">
-                <a class="local-badge" href="#settings" title="Saved in this browser only. Sign-in and shared storage aren't connected yet, so other staff and blog visitors don't see what you decide here.">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>
-                    <span>Saved in this browser only</span>
-                </a>
+                <div class="account" id="account">
+                    <span class="account__name" id="account-name"></span>
+                    <span class="account__role" id="account-role"></span>
+                </div>
+                <button type="button" class="pl-btn pl-btn--ghost" data-action="sign-out" aria-label="Sign out" title="Sign out">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10"/></svg>
+                    <span>Sign out</span>
+                </button>
                 <a class="pl-btn pl-btn--ghost" href="/blog">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
                     <span>View blog</span>
@@ -2085,7 +2147,7 @@
                 <div class="panel__head">
                     <span class="chip">Coming soon</span>
                     <h2 id="panel-media-title">Media</h2>
-                    <p class="panel__lede">For now, pictures are stored inside each article in this browser. Once there is a server to upload to, this page will be the one place to manage them.</p>
+                    <p class="panel__lede">For now, pictures are saved inside each article in the database. Once uploads to the server are added, this page will be the one place to manage them.</p>
                 </div>
                 <div class="panel__grid">
                     <div class="panel__card">
@@ -2146,31 +2208,49 @@
         <section class="panel" data-tab="team" aria-labelledby="panel-team-title" hidden>
             <div class="panel__inner">
                 <div class="panel__head">
-                    <span class="chip">Coming soon</span>
                     <h2 id="panel-team-title">Users and roles</h2>
-                    <p class="panel__lede">Who can sign in to this page and what they can do. Until it is set up, anyone who opens this page can moderate, and each browser keeps its own copy of the blog.</p>
+                    <p class="panel__lede">Who can sign in to this page and what they can do. People are disabled rather than deleted, so their name stays on the articles they wrote or reviewed.</p>
                 </div>
                 <div class="panel__grid">
                     <div class="panel__card">
                         <h3>Admin</h3>
-                        <p>Everything below, plus adding and removing people, changing roles and settings.</p>
-                    </div>
-                    <div class="panel__card">
-                        <h3>Editor</h3>
-                        <p>Reviews every article: approve, send back, edit, pin, unpublish and delete.</p>
+                        <p>Reviews every article: approve, send back, edit, pin, unpublish and delete. Adds people and changes their roles.</p>
                     </div>
                     <div class="panel__card">
                         <h3>Author</h3>
-                        <p>Writes articles and sends them for review. Sees only their own, and can edit them while they are sent back.</p>
+                        <p>Writes articles and sends them for review. Sees only their own, and can edit them until they are published.</p>
                     </div>
                 </div>
-                <div class="panel__card panel__card--wide">
-                    <h3>What it needs</h3>
-                    <ul>
-                        <li>A MySQL database with users, articles and history tables, managed with phpMyAdmin</li>
-                        <li>A PHP sign-in page with hashed passwords and sessions</li>
-                        <li>Moderation actions on this page sent to the server instead of saved in this browser</li>
-                    </ul>
+                <div class="panel__card">
+                    <h3>People</h3>
+                    <div class="team-scroll" id="team-list"><p>Loading…</p></div>
+                </div>
+                <div class="panel__card">
+                    <h3>Add someone</h3>
+                    <p>Give them their password in person or by phone, and ask them to keep it private.</p>
+                    <form class="team-form" id="team-form" novalidate>
+                        <div class="field">
+                            <label for="team-name">Name</label>
+                            <input id="team-name" name="name" type="text" autocomplete="off" required>
+                        </div>
+                        <div class="field">
+                            <label for="team-email">Email</label>
+                            <input id="team-email" name="email" type="email" autocomplete="off" required>
+                        </div>
+                        <div class="field">
+                            <label for="team-role">Role</label>
+                            <select id="team-role" name="role">
+                                <option value="author">Author</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="team-password">Password</label>
+                            <input id="team-password" name="password" type="text" autocomplete="new-password" minlength="10" required aria-describedby="team-password-hint">
+                        </div>
+                        <button type="submit" class="pl-btn pl-btn--primary">Add</button>
+                    </form>
+                    <p class="field__hint" id="team-password-hint">At least 10 characters. They can't change it themselves yet, so ask an admin to set a new one if needed.</p>
                 </div>
             </div>
         </section>
@@ -2181,9 +2261,14 @@
                     <h2 id="panel-settings-title">Settings</h2>
                 </div>
                 <div class="panel__grid">
+                    <div class="panel__card" id="import-card" hidden>
+                        <h3>Move articles into the database</h3>
+                        <p id="import-body"></p>
+                        <button type="button" class="pl-btn pl-btn--primary" data-action="import">Import articles</button>
+                    </div>
                     <div class="panel__card">
-                        <h3>Saved in this browser only</h3>
-                        <p>Sign-in and shared storage aren't connected yet, so other staff and blog visitors don't see what you decide here. Download a backup before clearing this browser's data.</p>
+                        <h3>Saved on the server</h3>
+                        <p>Articles and decisions are saved to the blog's database, so everyone who signs in sees the same list and the blog shows what is published. The backup holds the articles you can see.</p>
                         <button type="button" class="pl-btn pl-btn--ghost" data-action="export">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
                             <span>Export backup</span>
@@ -2211,10 +2296,10 @@
     </dialog>
 
     <script src="/blog/data/posts.js?v=20261011-5"></script>
-    <script src="/blog/media.js?v=20261011-1"></script>
+    <script src="/blog/media.js?v=20261024-1"></script>
     <script>
-        // Posts are shared with index.html and post.html through localStorage key "blog_posts".
-        // Until something is saved there, all three pages start from /blog/data/posts.js.
+        // Posts live in the blog database and come through /blog/api/posts.php, which also checks every permission.
+        // Before the database, posts were kept in each browser under this key; Settings can import them once.
         const STORAGE_KEY = 'blog_posts';
         const CATEGORY_LABELS = { 'ai': 'AI', 'avpn': 'AVPN', 'dapur-digital': 'Dapur Digital', 'youth': 'Youth', 'milestones': 'Milestones' };
 
@@ -2247,14 +2332,14 @@
                 icon: '',
                 order: 'longest wait first',
                 emptyTitle: 'Nothing is waiting for review',
-                emptyBody: 'Articles sent in from the blog\'s New post form arrive here. They appear on the blog only after you approve them.'
+                emptyBody: 'Articles written with New article arrive here. They appear on the blog only after an admin approves them.'
             },
             published: {
                 label: 'Published',
                 icon: ICON.check,
                 order: 'newest first',
                 emptyTitle: 'Nothing is published',
-                emptyBody: 'Approved articles are listed here. You can edit, pin or unpublish them at any time.'
+                emptyBody: 'Approved articles are listed here. Admins can edit, pin or unpublish them at any time.'
             },
             returned: {
                 label: 'Sent back',
@@ -2273,7 +2358,11 @@
         };
 
         const HISTORY_LABELS = {
-            added: 'Written here by a moderator',
+            added: 'Written here by an admin',
+            submitted: 'Sent in for review',
+            resubmitted: 'Edited and sent for review again',
+            imported: 'Moved into the database',
+            undone: 'Change undone',
             approved: 'Approved and published',
             returned: 'Sent back',
             unpublished: 'Unpublished',
@@ -2316,6 +2405,46 @@
         let sourcePictures = [];
         // An article being written with New article. It joins state.posts only when saved.
         let draft = null;
+
+        /* ---------- Server ---------- */
+
+        // Who is signed in, and the token the server wants with every change.
+        const session = { user: null, csrf: '' };
+
+        function isAdmin() {
+            return session.user?.role === 'admin';
+        }
+
+        // Authors may change their own articles until they are published; admins may change anything.
+        function canEdit(post) {
+            if (isAdmin()) return true;
+            const own = post === draft || post.authorId === session.user?.id;
+            return own && ['pending', 'returned'].includes(statusOf(post));
+        }
+
+        let signingIn = false;
+
+        function toSignIn() {
+            signingIn = true;
+            location.replace(`/blog/login.html?next=${encodeURIComponent(location.pathname + location.search + location.hash)}`);
+        }
+
+        async function api(path, { method = 'GET', body } = {}) {
+            const response = await fetch(`/blog/api/${path}`, {
+                method,
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', ...(method === 'GET' ? {} : { 'X-CSRF-Token': session.csrf }) },
+                body: body === undefined ? undefined : JSON.stringify(body)
+            });
+            const data = await response.json().catch(() => ({}));
+            if (response.status === 401) {
+                toSignIn();
+                throw new Error('Please sign in again.');
+            }
+            if (response.status === 413) throw new Error('That is too large for the server to save. Use smaller photos.');
+            if (!response.ok) throw new Error(data.error || 'The server could not save that. Please try again.');
+            return data;
+        }
 
         /* ---------- Helpers ---------- */
 
@@ -2379,34 +2508,8 @@
 
         /* ---------- Article analysis ---------- */
 
-        const UNSAFE_TAGS = 'script, style, iframe, frame, object, embed, link, meta, base, form, input, button, textarea, select';
-        const URL_ATTRIBUTES = ['href', 'src', 'xlink:href', 'action', 'formaction', 'poster'];
-
-        // The blog inserts the article body as HTML. This removes anything in it that could run code.
-        function sanitize(html) {
-            const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
-            let removed = 0;
-            doc.body.querySelectorAll(UNSAFE_TAGS).forEach(element => {
-                element.remove();
-                removed += 1;
-            });
-            doc.body.querySelectorAll('*').forEach(element => {
-                [...element.attributes].forEach(attribute => {
-                    const name = attribute.name.toLowerCase();
-                    const value = attribute.value.replace(/[\u0000- ]/g, '').toLowerCase();
-                    const badUrl = URL_ATTRIBUTES.includes(name)
-                        && (/^(javascript|vbscript):/.test(value) || (value.startsWith('data:') && !value.startsWith('data:image/')));
-                    if (name.startsWith('on') || badUrl) {
-                        element.removeAttribute(attribute.name);
-                        removed += 1;
-                    }
-                });
-                if (element.tagName === 'A' && element.getAttribute('target') === '_blank') {
-                    element.setAttribute('rel', 'noopener');
-                }
-            });
-            return { html: doc.body.innerHTML.trim(), removed, body: doc.body };
-        }
+        // The blog inserts the article body as HTML. This removes anything in it that could run code (see media.js).
+        const sanitize = BlogMedia.sanitize;
 
         let analysisCache = new WeakMap();
 
@@ -2463,13 +2566,13 @@
             const pictures = [post.image, ...placed, ...extra].filter(Boolean);
             const megabytes = pictures.filter(src => String(src).startsWith('data:')).reduce((total, src) => total + src.length, 0) * 0.75 / 1048576;
             const breakdown = [post.image ? '1 main' : '', placed.length ? `${placed.length} in the article` : '', extra.length ? plural(extra.length, 'more photo') : ''].filter(Boolean).join(', ');
-            const stored = megabytes ? ` ${megabytes.toFixed(1)} MB stored in this browser.` : '';
+            const stored = megabytes ? ` ${megabytes.toFixed(1)} MB of pictures saved with the article.` : '';
             if (!pictures.length) {
                 add('warn', 'No image', 'The blog shows the category name in place of a photo.');
             } else if (!post.image) {
                 add('warn', 'No main image', `${breakdown}, but blog cards show the category name in place of a photo.${stored}`);
             } else if (megabytes > 1.5) {
-                add('warn', 'Large images', `${breakdown}.${stored} The browser holds about 5 MB for the whole blog.`);
+                add('warn', 'Large images', `${breakdown}.${stored} Big pictures make the article slow to open, and the server may refuse to save very large ones.`);
             } else if (pictures.length === 1) {
                 add('ok', 'Image', `${stored.trim()} Confirm Pepper Labs may use this photo.`.trim());
             } else {
@@ -2507,47 +2610,72 @@
 
         /* ---------- Storage ---------- */
 
-        function loadPosts() {
-            let stored = null;
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                const parsed = raw === null ? null : JSON.parse(raw);
-                if (Array.isArray(parsed)) stored = blogFillSamplePictures(parsed);
-            } catch {
-            }
-            const posts = (stored || window.BLOG_SAMPLE_POSTS || []).map(post => ({ ...post }));
-            // Every article needs its own id to be selected and acted on.
-            let nextId = Math.max(0, ...posts.map(post => Number(post.id) || 0)) + 1;
-            const seen = new Set();
-            posts.forEach(post => {
-                if (post.id === undefined || post.id === null || seen.has(String(post.id))) post.id = nextId++;
-                seen.add(String(post.id));
-            });
-            state.posts = posts;
+        // An admin sees every article; an author sees their own.
+        async function loadPosts() {
+            const data = await api('posts.php?view=admin');
+            state.posts = data.posts;
             analysisCache = new WeakMap();
         }
 
-        function writePosts() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.posts));
+        // Swaps in the server's copy of a post (its real id, who did what) without replacing the object the page holds.
+        function adopt(post, saved) {
+            const oldId = post.id;
+            Object.keys(post).forEach(key => delete post[key]);
+            Object.assign(post, saved);
+            if (String(state.selectedId) === String(oldId)) state.selectedId = saved.id;
         }
 
-        // Runs a change, saves it, and offers Undo. Returns false and puts everything back if the browser refuses to save.
+        // Sends the server whatever changed between two versions of the list: new, edited and deleted articles.
+        // Saves run one after another, so an Undo never overtakes the change it undoes.
+        let saving = Promise.resolve();
+
+        function persist(beforeJson) {
+            const job = saving.then(async () => {
+                const before = new Map(JSON.parse(beforeJson).map(post => [String(post.id), post]));
+                for (const post of state.posts) {
+                    const previous = before.get(String(post.id));
+                    before.delete(String(post.id));
+                    if (!previous) {
+                        adopt(post, (await api('posts.php', { method: 'POST', body: { post } })).post);
+                    } else if (JSON.stringify(previous) !== JSON.stringify(post)) {
+                        adopt(post, (await api(`posts.php?id=${encodeURIComponent(post.id)}`, { method: 'PUT', body: { post } })).post);
+                    }
+                }
+                for (const removed of before.values()) {
+                    await api(`posts.php?id=${encodeURIComponent(removed.id)}`, { method: 'DELETE' });
+                }
+            });
+            saving = job.catch(() => {});
+            return job;
+        }
+
+        // Saves to the server; if the server says no, shows why and reloads the list as it really is.
+        function save(beforeJson) {
+            persist(beforeJson).then(() => {
+                analysisCache = new WeakMap();
+                if (state.mode !== 'edit') render();
+            }).catch(async error => {
+                toast(error.message, { error: true });
+                try {
+                    await loadPosts();
+                } catch {
+                }
+                state.mode = 'view';
+                render();
+            });
+        }
+
+        // Runs a change, saves it to the server, and offers Undo.
         function commit(change, message, { advanceFrom = null } = {}) {
             const before = JSON.stringify(state.posts);
             const selectedBefore = state.selectedId;
             const statusBefore = state.status;
             const listBefore = visiblePosts().map(post => post.id);
+            const listCountBefore = state.posts.length;
 
             change();
             analysisCache = new WeakMap();
-            try {
-                writePosts();
-            } catch {
-                state.posts = JSON.parse(before);
-                render();
-                toast('That could not be saved because this browser\'s storage is full. Remove a large image, then try again.', { error: true });
-                return false;
-            }
+            save(before);
 
             state.mode = 'view';
             state.dirty = false;
@@ -2564,14 +2692,18 @@
 
             render();
             focusReview();
+            // Undoing a new article would delete it, which only an admin can do.
+            const added = state.posts.length > listCountBefore;
+            if (added && !isAdmin()) {
+                toast(message);
+                return true;
+            }
             toast(message, {
                 undo() {
+                    const current = JSON.stringify(state.posts);
                     state.posts = JSON.parse(before);
                     analysisCache = new WeakMap();
-                    try {
-                        writePosts();
-                    } catch {
-                    }
+                    save(current);
                     state.status = statusBefore;
                     state.selectedId = selectedBefore;
                     state.mode = 'view';
@@ -2723,7 +2855,7 @@
                 <aside class="rail" aria-label="Checks and details">
                     ${section('checks', 'Checks', analysis.issues ? `${analysis.issues} to look at` : 'All passed', `<ul class="checks">${renderChecks(analysis)}</ul>`)}
 
-                    ${section('blog', 'On the blog', esc(blogState), `
+                    ${isAdmin() ? section('blog', 'On the blog', esc(blogState), `
                         <button type="button" class="setting" role="switch" aria-checked="${Boolean(post.pinned)}" data-action="toggle-pin">
                             <strong>Pin to the top</strong>
                             <span class="setting__track" aria-hidden="true"></span>
@@ -2733,11 +2865,12 @@
                             <strong>Allow comments</strong>
                             <span class="setting__track" aria-hidden="true"></span>
                             <small>Comments are not live on the blog yet. The choice is kept for when they are.</small>
-                        </button>`)}
+                        </button>`) : ''}
 
                     ${section('details', 'Details', '', `
                         <dl class="details">
                             <div><dt>Author</dt><dd>${esc(post.author || 'Not given')}</dd></div>
+                            ${post.authorAccount && post.authorAccount !== post.author ? `<div><dt>Account</dt><dd>${esc(post.authorAccount)}</dd></div>` : ''}
                             ${post.moderator ? `<div><dt>Moderator</dt><dd>${esc(post.moderator)}</dd></div>` : ''}
                             ${post.submittedAt ? `<div><dt>Submitted</dt><dd>${esc(dateAndTime(post.submittedAt))}</dd></div>` : ''}
                             <div><dt>Publish date</dt><dd>${esc(post.date || 'Not set')}</dd></div>
@@ -2747,14 +2880,28 @@
 
                     ${section('history', 'History', history.length ? String(history.length) : '', history.length ? `<ol class="history">${history.map(entry => `
                             <li>
-                                <strong>${esc(HISTORY_LABELS[entry.action] || entry.action)}</strong>
+                                <strong>${esc(HISTORY_LABELS[entry.action] || entry.action)}${entry.by ? ` <span>by ${esc(entry.by)}</span>` : ''}</strong>
                                 <time datetime="${esc(entry.at)}">${esc(dateAndTime(entry.at))}</time>
                                 ${entry.note ? `<p>${esc(entry.note)}</p>` : ''}
                             </li>`).join('')}</ol>` : '<p class="rail__none">No decisions have been recorded for this article.</p>')}
                 </aside>`;
         }
 
+        // What an author can do: edit their own article until it is published. Reviewing is for admins.
+        const AUTHOR_STATUS_NOTE = {
+            pending: 'Waiting for an admin to review it. You can still edit it.',
+            returned: 'Sent back to you. Edit it and save, and it goes back for review.',
+            published: 'Published. Ask an admin if it needs changing.',
+            unpublished: 'Taken off the blog by an admin.'
+        };
+
+        function renderAuthorDecision(post) {
+            const edit = canEdit(post) ? `<button type="button" class="pl-btn pl-btn--primary" data-action="edit">${ICON.edit}<span>Edit</span></button>` : '';
+            return `<div class="decision__bar"><p class="decision__why">${esc(AUTHOR_STATUS_NOTE[statusOf(post)])}</p><div class="decision__group">${edit}</div></div>`;
+        }
+
         function renderDecision(post, analysis) {
+            if (!isAdmin()) return renderAuthorDecision(post);
             const status = statusOf(post);
             const blocked = analysis.blockers > 0;
             const quiet = `
@@ -2980,7 +3127,7 @@
                         <div class="review__inner">
                             <div class="empty">
                                 <h3>${state.posts.length ? 'Choose an article to review' : 'There are no articles yet'}</h3>
-                                <p>${state.posts.length ? 'Pick one from the list to read it as blog visitors will, run through its checks and decide what happens next.' : 'Articles sent in from the blog\'s New post form will be listed here.'}</p>
+                                <p>${state.posts.length ? (isAdmin() ? 'Pick one from the list to read it as blog visitors will, run through its checks and decide what happens next.' : 'Pick one from the list to read it as blog visitors will see it.') : (isAdmin() ? 'Articles written with New article will be listed here. If the blog is new, Settings can import its first articles.' : 'Your articles will be listed here. Start one with New article.')}</p>
                             </div>
                         </div>
                     </div>`;
@@ -3135,6 +3282,8 @@
             }
 
             const isNew = post === draft;
+            // An author fixing a sent-back article puts it back in the review queue by saving.
+            const resubmit = !isNew && !isAdmin() && statusOf(post) === 'returned';
             const saved = commit(() => {
                 post.title = title;
                 post.excerpt = data.get('excerpt').trim();
@@ -3160,12 +3309,18 @@
                     let slug = base;
                     for (let n = 2; state.posts.some(other => other.slug === slug); n++) slug = `${base}-${n}`;
                     post.slug = slug;
-                    record(post, 'added');
+                    record(post, isAdmin() ? 'added' : 'submitted');
                     state.posts.push(post);
+                } else if (resubmit) {
+                    post.status = 'pending';
+                    post.submittedAt = new Date().toISOString();
+                    record(post, 'resubmitted');
                 } else {
                     record(post, 'edited');
                 }
-            }, isNew ? `"${title}" is in Needs review. Approve it to publish.` : 'Changes saved.');
+            }, isNew
+                ? (isAdmin() ? `"${title}" is in Needs review. Approve it to publish.` : `"${title}" is sent for review. An admin will approve it or send it back.`)
+                : resubmit ? `"${title}" is sent for review again.` : 'Changes saved.');
             if (saved && isNew) draft = null;
         }
 
@@ -3314,7 +3469,7 @@
                 const post = selectedPost();
                 const confirmed = await confirmDialog({
                     title: `Delete "${post.title || 'this article'}"?`,
-                    body: 'It is removed from this browser for good. To take it off the blog but keep it, unpublish it instead.',
+                    body: 'It is removed from the database for good, with its history. To take it off the blog but keep it, unpublish it instead.',
                     confirmLabel: 'Delete article'
                 });
                 if (!confirmed) return;
@@ -3331,11 +3486,12 @@
                 }
                 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
                 draft = {
-                    id: Math.max(0, ...state.posts.map(post => Number(post.id) || 0)) + 1,
+                    // A stand-in until the server gives the article its real id.
+                    id: `new-${Date.now()}`,
                     title: '',
                     excerpt: '',
                     category: '',
-                    author: '',
+                    author: session.user.name,
                     content: '',
                     image: '',
                     gallery: [],
@@ -3472,12 +3628,164 @@
                 undo?.();
             },
 
-            'toast-close': clearToast
+            'toast-close': clearToast,
+
+            async 'sign-out'() {
+                if (!(await leaveEdit())) return;
+                try {
+                    await api('auth.php', { method: 'POST', body: { action: 'logout' } });
+                } catch {
+                }
+                location.replace('/blog/login.html');
+            },
+
+            async import(element) {
+                const source = importSource();
+                if (!source) return;
+                const confirmed = await confirmDialog({
+                    title: `Import ${plural(source.posts.length, 'article')}?`,
+                    body: `${source.label} They are added to the database as they are now, and everyone who signs in will see them.`,
+                    confirmLabel: 'Import'
+                });
+                if (!confirmed) return;
+                element.disabled = true;
+                try {
+                    state.posts = (await api('posts.php?action=import', { method: 'POST', body: { posts: source.posts } })).posts;
+                    analysisCache = new WeakMap();
+                    state.status = state.posts.some(post => statusOf(post) === 'pending') ? 'pending' : 'published';
+                    state.selectedId = phone.matches ? null : (visiblePosts()[0]?.id ?? null);
+                    render();
+                    renderImportCard();
+                    toast(`${plural(state.posts.length, 'article')} imported.`);
+                } catch (error) {
+                    element.disabled = false;
+                    toast(error.message, { error: true });
+                }
+            }
         };
+
+        // Reviewing and publishing are admin decisions. The server refuses them anyway; this keeps the page honest.
+        const ADMIN_ACTIONS = ['approve', 'republish', 'unpublish', 'open-sendback', 'delete', 'toggle-pin', 'toggle-comments', 'import'];
 
         document.addEventListener('click', event => {
             const element = event.target.closest('[data-action]');
-            if (element && !element.disabled) actions[element.dataset.action]?.(element);
+            if (!element || element.disabled) return;
+            const name = element.dataset.action;
+            if (ADMIN_ACTIONS.includes(name) && !isAdmin()) return;
+            if (name === 'edit' && !canEdit(selectedPost())) return;
+            actions[name]?.(element);
+        });
+
+        /* ---------- Import (first run) ---------- */
+
+        // Articles kept in this browser before the database existed, or else the sample articles in posts.js.
+        function importSource() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (Array.isArray(saved) && saved.length) {
+                    return { posts: blogFillSamplePictures(saved), label: 'These are the articles this browser saved before the blog had a database, with the decisions made here.' };
+                }
+            } catch {
+            }
+            const samples = window.BLOG_SAMPLE_POSTS || [];
+            return samples.length ? { posts: samples, label: 'These are the sample articles from blog/data/posts.js, all published.' } : null;
+        }
+
+        // Shown to an admin only while the database has no articles.
+        function renderImportCard() {
+            const card = document.getElementById('import-card');
+            const source = isAdmin() && !state.posts.length ? importSource() : null;
+            card.hidden = !source;
+            if (source) document.getElementById('import-body').textContent = `The blog's database is empty. ${source.label} (${plural(source.posts.length, 'article')})`;
+        }
+
+        /* ---------- Users and roles (admins) ---------- */
+
+        let team = [];
+
+        function renderTeam() {
+            const rows = team.map(user => {
+                const self = user.id === session.user.id;
+                const lastIn = user.last_login_at ? `Last signed in ${esc(dateAndTime(user.last_login_at.replace(' ', 'T')))}` : 'Has not signed in yet';
+                return `
+                    <tr class="${user.status === 'disabled' ? 'is-disabled' : ''}">
+                        <td><strong>${esc(user.name)}</strong>${self ? ' (you)' : ''}<small>${lastIn}</small></td>
+                        <td>${esc(user.email)}</td>
+                        <td>
+                            <label class="visually-hidden" for="role-${user.id}">Role for ${esc(user.name)}</label>
+                            <select id="role-${user.id}" data-user="${user.id}" data-field="role" ${self ? 'disabled' : ''}>
+                                <option value="author" ${user.role === 'author' ? 'selected' : ''}>Author</option>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                            </select>
+                        </td>
+                        <td>
+                            ${self ? '' : `<button type="button" class="pl-btn pl-btn--ghost" data-team="status" data-user="${user.id}">${user.status === 'disabled' ? 'Enable' : 'Disable'}</button>`}
+                            <button type="button" class="pl-btn pl-btn--ghost" data-team="password" data-user="${user.id}">New password</button>
+                        </td>
+                    </tr>`;
+            }).join('');
+            document.getElementById('team-list').innerHTML = `
+                <table class="team-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>`;
+        }
+
+        async function loadTeam() {
+            if (!isAdmin()) return;
+            try {
+                team = (await api('users.php')).users;
+                renderTeam();
+            } catch (error) {
+                document.getElementById('team-list').textContent = error.message;
+            }
+        }
+
+        async function updateUser(id, changes, message) {
+            try {
+                const saved = (await api(`users.php?id=${id}`, { method: 'PUT', body: changes })).user;
+                team = team.map(user => user.id === saved.id ? saved : user);
+                toast(message(saved));
+            } catch (error) {
+                toast(error.message, { error: true });
+            }
+            renderTeam();
+        }
+
+        document.getElementById('team-list').addEventListener('change', event => {
+            const select = event.target.closest('select[data-field="role"]');
+            if (!select) return;
+            updateUser(Number(select.dataset.user), { role: select.value }, user => `${user.name} is now ${user.role === 'admin' ? 'an admin' : 'an author'}.`);
+        });
+
+        document.getElementById('team-list').addEventListener('click', event => {
+            const button = event.target.closest('[data-team]');
+            if (!button) return;
+            const user = team.find(other => other.id === Number(button.dataset.user));
+            if (button.dataset.team === 'status') {
+                const status = user.status === 'disabled' ? 'active' : 'disabled';
+                updateUser(user.id, { status }, saved => status === 'disabled' ? `${saved.name} can no longer sign in.` : `${saved.name} can sign in again.`);
+            } else {
+                const password = prompt(`New password for ${user.name} (at least 10 characters):`);
+                if (password) updateUser(user.id, { password }, saved => `New password set for ${saved.name}.`);
+            }
+        });
+
+        document.getElementById('team-form').addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = event.target;
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                const user = (await api('users.php', { method: 'POST', body: Object.fromEntries(new FormData(form)) })).user;
+                team = [...team, user].sort((a, b) => a.name.localeCompare(b.name));
+                renderTeam();
+                form.reset();
+                toast(`${user.name} can now sign in as ${user.role === 'admin' ? 'an admin' : 'an author'}.`);
+            } catch (error) {
+                toast(error.message, { error: true });
+            }
+            button.disabled = false;
         });
 
         /* ---------- Other events ---------- */
@@ -3590,12 +3898,20 @@
             if (state.mode === 'edit' && state.dirty) event.preventDefault();
         });
 
-        // A post submitted from the blog in another tab shows up here without a reload.
-        window.addEventListener('storage', event => {
-            if (event.key !== STORAGE_KEY || state.mode === 'edit') return;
-            loadPosts();
+        // Coming back to this tab picks up what other staff did meanwhile, unless an article is open for editing.
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState !== 'visible' || state.mode === 'edit' || !session.user) return;
+            const before = JSON.stringify(state.posts);
+            try {
+                await saving;
+                await loadPosts();
+            } catch {
+                return;
+            }
+            if (JSON.stringify(state.posts) === before) return;
+            if (!byId(state.selectedId)) state.selectedId = phone.matches ? null : (visiblePosts()[0]?.id ?? null);
             render();
-            toast('The article list was updated from another tab.');
+            toast('The article list was updated.');
         });
 
         /* ---------- Adjustable panes ---------- */
@@ -3723,7 +4039,8 @@
         const TABS = ['articles', 'comments', 'media', 'categories', 'subscribers', 'team', 'settings'];
 
         function showTab() {
-            const tab = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'articles';
+            const wanted = location.hash.slice(1);
+            const tab = TABS.includes(wanted) && (wanted !== 'team' || isAdmin()) ? wanted : 'articles';
             desk.dataset.tab = tab;
             document.querySelectorAll('.tabs a').forEach(link => link.setAttribute('aria-current', link.hash === `#${tab}` ? 'page' : 'false'));
             document.querySelectorAll('.panel').forEach(panel => { panel.hidden = panel.dataset.tab !== tab; });
@@ -3734,10 +4051,32 @@
         /* ---------- Start ---------- */
 
         applyLayout();
-        showTab();
 
-        loadPosts();
-        (() => {
+        (async () => {
+            // Nothing shows until the server confirms who is signed in.
+            try {
+                const me = await api('auth.php');
+                session.user = me.user;
+                session.csrf = me.csrf;
+                await loadPosts();
+            } catch (error) {
+                // A 401 is already on its way to the sign-in page. Anything else (no database yet, say) is shown.
+                if (!signingIn) {
+                    document.body.classList.remove('is-loading');
+                    toast(error.message, { error: true });
+                }
+                return;
+            }
+
+            document.getElementById('account-name').textContent = session.user.name;
+            document.getElementById('account-role').textContent = session.user.role;
+            document.querySelectorAll('[data-admin-only]').forEach(element => { element.hidden = !isAdmin(); });
+            if (!isAdmin() && location.hash === '#team') location.hash = 'articles';
+            showTab();
+            renderImportCard();
+            loadTeam();
+            document.body.classList.remove('is-loading');
+
             const params = new URLSearchParams(location.search);
             const linked = state.posts.find(post => post.slug && post.slug === params.get('post'));
             if (linked) {

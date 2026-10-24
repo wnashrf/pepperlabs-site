@@ -1761,7 +1761,7 @@
 
         <div class="empty-state" id="empty-state" hidden>
             <h2 id="empty-state-title"></h2>
-            <p>Check back soon for new posts.</p>
+            <p id="empty-state-body">Check back soon for new posts.</p>
             <button type="button" class="pl-btn pl-btn--primary" id="empty-state-action" hidden>Write a post</button>
         </div>
     </main>
@@ -1911,22 +1911,11 @@
         </section>
     </div>
 
-    <script src="/blog/data/posts.js?v=20261011-5"></script>
-    <script src="/blog/media.js?v=20261011-1"></script>
+    <script src="/blog/media.js?v=20261024-1"></script>
     <script>
-        // Sample posts live in /blog/data/posts.js
-        const posts = window.BLOG_SAMPLE_POSTS.map(post => ({ ...post }));
-
-        try {
-            const storedPosts = localStorage.getItem('blog_posts');
-            if (storedPosts !== null) {
-                const parsedPosts = JSON.parse(storedPosts);
-                if (Array.isArray(parsedPosts)) {
-                    posts.splice(0, posts.length, ...blogFillSamplePictures(parsedPosts).filter(post => post.status === 'published'));
-                }
-            }
-        } catch {
-        }
+        // Published posts come from the blog database through /blog/api/posts.php (loaded at the bottom of this script).
+        const posts = [];
+        let loadFailed = false;
         
         let currentFilter = '';
 
@@ -2060,9 +2049,13 @@
             document.getElementById('posts-container').innerHTML = cards;
 
             document.getElementById('empty-state').hidden = Boolean(featured) || filtered.length > 0;
-            document.getElementById('empty-state-title').textContent = filter
-                ? `No ${categoryLabel(filter)} posts yet`
-                : 'No posts yet';
+            // A blog that could not be loaded is not the same as an empty one.
+            document.getElementById('empty-state-title').textContent = loadFailed
+                ? 'Posts could not be loaded'
+                : filter ? `No ${categoryLabel(filter)} posts yet` : 'No posts yet';
+            document.getElementById('empty-state-body').textContent = loadFailed
+                ? 'Something went wrong on our side. Please try again in a few minutes.'
+                : 'Check back soon for new posts.';
         }
 
         function render() {
@@ -2258,7 +2251,17 @@
         });
         
         // Initial render
-        render();
+        (async () => {
+            try {
+                const response = await fetch('/blog/api/posts.php');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                posts.push(...(await response.json()).posts);
+            } catch (error) {
+                loadFailed = true;
+                console.error('Blog posts could not be loaded.', error);
+            }
+            render();
+        })();
     </script>
 </body>
 </html>
