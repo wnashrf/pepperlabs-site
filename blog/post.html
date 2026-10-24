@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- seo:start: blog/post.php replaces these with the article's own title, summary and picture. -->
     <title>Blog Post - Pepper Labs</title>
     <meta name="description" content="Read article from Pepper Labs Blog">
     <meta property="og:type" content="article">
+    <!-- seo:end -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" href="/favicon.ico">
@@ -1935,8 +1937,9 @@
             return CATEGORY_LABELS[key] || key.replace(/-/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase()) || 'Uncategorised';
         }
 
+        // Articles live at /blog/<slug>; post.php serves them with the article's own title and preview.
         function postUrl(slug) {
-            return `/blog/post.html?slug=${encodeURIComponent(slug)}`;
+            return `/blog/${encodeURIComponent(slug)}`;
         }
 
         function postMedia(post, extraClass = '') {
@@ -1952,7 +1955,8 @@
         }
 
         function renderPost() {
-            const slug = getQueryParam('slug');
+            // post.php sets BLOG_SLUG for /blog/<slug>; ?slug= still works when this file is opened directly.
+            const slug = window.BLOG_SLUG || getQueryParam('slug');
             const post = posts[slug];
 
             if (!post) {

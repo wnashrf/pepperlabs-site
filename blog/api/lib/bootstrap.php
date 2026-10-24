@@ -40,6 +40,8 @@ function config(): array
             fail('The blog database is not set up yet. Copy blog/api/config.example.php to config.local.php.', 503);
         }
         $config = require $file;
+        // MySQL stores times in the server's local time, so PHP must read them in the same zone.
+        date_default_timezone_set($config['timezone'] ?? 'Asia/Kuala_Lumpur');
     }
     return $config;
 }

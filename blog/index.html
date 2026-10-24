@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- seo:start: blog/index.php replaces these with full tags for search engines and link previews. -->
     <title>Blog - Pepper Labs</title>
     <meta name="description" content="Read the latest insights and articles from Pepper Labs">
     <meta property="og:title" content="Blog - Pepper Labs">
     <meta property="og:description" content="Read the latest insights and articles from Pepper Labs">
     <meta property="og:type" content="website">
+    <!-- seo:end -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" href="/favicon.ico">
@@ -1945,7 +1947,7 @@
         }
 
         function postUrl(post) {
-            return `/blog/post.html?slug=${encodeURIComponent(post.slug)}`;
+            return `/blog/${encodeURIComponent(post.slug)}`;
         }
 
         function postTime(post) {

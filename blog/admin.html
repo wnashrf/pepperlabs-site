@@ -2471,7 +2471,7 @@
         }
 
         function postUrl(post) {
-            return `/blog/post.html?slug=${encodeURIComponent(post.slug || '')}`;
+            return `/blog/${encodeURIComponent(post.slug || '')}`;
         }
 
         function shortDate(time) {
