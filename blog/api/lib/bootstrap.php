@@ -88,7 +88,18 @@ function sign_in(array $user): void
 {
     start_session();
     session_regenerate_id(true);
-    $_SESSION = ['user_id' => (int) $user['id'], 'signed_in_at' => time(), 'last_seen' => time()];
+    $_SESSION = [
+        'user_id' => (int) $user['id'],
+        'password' => password_fingerprint($user['password_hash']),
+        'signed_in_at' => time(),
+        'last_seen' => time(),
+    ];
+}
+
+// Kept in the session so that a new password ends every sign-in made with the old one.
+function password_fingerprint(string $hash): string
+{
+    return hash('sha256', $hash);
 }
 
 // The signed-in user, read fresh from the database so a disabled account or changed role takes effect at once.
@@ -103,13 +114,15 @@ function current_user(): ?array
         return null;
     }
     $_SESSION['last_seen'] = $now;
-    $statement = db()->prepare('SELECT id, name, email, role, status FROM users WHERE id = ?');
+    $statement = db()->prepare('SELECT id, name, email, role, status, password_hash FROM users WHERE id = ?');
     $statement->execute([$id]);
     $user = $statement->fetch();
-    if (!$user || $user['status'] !== 'active' || !in_array($user['role'], ROLES, true)) {
+    if (!$user || $user['status'] !== 'active' || !in_array($user['role'], ROLES, true)
+        || !hash_equals(password_fingerprint($user['password_hash']), (string) ($_SESSION['password'] ?? ''))) {
         $_SESSION = [];
         return null;
     }
+    unset($user['password_hash']);
     $user['id'] = (int) $user['id'];
     return $user;
 }

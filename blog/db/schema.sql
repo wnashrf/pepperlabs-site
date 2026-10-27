@@ -50,5 +50,6 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     email VARCHAR(190) NOT NULL,
     ip VARCHAR(45) NOT NULL,
     attempted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    KEY login_attempts_lookup (email, attempted_at)
+    KEY login_attempts_lookup (email, attempted_at),
+    KEY login_attempts_ip (ip, attempted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
