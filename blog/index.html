@@ -485,7 +485,7 @@
             font-family: var(--pl-font-display);
         }
 
-        /* The red band: the main site's accent red behind the title, the filters and the lead story. */
+        /* The red band: the main site's accent red behind the title. */
         .masthead {
             position: relative;
             overflow: hidden;
@@ -500,13 +500,14 @@
             margin-inline: auto;
         }
 
-        /* The logo mark, large and cropped off the right edge. Its red piece turns white so it reads on the red. */
+        /* The logo mark, large and cropped off the right edge, with a little of its top and bottom triangles showing. Its red piece turns white so it reads on the red. */
         .masthead > .masthead__mark {
             position: absolute;
-            top: clamp(-5rem, -3vw, -1.5rem);
+            /* Sized to the band's height, so the same slice of each triangle shows on every screen. */
+            top: -3%;
             right: max(-60px, -3vw);
-            width: clamp(220px, 24vw, 420px);
-            height: auto;
+            width: auto;
+            height: 115%;
             pointer-events: none;
             animation: pl-rise 1.4s 0.15s var(--pl-ease) backwards;
         }
@@ -567,10 +568,12 @@
             }
         }
 
+        /* Category chips above the post grid; they filter the grid only, so the big stories above stay put. */
         .filter-bar {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
+            margin-bottom: 2.5rem;
         }
 
         .filter-chip {
@@ -579,10 +582,10 @@
             gap: 0.55rem;
             min-height: 2.5rem;
             padding: 0 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(27, 26, 26, 0.2);
             border-radius: 999px;
             background: transparent;
-            color: #fff;
+            color: var(--pl-heading);
             font-family: var(--pl-font-mono);
             font-size: 0.78rem;
             font-weight: 500;
@@ -594,19 +597,18 @@
         }
 
         .filter-chip:hover {
-            border-color: #fff;
-            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--pl-heading);
         }
 
         .filter-chip:focus-visible {
-            outline-color: #fff;
+            outline-color: var(--pl-red);
             border-radius: 999px;
         }
 
         .filter-chip[aria-pressed="true"] {
-            border-color: #fff;
-            background: #fff;
-            color: var(--pl-red);
+            border-color: var(--pl-red);
+            background: var(--pl-red);
+            color: #fff;
         }
 
         .filter-chip__count {
@@ -792,46 +794,13 @@
             color: rgba(217, 52, 42, 0.5);
         }
 
-        /* The lead story sits on the red band, so everything in it turns white. */
+        /* The lead story opens the white page, under the red band. */
         .lead-stories {
-            margin-top: clamp(2.5rem, 5vw, 4rem);
-            padding-top: clamp(2.5rem, 5vw, 4rem);
-            border-top: 1px solid rgba(255, 255, 255, 0.35);
+            padding-top: clamp(3rem, 6vw, 5rem);
         }
 
         .lead-stories[hidden] {
             display: none;
-        }
-
-        .lead-stories :is(.post-meta, .featured-post__excerpt, .post-source, .post-source strong, .read-more) {
-            color: #fff;
-        }
-
-        .lead-stories .post-category {
-            background: #fff;
-            color: var(--pl-red);
-        }
-
-        .lead-stories .read-more svg {
-            color: var(--pl-amber);
-        }
-
-        .lead-stories .stretched-link:focus-visible::after {
-            outline-color: #fff;
-            outline-offset: 10px;
-        }
-
-        .lead-stories .post-media {
-            box-shadow: 0 40px 80px -30px rgba(70, 8, 4, 0.55);
-        }
-
-        .lead-stories .post-media--word {
-            background: var(--pl-red-dark);
-        }
-
-        .lead-stories .post-media__word,
-        .lead-stories .featured-post:hover .post-media__word {
-            color: rgba(255, 255, 255, 0.3);
         }
 
         /* ---------- Spotlights ---------- */
@@ -896,7 +865,7 @@
             align-items: end;
             justify-content: space-between;
             gap: 1rem;
-            margin: clamp(4rem, 8vw, 6.5rem) 0 2rem;
+            margin: clamp(4rem, 8vw, 6.5rem) 0 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 2px solid var(--pl-heading);
         }
@@ -920,6 +889,12 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             font-variant-numeric: tabular-nums;
+        }
+
+        .post-list__empty {
+            grid-column: 1 / -1;
+            color: var(--pl-body);
+            font-size: 1.05rem;
         }
 
         .blog-posts {
@@ -965,10 +940,6 @@
         .featured-post h2 a {
             background: linear-gradient(var(--pl-red), var(--pl-red)) 0 100% / 0 3px no-repeat;
             transition: background-size 0.42s var(--pl-ease);
-        }
-
-        .lead-stories .featured-post h2 a {
-            background-image: linear-gradient(#fff, #fff);
         }
 
         .post-card:hover .post-title a,
@@ -1746,15 +1717,13 @@
             <h1 id="blog-title">Our Blog<span class="masthead__dot" aria-hidden="true">.</span></h1>
             <p>Stories and notes from the Pepper Labs team, on the programmes we run and what we learn running them.</p>
         </div>
-
-        <div class="filter-bar" id="filter-bar" role="group" aria-label="Filter posts by category"></div>
-
-        <div class="lead-stories" id="lead-stories" hidden>
-            <article class="featured-post" id="featured-post"></article>
-        </div>
     </section>
 
     <main class="page">
+        <div class="lead-stories" id="lead-stories" hidden>
+            <article class="featured-post" id="featured-post"></article>
+        </div>
+
         <section class="spotlights" id="spotlights" aria-label="More stories" hidden></section>
 
         <section class="post-list" id="post-list" aria-labelledby="post-list-title" hidden>
@@ -1762,6 +1731,7 @@
                 <h2 id="post-list-title"></h2>
                 <span class="post-list__count" id="post-list-count"></span>
             </div>
+            <div class="filter-bar" id="filter-bar" role="group" aria-label="Filter posts by category"></div>
             <div class="blog-posts" id="posts-container"></div>
         </section>
 
@@ -1977,15 +1947,16 @@
             return post.sourceName ? `<p class="post-source">Source: <strong>${esc(post.sourceName)}</strong></p>` : '';
         }
 
-        function renderFilters() {
+        // The chips filter the grid only, so each count is what the grid shows for that category.
+        function renderFilters(list) {
             const keys = [...new Set([...Object.keys(CATEGORY_LABELS), ...posts.map(categoryKey).filter(Boolean)])];
             const chip = (key, label, count) => `
                 <button type="button" class="filter-chip" data-filter="${esc(key)}" aria-pressed="${key === currentFilter}">
                     ${esc(label)}<span class="filter-chip__count">${count}</span>
                 </button>`;
 
-            document.getElementById('filter-bar').innerHTML = chip('', 'All', posts.length)
-                + keys.map(key => chip(key, categoryLabel(key), posts.filter(post => categoryKey(post) === key).length)).join('');
+            document.getElementById('filter-bar').innerHTML = chip('', 'All', list.length)
+                + keys.map(key => chip(key, categoryLabel(key), list.filter(post => categoryKey(post) === key).length)).join('');
         }
 
         // The large story layout, shared by the featured post and the spotlights under it.
@@ -2023,24 +1994,33 @@
             `).join('');
         }
 
+        let renderedLeadKey = null;
+
         function renderPosts(filter = '') {
             const sorted = [...posts].sort((a, b) => postTime(b) - postTime(a));
-            // The featured post leads the unfiltered view and is left out of the grid below it.
-            const featured = filter ? null : (sorted.find(post => post.pinned) || sorted[0] || null);
-            const rest = sorted.filter(post => post !== featured && (!filter || categoryKey(post) === filter));
+            // The featured post and spotlights always lead the page; the category chips only filter the grid under them.
+            const featured = sorted.find(post => post.pinned) || sorted[0] || null;
+            const rest = sorted.filter(post => post !== featured);
             // The next two stories are told large too, but only when the grid still has two rows of its own.
             const spotlights = featured && rest.length >= 2 + gridColumns() * 2 ? rest.slice(0, 2) : [];
-            const filtered = rest.slice(spotlights.length);
+            const list = rest.slice(spotlights.length);
+            const filtered = filter ? list.filter(post => categoryKey(post) === filter) : list;
 
-            renderFeaturedPost(featured);
-            renderSpotlights(spotlights);
+            // The big stories rise in once; filtering only redraws the grid, so they are left alone unless they changed.
+            const leadKey = JSON.stringify([featured, ...spotlights]);
+            if (leadKey !== renderedLeadKey) {
+                renderedLeadKey = leadKey;
+                renderFeaturedPost(featured);
+                renderSpotlights(spotlights);
+            }
+            renderFilters(list);
 
-            document.getElementById('post-list').hidden = filtered.length === 0;
+            document.getElementById('post-list').hidden = list.length === 0;
             document.getElementById('post-list-title').textContent = filter ? categoryLabel(filter) : 'Latest posts';
             // On the unfiltered view the featured post and spotlights sit above the grid, so say so in the count.
-            document.getElementById('post-list-count').textContent = featured && filtered.length
-                ? `${filtered.length} of ${sorted.length} posts`
-                : `${filtered.length} ${filtered.length === 1 ? 'post' : 'posts'}`;
+            document.getElementById('post-list-count').textContent = filter
+                ? `${filtered.length} ${filtered.length === 1 ? 'post' : 'posts'}`
+                : `${list.length} of ${sorted.length} posts`;
 
             const cards = filtered.map((post, i) => `
                 <article class="post-card" style="--i: ${i}">
@@ -2057,20 +2037,21 @@
                     </div>
                 </article>
             `).join('');
-            document.getElementById('posts-container').innerHTML = cards;
+            // A category's posts may all be among the big stories above, so the grid says so rather than vanishing.
+            document.getElementById('posts-container').innerHTML = cards
+                || `<p class="post-list__empty">No more ${esc(categoryLabel(filter))} posts yet.</p>`;
 
-            document.getElementById('empty-state').hidden = Boolean(featured) || filtered.length > 0;
+            document.getElementById('empty-state').hidden = Boolean(featured);
             // A blog that could not be loaded is not the same as an empty one.
             document.getElementById('empty-state-title').textContent = loadFailed
                 ? 'Posts could not be loaded'
-                : filter ? `No ${categoryLabel(filter)} posts yet` : 'No posts yet';
+                : 'No posts yet';
             document.getElementById('empty-state-body').textContent = loadFailed
                 ? 'Something went wrong on our side. Please try again in a few minutes.'
                 : 'Check back soon for new posts.';
         }
 
         function render() {
-            renderFilters();
             renderPosts(currentFilter);
         }
 
@@ -2082,7 +2063,10 @@
             // The chips are rebuilt by render, so focus goes to the new one once it exists.
             const focusChip = () => document.querySelector(`[data-filter="${CSS.escape(currentFilter)}"]`)?.focus({ preventScroll: true });
             if (document.startViewTransition && !reduceMotion) {
-                document.startViewTransition(render).updateCallbackDone.then(focusChip);
+                const transition = document.startViewTransition(render);
+                // A transition the browser skips (a hidden tab, a quick second click) still updates the page.
+                transition.ready.catch(() => {});
+                transition.updateCallbackDone.then(focusChip);
             } else {
                 render();
                 focusChip();
