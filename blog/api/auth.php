@@ -4,6 +4,7 @@
 //   POST {action: "login"}    email + password
 //   POST {action: "setup"}    first admin, only while there are no accounts
 //   POST {action: "logout"}
+//   POST {action: "demo"}     staging only: signs in as the demo_login account, if config.local.php sets one
 
 declare(strict_types=1);
 require __DIR__ . '/lib/bootstrap.php';
@@ -49,6 +50,20 @@ if ($action === 'setup') {
     $body['email'] = $email;
 }
 
+// shortcut: staging-only one-click sign-in for the "Admin (demo)" button. It works only while config.local.php
+// names an account in demo_login; delete this block, the setting and the button before launch.
+if ($action === 'demo') {
+    $email = strtolower(trim((string) (config()['demo_login'] ?? '')));
+    if ($email === '') fail('One-click demo sign-in is turned off. Sign in with your email and password.', 403);
+    $statement = db()->prepare('SELECT id, name, email, role, status FROM users WHERE email = ?');
+    $statement->execute([$email]);
+    $user = $statement->fetch();
+    if (!$user || $user['status'] !== 'active' || !in_array($user['role'], ROLES, true)) fail('The demo account is not available.', 403);
+    db()->prepare('UPDATE users SET last_login_at = NOW() WHERE id = ?')->execute([$user['id']]);
+    sign_in($user);
+    send_json(['user' => public_user($user), 'csrf' => csrf_token()]);
+}
+
 if ($action !== 'login') fail('Unknown action.');
 
 $email = strtolower(trim((string) ($body['email'] ?? '')));
@@ -78,8 +93,5 @@ if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
 db()->prepare('DELETE FROM login_attempts WHERE email = ?')->execute([$email]);
 db()->prepare('UPDATE users SET last_login_at = NOW() WHERE id = ?')->execute([$user['id']]);
 
-start_session();
-session_regenerate_id(true);
-$_SESSION = ['user_id' => (int) $user['id']];
-
+sign_in($user);
 send_json(['user' => public_user($user), 'csrf' => csrf_token()]);

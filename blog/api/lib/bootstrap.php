@@ -5,6 +5,10 @@ declare(strict_types=1);
 
 const ROLES = ['admin', 'author'];
 
+// A sign-in ends after 2 hours without any request to the API, and after 12 hours in any case.
+const SESSION_IDLE_SECONDS = 2 * 60 * 60;
+const SESSION_MAX_SECONDS = 12 * 60 * 60;
+
 // Anything unexpected is logged on the server and the browser only gets a short message.
 set_exception_handler(function (Throwable $error) {
     error_log('[blog api] ' . $error);
@@ -75,7 +79,16 @@ function start_session(): void
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
+    // PHP's own clean-up must not delete session files before the idle limit is reached.
+    ini_set('session.gc_maxlifetime', (string) SESSION_IDLE_SECONDS);
     session_start();
+}
+
+function sign_in(array $user): void
+{
+    start_session();
+    session_regenerate_id(true);
+    $_SESSION = ['user_id' => (int) $user['id'], 'signed_in_at' => time(), 'last_seen' => time()];
 }
 
 // The signed-in user, read fresh from the database so a disabled account or changed role takes effect at once.
@@ -84,6 +97,12 @@ function current_user(): ?array
     start_session();
     $id = $_SESSION['user_id'] ?? null;
     if (!$id) return null;
+    $now = time();
+    if ($now - ($_SESSION['last_seen'] ?? 0) > SESSION_IDLE_SECONDS || $now - ($_SESSION['signed_in_at'] ?? 0) > SESSION_MAX_SECONDS) {
+        $_SESSION = [];
+        return null;
+    }
+    $_SESSION['last_seen'] = $now;
     $statement = db()->prepare('SELECT id, name, email, role, status FROM users WHERE id = ?');
     $statement->execute([$id]);
     $user = $statement->fetch();

@@ -278,6 +278,20 @@
                     return;
                 }
                 if (response.status === 503) show(data.error);
+                // shortcut: staging-only one-click sign-in from the "Admin (demo)" button; remove with that button before launch.
+                else if (new URLSearchParams(location.search).has('demo')) {
+                    const demo = await fetch('/blog/api/auth.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ action: 'demo' })
+                    });
+                    if (demo.ok) {
+                        location.replace(nextPage());
+                        return;
+                    }
+                    show((await demo.json().catch(() => ({}))).error || 'Demo sign-in did not work. Sign in below.');
+                }
             } catch {
                 show('The server could not be reached. Check your connection and try again.');
             }
