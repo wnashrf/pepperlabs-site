@@ -2,12 +2,18 @@
 #
 # A folder with its own rewrite rules takes over from the root .htaccess for every address inside it,
 # so the root's /blog rules no longer run. The blog's home is therefore /blog/ (with the slash):
-# Apache sends /blog there by itself, and the folder serves index.html. Rewriting /blog/ back to /blog
-# here would loop, because Apache adds the slash before these rules can see the address.
+# the first rule below sends /blog there, and the folder serves index.html. Rewriting /blog/ back to /blog
+# here would loop.
 # php -S ignores this file; see private/dev-router.php.
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  # Lets the rule below see /blog itself (Apache otherwise skips a folder's rules for its no-slash address)
+  RewriteOptions AllowNoSlash
+
+  # /blog -> /blog/ here, not by Apache's own slash redirect, which answers 500 on mock (/assets and /css too)
+  RewriteCond %{THE_REQUEST} \s/blog(\?\S*)?\s
+  RewriteRule ^ /blog/ [R=301,L]
 
   # One address for the blog's home: /blog/index.html -> /blog/
   RewriteCond %{THE_REQUEST} \s/blog/index\.html(\?\S*)?\s
