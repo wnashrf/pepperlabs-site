@@ -24,4 +24,8 @@ return [
 
     // The time zone MySQL records times in. Change it only if the server is not on Malaysian time.
     'timezone' => 'Asia/Kuala_Lumpur',
+
+    // STAGING ONLY. The email of an account that the "Admin (demo)" button signs in as, with no password.
+    // Anyone who can open the site gets that account, so leave this empty on the live site.
+    'demo_login' => '',
 ];

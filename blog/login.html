@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
+    <!-- Hidden when shown inside another site's frame, so nobody can be tricked into clicking here (clickjacking). -->
+    <style id="unframed">html { display: none !important; }</style>
+    <script>if (window.top === window.self) document.getElementById('unframed').remove(); else try { window.top.location = location.href; } catch {}</script>
     <title>Sign in - Pepper Labs Blog</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -278,6 +281,20 @@
                     return;
                 }
                 if (response.status === 503) show(data.error);
+                // shortcut: staging-only one-click sign-in from the "Admin (demo)" button; remove with that button before launch.
+                else if (new URLSearchParams(location.search).has('demo')) {
+                    const demo = await fetch('/blog/api/auth.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ action: 'demo' })
+                    });
+                    if (demo.ok) {
+                        location.replace(nextPage());
+                        return;
+                    }
+                    show((await demo.json().catch(() => ({}))).error || 'Demo sign-in did not work. Sign in below.');
+                }
             } catch {
                 show('The server could not be reached. Check your connection and try again.');
             }

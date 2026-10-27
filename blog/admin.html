@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
+    <!-- Hidden when shown inside another site's frame, so nobody can be tricked into clicking here (clickjacking). -->
+    <style id="unframed">html { display: none !important; }</style>
+    <script>if (window.top === window.self) document.getElementById('unframed').remove(); else try { window.top.location = location.href; } catch {}</script>
     <title>Admin - Pepper Labs Blog</title>
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2250,7 +2253,7 @@
                         </div>
                         <button type="submit" class="pl-btn pl-btn--primary">Add</button>
                     </form>
-                    <p class="field__hint" id="team-password-hint">At least 10 characters. They can't change it themselves yet, so ask an admin to set a new one if needed.</p>
+                    <p class="field__hint" id="team-password-hint">At least 10 characters. Ask them to change it in Settings after they first sign in.</p>
                 </div>
             </div>
         </section>
@@ -2273,6 +2276,22 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
                             <span>Export backup</span>
                         </button>
+                    </div>
+                    <div class="panel__card">
+                        <h3>Your password</h3>
+                        <p>Changing it signs this account out of every other browser.</p>
+                        <form class="team-form" id="password-form" novalidate>
+                            <div class="field">
+                                <label for="password-current">Current password</label>
+                                <input id="password-current" name="currentPassword" type="password" autocomplete="current-password" required>
+                            </div>
+                            <div class="field">
+                                <label for="password-new">New password</label>
+                                <input id="password-new" name="newPassword" type="password" autocomplete="new-password" minlength="10" required aria-describedby="password-new-hint">
+                            </div>
+                            <button type="submit" class="pl-btn pl-btn--primary">Change password</button>
+                        </form>
+                        <p class="field__hint" id="password-new-hint">At least 10 characters.</p>
                     </div>
                     <div class="panel__card">
                         <h3>Layout</h3>
@@ -2426,6 +2445,7 @@
 
         function toSignIn() {
             signingIn = true;
+            keepUnsaved();
             location.replace(`/blog/login.html?next=${encodeURIComponent(location.pathname + location.search + location.hash)}`);
         }
 
@@ -2651,7 +2671,10 @@
 
         // Saves to the server; if the server says no, shows why and reloads the list as it really is.
         function save(beforeJson) {
+            const fromEdit = savingEdit;
+            savingEdit = false;
             persist(beforeJson).then(() => {
+                if (fromEdit) forgetUnsaved();
                 analysisCache = new WeakMap();
                 if (state.mode !== 'edit') render();
             }).catch(async error => {
@@ -3116,6 +3139,12 @@
             sourcePictures = [];
             updateEditThumb();
             updateExcerptCount();
+
+            const copy = readUnsaved();
+            if (copy?.postId === unsavedId(post)) {
+                document.getElementById('edit-state').innerHTML = `Unsaved changes from ${esc(dateAndTime(copy.savedAt))} were kept in this browser.
+                    <button type="button" class="pl-btn pl-btn--ghost" data-action="restore-unsaved">Restore them</button>`;
+            }
         }
 
         function renderReview() {
@@ -3207,18 +3236,73 @@
         async function leaveEdit() {
             if (state.mode !== 'edit' || !state.dirty) return true;
             const post = selectedPost();
-            return confirmDialog({
+            const discard = await confirmDialog({
                 title: 'Discard your changes?',
                 body: `Your edits to "${post?.title || 'this article'}" have not been saved.`,
                 confirmLabel: 'Discard changes',
                 cancelLabel: 'Keep editing'
             });
+            if (discard) forgetUnsaved();
+            return discard;
+        }
+
+        /* ---------- Unsaved copy ---------- */
+
+        // The article being edited is copied into this browser as it changes, so a sign-in that runs out or a
+        // closed tab doesn't lose it. The copy is dropped once the edit saves or the changes are discarded.
+        const UNSAVED_KEY = 'blog_unsaved';
+        const UNSAVED_FIELDS = ['title', 'excerpt', 'category', 'author', 'publishDate', 'sourceName'];
+        let unsavedTimer = 0;
+        let savingEdit = false;
+
+        function unsavedId(post) {
+            return post === draft ? 'new' : String(post.id);
+        }
+
+        function readUnsaved() {
+            try {
+                const copy = JSON.parse(localStorage.getItem(UNSAVED_KEY));
+                return copy?.userId === session.user?.id ? copy : null;
+            } catch {
+                return null;
+            }
+        }
+
+        function keepUnsaved() {
+            clearTimeout(unsavedTimer);
+            const form = document.getElementById('edit-form');
+            const post = selectedPost();
+            if (!form || !post || !state.dirty) return;
+            const data = new FormData(form);
+            try {
+                localStorage.setItem(UNSAVED_KEY, JSON.stringify({
+                    userId: session.user.id,
+                    postId: unsavedId(post),
+                    savedAt: new Date().toISOString(),
+                    fields: Object.fromEntries(UNSAVED_FIELDS.map(name => [name, data.get(name) ?? ''])),
+                    body: editorHtmlMode() ? restorePictures(document.getElementById('edit-source-html').value) : document.getElementById('edit-body').innerHTML,
+                    image: editImage,
+                    gallery: editGallery.items
+                }));
+            } catch {
+                // shortcut: an article too big for browser storage (several large photos) isn't copied; fine until pictures are real uploads.
+            }
+        }
+
+        function forgetUnsaved() {
+            clearTimeout(unsavedTimer);
+            try {
+                localStorage.removeItem(UNSAVED_KEY);
+            } catch {
+            }
         }
 
         /* ---------- Edit form ---------- */
 
         function markDirty() {
             state.dirty = true;
+            clearTimeout(unsavedTimer);
+            unsavedTimer = setTimeout(keepUnsaved, 1000);
             const label = document.getElementById('edit-state');
             if (label) label.textContent = 'You have unsaved changes.';
         }
@@ -3281,6 +3365,8 @@
                 return;
             }
 
+            keepUnsaved();
+            savingEdit = true;
             const isNew = post === draft;
             // An author fixing a sent-back article puts it back in the review queue by saving.
             const resubmit = !isNew && !isAdmin() && statusOf(post) === 'returned';
@@ -3514,6 +3600,20 @@
                 state.sendBackOpen = false;
                 renderReview();
                 review.querySelector('.review__scroll').scrollTo({ top: 0 });
+                document.getElementById('edit-title').focus();
+            },
+
+            'restore-unsaved'() {
+                const copy = readUnsaved();
+                if (!copy) return;
+                const form = document.getElementById('edit-form');
+                UNSAVED_FIELDS.forEach(name => { form.elements[name].value = copy.fields[name]; });
+                document.getElementById('edit-body').innerHTML = copy.body;
+                editImage = copy.image;
+                editGallery.items = copy.gallery;
+                updateEditThumb();
+                updateExcerptCount();
+                markDirty();
                 document.getElementById('edit-title').focus();
             },
 
@@ -3769,6 +3869,22 @@
                 const password = prompt(`New password for ${user.name} (at least 10 characters):`);
                 if (password) updateUser(user.id, { password }, saved => `New password set for ${saved.name}.`);
             }
+        });
+
+        document.getElementById('password-form').addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = event.target;
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                // Changing the password starts a fresh session here, with a new token.
+                session.csrf = (await api('auth.php', { method: 'POST', body: { action: 'password', ...Object.fromEntries(new FormData(form)) } })).csrf;
+                form.reset();
+                toast('Password changed. Any other browser signed in to this account is now signed out.');
+            } catch (error) {
+                toast(error.message, { error: true });
+            }
+            button.disabled = false;
         });
 
         document.getElementById('team-form').addEventListener('submit', async event => {
@@ -4089,6 +4205,14 @@
                 state.selectedId = phone.matches ? null : (visiblePosts()[0]?.id ?? null);
             }
             render();
+
+            const copy = readUnsaved();
+            if (copy) {
+                const title = state.posts.find(post => String(post.id) === copy.postId)?.title;
+                toast(copy.postId === 'new'
+                    ? 'A new article you had not saved was kept in this browser. Choose New article to restore it.'
+                    : `Unsaved changes to "${title || 'an article'}" were kept in this browser. Open it and choose Edit to restore them.`);
+            }
         })();
     </script>
 </body>
