@@ -956,6 +956,50 @@
             animation-delay: calc(min(var(--i, 0), 12) * 40ms);
         }
 
+        /* ---------- Loading placeholder ---------- */
+
+        /* Grey shapes in the real layout hold the page's height until the posts arrive, so the footer does not jump up. */
+        .blog-skeleton .featured-post,
+        .blog-skeleton .post-card {
+            animation: none;
+        }
+
+        .skeleton-bar,
+        .blog-skeleton .post-media {
+            display: block;
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--pl-border) 0%, var(--pl-surface) 40%, var(--pl-border) 80%) 0 0 / 250% 100%;
+            animation: skeleton-shimmer 1.4s linear infinite;
+        }
+
+        .blog-skeleton .post-media {
+            border-radius: 14px;
+        }
+
+        .skeleton-bar {
+            height: 0.9rem;
+            margin-top: 0.7rem;
+        }
+
+        .skeleton-bar--meta { width: 9rem; height: 1.5rem; margin-top: 0; border-radius: 999px; }
+        .skeleton-bar--heading { height: clamp(2.2rem, 2.6vw + 1rem, 4.25rem); margin-top: 0.6rem; }
+        .skeleton-bar--card-title { height: 1.35rem; }
+        .skeleton-bar--list-title { width: 16rem; max-width: 60%; height: clamp(2rem, 3vw, 3rem); margin-top: 0; }
+        .skeleton-bar--short { width: 60%; }
+
+        @keyframes skeleton-shimmer {
+            to { background-position: -150% 0; }
+        }
+
+        .skeleton-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
         .post-excerpt {
             display: -webkit-box;
             overflow: hidden;
@@ -1653,6 +1697,11 @@
                 transition-duration: 0.01ms !important;
                 animation-duration: 0.01ms !important;
             }
+
+            .skeleton-bar,
+            .blog-skeleton .post-media {
+                animation: none;
+            }
         }
     </style>
     <link rel="stylesheet" href="/blog/media.css?v=20261011-2">
@@ -1719,7 +1768,116 @@
         </div>
     </section>
 
-    <main class="page">
+    <main class="page" aria-busy="true">
+        <!-- Shown until the posts arrive (removed by the script at the bottom), in the same layout as the real stories. -->
+        <div class="blog-skeleton" id="blog-skeleton" role="status">
+            <span class="skeleton-label">Loading posts…</span>
+            <div class="lead-stories" aria-hidden="true">
+                <div class="featured-post">
+                    <div class="featured-post__body">
+                        <span class="skeleton-bar skeleton-bar--meta"></span>
+                        <div>
+                            <span class="skeleton-bar skeleton-bar--heading"></span>
+                            <span class="skeleton-bar skeleton-bar--heading skeleton-bar--short"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                    <span class="post-media"></span>
+                </div>
+            </div>
+            <div class="spotlights" aria-hidden="true">
+                <div class="featured-post featured-post--spotlight">
+                    <div class="featured-post__body">
+                        <span class="skeleton-bar skeleton-bar--meta"></span>
+                        <div>
+                            <span class="skeleton-bar skeleton-bar--heading"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                    <span class="post-media"></span>
+                </div>
+                <div class="featured-post featured-post--spotlight">
+                    <div class="featured-post__body">
+                        <span class="skeleton-bar skeleton-bar--meta"></span>
+                        <div>
+                            <span class="skeleton-bar skeleton-bar--heading"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                    <span class="post-media"></span>
+                </div>
+            </div>
+            <div class="post-list" aria-hidden="true">
+                <div class="post-list__head"><span class="skeleton-bar skeleton-bar--list-title"></span></div>
+                <div class="blog-posts">
+                    <div class="post-card">
+                        <span class="post-media"></span>
+                        <div class="post-content">
+                            <span class="skeleton-bar skeleton-bar--meta"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title skeleton-bar--short"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                    <div class="post-card">
+                        <span class="post-media"></span>
+                        <div class="post-content">
+                            <span class="skeleton-bar skeleton-bar--meta"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title skeleton-bar--short"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                    <div class="post-card">
+                        <span class="post-media"></span>
+                        <div class="post-content">
+                            <span class="skeleton-bar skeleton-bar--meta"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title skeleton-bar--short"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                    <div class="post-card">
+                        <span class="post-media"></span>
+                        <div class="post-content">
+                            <span class="skeleton-bar skeleton-bar--meta"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title skeleton-bar--short"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                    <div class="post-card">
+                        <span class="post-media"></span>
+                        <div class="post-content">
+                            <span class="skeleton-bar skeleton-bar--meta"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title skeleton-bar--short"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                    <div class="post-card">
+                        <span class="post-media"></span>
+                        <div class="post-content">
+                            <span class="skeleton-bar skeleton-bar--meta"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title"></span>
+                            <span class="skeleton-bar skeleton-bar--card-title skeleton-bar--short"></span>
+                            <span class="skeleton-bar"></span>
+                            <span class="skeleton-bar skeleton-bar--short"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="lead-stories" id="lead-stories" hidden>
             <article class="featured-post" id="featured-post"></article>
         </div>
@@ -2255,6 +2413,8 @@
                 loadFailed = true;
                 console.error('Blog posts could not be loaded.', error);
             }
+            document.getElementById('blog-skeleton').remove();
+            document.querySelector('main').removeAttribute('aria-busy');
             render();
         })();
     </script>
