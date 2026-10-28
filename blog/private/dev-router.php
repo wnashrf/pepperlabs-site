@@ -21,6 +21,12 @@ if (str_starts_with($path, '/blog/private/')) {
     return true;
 }
 
+// Like blog/uploads/.htaccess: pictures only.
+if (str_starts_with($path, '/blog/uploads/') && !preg_match('/\.(jpg|png|gif|webp)$/', $path)) {
+    http_response_code(403);
+    return true;
+}
+
 if ($path === '/blog' || $path === '/blog/index.html') {
     header('Location: /blog/', true, 301);
     return true;

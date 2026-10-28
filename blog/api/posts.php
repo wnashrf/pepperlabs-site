@@ -11,6 +11,7 @@
 
 declare(strict_types=1);
 require __DIR__ . '/../private/lib/bootstrap.php';
+require __DIR__ . '/../private/lib/media.php';
 
 const STATUSES = ['pending', 'published', 'returned', 'unpublished'];
 const ADMIN_ACTIONS = ['added', 'submitted', 'resubmitted', 'approved', 'returned', 'unpublished', 'republished', 'edited', 'pinned', 'unpinned', 'comments-on', 'comments-off'];
@@ -56,6 +57,7 @@ if ($method === 'DELETE') {
     $statement = db()->prepare('DELETE FROM posts WHERE id = ?');
     $statement->execute([(int) ($_GET['id'] ?? 0)]);
     if (!$statement->rowCount()) fail('That article no longer exists.', 404);
+    delete_pictures((int) $_GET['id']);
     send_json(['ok' => true]);
 }
 
@@ -203,6 +205,8 @@ function create_post(array $post, array $user): array
     db()->prepare('INSERT INTO posts (slug, status, author_id, pinned, data) VALUES (?, ?, ?, ?, ?)')
         ->execute([$slug, $status, $user['id'], (int) $pinned, document_of($post)]);
     $id = (int) db()->lastInsertId();
+    // The folder is named after the article, so its pictures are stored once the article has a number.
+    db()->prepare('UPDATE posts SET data = ? WHERE id = ?')->execute([store_pictures($id, document_of($post), $user['id']), $id]);
     $history = is_array($post['history'] ?? null) ? $post['history'] : [];
     if (!add_history($id, $history, 0, $user)) {
         add_history($id, [['action' => $user['role'] === 'admin' ? 'added' : 'submitted']], 0, $user);
@@ -237,7 +241,7 @@ function update_post(int $id, array $post, array $user): array
 
     db()->beginTransaction();
     db()->prepare('UPDATE posts SET slug = ?, status = ?, pinned = ?, data = ? WHERE id = ?')
-        ->execute([$slug, $status, (int) $pinned, document_of($post), $id]);
+        ->execute([$slug, $status, (int) $pinned, store_pictures($id, document_of($post), $user['id']), $id]);
     $history = is_array($post['history'] ?? null) ? $post['history'] : [];
     $added = add_history($id, $history, history_count($id), $user);
     // An Undo changes the status without adding a step, so the server notes it to keep the record complete.
@@ -270,6 +274,7 @@ function import_posts($posts, array $user): void
         $status = in_array($post['status'] ?? '', STATUSES, true) ? $post['status'] : 'published';
         $insert->execute([$slug, $status, (int) (!empty($post['pinned']) && $status === 'published'), document_of($post)]);
         $id = (int) db()->lastInsertId();
+        db()->prepare('UPDATE posts SET data = ? WHERE id = ?')->execute([store_pictures($id, document_of($post), $user['id']), $id]);
         // Earlier steps are kept with their original times, but nobody can be named for them.
         foreach (is_array($post['history'] ?? null) ? $post['history'] : [] as $entry) {
             if (!is_array($entry) || !in_array($entry['action'] ?? '', ADMIN_ACTIONS, true)) continue;

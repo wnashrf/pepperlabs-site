@@ -1,0 +1,6 @@
+# Article pictures written by the blog's API (blog/private/lib/media.php). Anything that is not a picture
+# is refused, so nothing in this folder can run as code and the folder cannot be listed.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule !\.(jpg|png|gif|webp)$ - [F]
+</IfModule>
