@@ -531,6 +531,21 @@
             border-radius: var(--pl-radius);
         }
 
+        /* The main picture opens the photo viewer, together with the photos under it. */
+        .post-hero__open {
+            position: absolute;
+            inset: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: zoom-in;
+        }
+
+        .post-hero__open:focus-visible {
+            outline: 3px solid var(--pl-primary);
+            outline-offset: -3px;
+        }
+
         @media (min-width: 901px) {
             .post-top--side {
                 display: grid;
@@ -1914,7 +1929,7 @@
         </section>
     </div>
 
-    <script src="/blog/media.js?v=20261028-1"></script>
+    <script src="/blog/media.js?v=20261028-2"></script>
     <script>
         // Published posts by slug, from the blog database through /blog/api/posts.php (loaded at the bottom of this script).
         const posts = {};
@@ -1942,10 +1957,12 @@
             return `/blog/${encodeURIComponent(slug)}`;
         }
 
-        function postMedia(post, extraClass = '') {
-            const picture = post.image
-                ? `<img src="${esc(post.image)}" alt="">`
-                : `<span class="post-media__word" aria-hidden="true">${esc(categoryLabel(categoryKey(post)))}</span>`;
+        // openOf: the number of photos in the viewer, when this picture opens it as photo 1 (the article's main picture).
+        function postMedia(post, extraClass = '', openOf = 0) {
+            const image = `<img src="${esc(post.image)}" alt="">`;
+            const picture = !post.image
+                ? `<span class="post-media__word" aria-hidden="true">${esc(categoryLabel(categoryKey(post)))}</span>`
+                : openOf ? `<button type="button" class="post-hero__open" data-photo data-caption="" aria-label="Open photo 1 of ${openOf}">${image}</button>` : image;
             return `<div class="post-media ${extraClass}">${picture}</div>`;
         }
 
@@ -2005,9 +2022,9 @@
                     <p class="post-byline">By <strong>${esc(post.author)}</strong>${post.sourceName ? ` · Source: <strong>${esc(post.sourceName)}</strong>` : ''}</p>
                 </header>
 
-                <div class="post-top">
-                    ${postMedia(post, 'post-hero')}
-                    ${BlogMedia.galleryHtml(post.gallery)}
+                <div class="post-top" data-photos>
+                    ${postMedia(post, 'post-hero', 1 + BlogMedia.list(post.gallery).length)}
+                    ${BlogMedia.galleryHtml(post.gallery, post.image ? 1 : 0)}
                 </div>
 
                 <div class="post-body">
@@ -2088,7 +2105,7 @@
                 const fit = () => {
                     if (!heroImage.naturalWidth) return;
                     const cap = heroImage.naturalWidth * 2;
-                    heroImage.parentElement.style.maxWidth = `${cap}px`;
+                    heroImage.closest('.post-hero').style.maxWidth = `${cap}px`;
                     top.style.setProperty('--hero-cap', `${cap}px`);
                     top.classList.toggle('post-top--side', cap < top.clientWidth - 280);
                 };
