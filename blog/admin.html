@@ -866,6 +866,8 @@
         }
 
         .review__scroll {
+            /* Hidden inputs (position: absolute) inside must be placed and clipped here, or they stretch the whole page. */
+            position: relative;
             overflow-y: auto;
             container-type: inline-size;
         }
@@ -2439,7 +2441,7 @@
     </dialog>
 
     <script src="/blog/data/posts.js?v=20261011-5"></script>
-    <script src="/blog/media.js?v=20261028-1"></script>
+    <script src="/blog/media.js?v=20261028-2"></script>
     <script>
         // Posts live in the blog database and come through /blog/api/posts.php, which also checks every permission.
         // Before the database, posts were kept in each browser under this key; Settings can import them once.
@@ -2964,7 +2966,7 @@
 
         function previewMedia(post) {
             return post.image
-                ? `<div class="preview__media"><img src="${esc(post.image)}" alt=""></div>`
+                ? `<div class="preview__media"><img src="${esc(post.image)}" alt="${esc(post.imageCaption)}"></div>`
                 : `<div class="preview__media preview__media--word"><span aria-hidden="true">${esc(categoryLabel(categoryKey(post)))}</span></div>`;
         }
 
@@ -3203,6 +3205,7 @@
                                     <button type="button" class="pl-btn pl-btn--ghost" data-action="pick-image">From library</button>
                                     <button type="button" class="pl-btn pl-btn--ghost" id="edit-image-remove" data-action="remove-image">Remove</button>
                                 </div>
+                                <input id="edit-image-caption" name="imageCaption" type="text" maxlength="200" value="${esc(post.imageCaption)}" placeholder="Caption (optional)" aria-label="Caption for the main image">
                                 <p class="field__hint" id="edit-image-hint">Shown on blog cards and at the top of the article. Large photos are shrunk for you.</p>
                             </div>
 
@@ -3377,7 +3380,7 @@
         // The article being edited is copied into this browser as it changes, so a sign-in that runs out or a
         // closed tab doesn't lose it. The copy is dropped once the edit saves or the changes are discarded.
         const UNSAVED_KEY = 'blog_unsaved';
-        const UNSAVED_FIELDS = ['title', 'excerpt', 'category', 'author', 'publishDate', 'sourceName'];
+        const UNSAVED_FIELDS = ['title', 'excerpt', 'category', 'author', 'publishDate', 'sourceName', 'imageCaption'];
         let unsavedTimer = 0;
         let savingEdit = false;
 
@@ -3444,6 +3447,7 @@
             if (!thumb) return;
             thumb.innerHTML = editImage ? `<img src="${esc(editImage)}" alt="Current image">` : 'No image';
             document.getElementById('edit-image-remove').hidden = !editImage;
+            document.getElementById('edit-image-caption').hidden = !editImage;
         }
 
         function setFieldError(inputId, errorId, invalid) {
@@ -3503,6 +3507,13 @@
                 post.author = data.get('author').trim();
                 post.content = body.html;
                 post.image = editImage;
+                // Shown in the photo viewer, like a More photos caption; it goes with the picture it describes.
+                const imageCaption = data.get('imageCaption').trim();
+                if (editImage && imageCaption) {
+                    post.imageCaption = imageCaption;
+                } else {
+                    delete post.imageCaption;
+                }
                 // An emptied gallery is saved as an empty list, so a sample post's photos do not come back.
                 post.gallery = editGallery.items;
                 const source = data.get('sourceName').trim();

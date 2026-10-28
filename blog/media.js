@@ -153,11 +153,12 @@ const BlogMedia = (() => {
             .map(item => ({ src: item.src, caption: String(item.caption || '').trim() }));
     }
 
-    function galleryHtml(gallery) {
+    // before: photos shown ahead of the gallery in the same viewer (the article's main picture), so the count includes them.
+    function galleryHtml(gallery, before = 0) {
         const items = list(gallery);
         if (!items.length) return '';
         return `<ul class="post-gallery" aria-label="More photos">${items.map((item, index) => `
-            <li><button type="button" data-photo data-caption="${esc(item.caption)}" aria-label="Open photo ${index + 1} of ${items.length}${item.caption ? `: ${esc(item.caption)}` : ''}"><img src="${esc(item.src)}" alt="" loading="lazy"></button></li>`).join('')}
+            <li><button type="button" data-photo data-caption="${esc(item.caption)}" aria-label="Open photo ${index + 1 + before} of ${items.length + before}${item.caption ? `: ${esc(item.caption)}` : ''}"><img src="${esc(item.src)}" alt="" loading="lazy"></button></li>`).join('')}
         </ul>`;
     }
 
@@ -282,10 +283,12 @@ const BlogMedia = (() => {
         viewer.showModal();
     }
 
+    // Every [data-photo] inside one [data-photos] block (or one gallery) is a single set to step through.
     document.addEventListener('click', event => {
-        const button = event.target.closest('.post-gallery [data-photo]');
-        if (!button) return;
-        const buttons = [...button.closest('.post-gallery').querySelectorAll('[data-photo]')];
+        const button = event.target.closest('[data-photo]');
+        const group = button?.closest('[data-photos], .post-gallery');
+        if (!group) return;
+        const buttons = [...group.querySelectorAll('[data-photo]')];
         openViewer(buttons.map(each => ({ src: each.querySelector('img').src, caption: each.dataset.caption || '' })), buttons.indexOf(button));
     });
 
