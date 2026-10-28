@@ -63,6 +63,46 @@
   overflow: visible;
 }
 
+.pl-typewriter {
+  position: absolute;
+  z-index: 2;
+  bottom: clamp(18px, 4vh, 36px);
+  left: 50%;
+  width: min(100% - 32px, 476px);
+  margin: 0;
+  padding: 18px 22px;
+  transform: translateX(-50%);
+  background: #292631;
+  color: #FFFFFF;
+  text-align: left;
+  clip-path: inset(0 100% 0 0);
+}
+
+.pl-typewriter-kicker {
+  display: block;
+  margin-bottom: 7px;
+  color: #D7D4DC;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.pl-typewriter-text {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(8px, 1.4vw, 18px);
+  font-family: "Bricolage Grotesque", Arial, Helvetica, sans-serif;
+  font-size: clamp(17px, 1.8vw, 21px);
+  font-weight: 800;
+  letter-spacing: -.025em;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.pl-typewriter-plus {
+  color: #F7941D;
+}
+
 .pl-in {
   transform-box: fill-box;
   transform-origin: center;
@@ -290,6 +330,10 @@
   animation: pl-rise .9s cubic-bezier(.2, .7, .2, 1) 2.3s both;
 }
 
+.pl-play .pl-typewriter {
+  animation: pl-typewriter-reveal 1.1s cubic-bezier(.2, .7, .2, 1) 2.3s both;
+}
+
 .pl-play .pl-title-line:first-child .pl-title-inner {
   animation: pl-title-rise .9s cubic-bezier(.2, .7, .2, 1) 2.45s both;
 }
@@ -366,9 +410,28 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pl-typewriter-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
+
 @keyframes pl-title-rise {
   from { transform: translateY(112%); }
   to { transform: translateY(0); }
+}
+
+@media (min-width: 761px) and (max-width: 1200px) {
+  .pl-stats {
+    gap: 12px;
+  }
+
+  .pl-stat-number {
+    font-size: clamp(20px, 2.2vw, 27px);
+  }
+
+  .pl-stat-label {
+    font-size: 11px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -391,6 +454,22 @@
   .pl-mark {
     width: clamp(72px, 13.4vh, 118px);
     width: clamp(72px, 13.4svh, 118px);
+  }
+
+  .pl-typewriter {
+    bottom: 8px;
+    width: calc(100% - 32px);
+    padding: 10px 12px;
+  }
+
+  .pl-typewriter-kicker {
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+
+  .pl-typewriter-text {
+    gap: clamp(6px, 2.4vw, 10px);
+    font-size: clamp(14px, 4.2vw, 17px);
   }
 
   .pl-glow {
@@ -476,6 +555,10 @@
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: .01ms !important;
+  }
+
+  .pl-typewriter {
+    clip-path: inset(0);
   }
 
   .pl-glow {

@@ -36,9 +36,47 @@
 
   function activateHero(hero) {
     if (!prefersReducedMotion.matches) {
+      var segments = Array.prototype.slice.call(hero.querySelectorAll(".pl-typewriter-segment"));
+      var characters = [];
+      segments.forEach(function (segment) {
+        var text = segment.textContent;
+        segment.setAttribute("data-full-text", text);
+        for (var index = 0; index < text.length; index += 1) {
+          characters.push({ segment: segment, character: text.charAt(index) });
+        }
+      });
+      var characterIndex = 0;
+
+      function revealNextCharacter() {
+        if (!hero.isConnected) {
+          return;
+        }
+        if (prefersReducedMotion.matches || characterIndex >= characters.length) {
+          segments.forEach(function (segment) {
+            if (!segment.textContent) {
+              segment.textContent = segment.getAttribute("data-full-text") || "";
+            }
+          });
+          return;
+        }
+        var next = characters[characterIndex];
+        next.segment.textContent += next.character;
+        characterIndex += 1;
+        window.setTimeout(revealNextCharacter, 48);
+      }
+
       window.requestAnimationFrame(function () {
         hero.classList.add("pl-play");
       });
+      window.setTimeout(function () {
+        if (!hero.isConnected) {
+          return;
+        }
+        segments.forEach(function (segment) {
+          segment.textContent = "";
+        });
+        window.requestAnimationFrame(revealNextCharacter);
+      }, 2450);
       window.setTimeout(function () {
         startCountUp(hero);
       }, 3100);
@@ -91,6 +129,7 @@
     existingHero.setAttribute("data-pl-original", "true");
     existingHero.setAttribute("aria-hidden", "true");
     existingHero.hidden = true;
+    existingHero.style.setProperty("display", "none", "important");
     existingHero.parentNode.insertBefore(hero, existingHero);
     activateHero(hero);
   }

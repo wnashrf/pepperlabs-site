@@ -16,6 +16,25 @@
   font-family: "DM Sans", Arial, Helvetica, sans-serif;
 }
 
+.ww-section .ww-primary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ww-section .ww-watermark {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: clamp(16px, 5vw, 80px);
+  width: clamp(220px, 34vw, 390px);
+  height: auto;
+  opacity: .09;
+  transform: translateY(-50%) rotate(5deg);
+  transform-origin: center;
+  pointer-events: none;
+}
+
 .ww-section *,
 .ww-section *::before,
 .ww-section *::after {
@@ -41,6 +60,7 @@
 
 .ww-section .ww-headline {
   position: relative;
+  z-index: 1;
   padding: 128px 32px 56px;
   overflow: hidden;
   text-align: center;
@@ -51,17 +71,6 @@
   z-index: 1;
   width: min(100%, 1240px);
   margin: 0 auto;
-}
-
-.ww-section .ww-headline-mark {
-  position: absolute;
-  z-index: -1;
-  top: -122px;
-  right: -140px;
-  width: 360px;
-  height: auto;
-  opacity: .09;
-  transform: rotate(12deg);
 }
 
 .ww-section .ww-eyebrow {
@@ -92,6 +101,8 @@
 }
 
 .ww-section .ww-main {
+  position: relative;
+  z-index: 1;
   padding-bottom: 104px;
 }
 
@@ -263,6 +274,8 @@
 }
 
 .ww-section .ww-field {
+  position: relative;
+  z-index: 1;
   padding: 88px 0 96px;
   background: var(--ww-warm);
 }
@@ -447,10 +460,9 @@
     padding: 88px 16px 40px;
   }
 
-  .ww-section .ww-headline-mark {
-    top: -74px;
-    right: -176px;
-    width: 280px;
+  .ww-section .ww-watermark {
+    right: 24px;
+    width: clamp(220px, 58vw, 260px);
   }
 
   .ww-section .ww-eyebrow {
