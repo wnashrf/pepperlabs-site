@@ -6,6 +6,9 @@
 declare(strict_types=1);
 require __DIR__ . '/private/lib/seo.php';
 
+// Like article pages (send_page): always current, never a copy saved by Plesk's nginx caching.
+header('Cache-Control: no-cache');
+
 if (!indexing_allowed()) {
     http_response_code(404);
     exit;

@@ -63,6 +63,27 @@ The blog keeps its articles, accounts and history in MySQL. `blog/api/` reads an
 
 On the live site (pepperlabs.my) the steps are the same, with `'site_url' => 'https://pepperlabs.my'` and `'allow_indexing' => true`.
 
+## Before the blog goes live (pepperlabs.my)
+
+Go through this once before the first upload to live. Live gets only the `blog/` folder: zip it from `main` and extract it into `public_html`
+in File Manager. Don't connect live to Git, because a deploy would also overwrite the main site's files.
+
+In the code (do these on a branch, test on mock, then merge):
+- [ ] Remove the "Admin (demo)" button (`index.html`, `post.html`) and the code marked `shortcut:` in `api/auth.php` and `login.html`.
+- [ ] Remove `blog/data/` and the sample import in Settings (keep a copy of `data/images/SOURCES.md`, the photo credits, outside the repo).
+- [ ] The blog's nav bar works without the main site's newer files (live has no `/assets/nav-ai-dropdown.*`).
+
+On the live server:
+- [ ] A new database with `schema.sql` imported (steps above).
+- [ ] `blog/private/config.local.php` with `'site_url' => 'https://pepperlabs.my'`, `'allow_indexing' => true`, `'demo_login' => ''` and a new long `setup_key`.
+- [ ] PHP can write to `blog/uploads/`: add a picture to a test article, then delete the article.
+- [ ] `/blog/private/config.local.php` answers 403 or 404 in a browser, never the file.
+- [ ] First admin created at `/blog/login.html`, then other staff under Users and roles.
+- [ ] Backups of the database **and** `blog/uploads/` (Plesk > Backup Manager).
+- [ ] Submit `https://pepperlabs.my/blog/sitemap.xml` in Google Search Console (below).
+
+For the main site's owner: an "Our Blog" link to `/blog/` in live's nav bar.
+
 ## Search engines and link previews
 
 Search engines and link previews (WhatsApp, LinkedIn, Facebook) read a page's `<head>` without running JavaScript.

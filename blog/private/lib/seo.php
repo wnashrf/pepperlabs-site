@@ -128,6 +128,8 @@ function send_page(string $html, int $status = 200): void
 {
     http_response_code($status);
     header('Content-Type: text/html; charset=utf-8');
+    // Plesk's nginx caching would keep showing an article after it is edited or taken down.
+    header('Cache-Control: no-cache');
     if (!indexing_allowed()) header('X-Robots-Tag: noindex, nofollow');
     echo $html;
 }
