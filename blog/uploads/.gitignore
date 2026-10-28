@@ -1,0 +1,4 @@
+# Pictures saved from the admin page live only on each server; back them up with the database.
+*
+!.gitignore
+!.htaccess

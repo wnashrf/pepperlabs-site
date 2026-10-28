@@ -44,6 +44,21 @@ CREATE TABLE IF NOT EXISTS post_history (
     CONSTRAINT post_history_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Pictures saved as files in blog/uploads/<post id>/. The article's data uses the same address (url).
+CREATE TABLE IF NOT EXISTS media (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    post_id INT UNSIGNED NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    mime VARCHAR(30) NOT NULL,
+    size INT UNSIGNED NOT NULL,
+    uploaded_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY media_url (url),
+    KEY media_post (post_id),
+    CONSTRAINT media_post FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
+    CONSTRAINT media_user FOREIGN KEY (uploaded_by) REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Failed sign-ins, used to slow down password guessing.
 CREATE TABLE IF NOT EXISTS login_attempts (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,

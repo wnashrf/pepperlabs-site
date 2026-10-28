@@ -10,12 +10,13 @@ blog/
 ├── admin.html, login.html, media.js, media.css
 ├── sitemap.php         /blog/sitemap.xml
 ├── api/                auth.php, posts.php, users.php: the only PHP that browsers call directly
-├── data/images/        article pictures
+├── data/images/        pictures of the sample articles
+├── uploads/            pictures added in the admin page, one folder per article (not in git)
 └── private/            never served to browsers (private/.htaccess)
     ├── config.example.php, config.local.php
-    ├── lib/            bootstrap.php (API), seo.php (post.php, sitemap.php)
+    ├── lib/            bootstrap.php (API), media.php (picture files), seo.php (post.php, sitemap.php)
     ├── db/             schema.sql, this file
-    ├── cli/            create-user.php
+    ├── cli/            create-user.php, move-pictures.php
     └── dev-router.php  laptop only
 ```
 
@@ -82,11 +83,15 @@ After the live site has this:
 2. Check a few articles with Google's [Rich Results Test](https://search.google.com/test/rich-results) and LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/).
 3. Plesk's **SEO** page (SEO Toolkit) can audit the site and track keywords.
 
-An article whose main picture was uploaded in the admin page is saved inside the article, which link previews cannot load, so it shares with the Pepper Labs image instead. Moving uploads to real files (the Media tab) fixes that.
+Pictures uploaded in the admin page are saved as files (see Notes), so link previews can show an article's main picture.
 
 ## Notes
 
 - Passwords are stored with PHP's `password_hash`. Five wrong passwords lock that email out for 15 minutes.
-- Pictures are still saved inside each article (as data in the database). Very large photos can hit the server's upload limit (`post_max_size` in PHP settings).
+- Pictures: the admin page sends them inside the article, and on save the server writes each one to `blog/uploads/<article id>/` and lists it in the `media` table. The article keeps only the address.
+  Deleting an article deletes its folder. A picture removed from an article stays on disk.
+  The folder is not in git and deploys don't touch it, so **back up `blog/uploads/` together with the database**. PHP must be able to write to `blog/uploads/`.
+  An article with many photos is sent in one request, so it can hit the server's upload limit (`post_max_size` in PHP settings).
+- Databases made before the `media` table: import `schema.sql` again (it only adds missing tables), then run `php blog/private/cli/move-pictures.php` once to move pictures saved inside older articles into files.
 - `blog/private/.htaccess` stops browsers opening that folder. If the server does not allow it, Apache answers with an error instead, which still keeps the folder closed.
   On `php -S`, PHP files there run and print nothing, and `dev-router.php` blocks the folder.

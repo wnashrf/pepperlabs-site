@@ -5,9 +5,9 @@
 //   post.content  pictures placed at a set point in the article, as <figure class="post-figure">
 //   post.gallery  the rest, as [{ src, caption }], shown as thumbnails under the main picture
 //
-// Posts are still saved in this browser, which holds about 5 MB for the whole blog, so every
-// upload goes through BlogMedia.shrink() first. When pictures move to the server, that is the
-// one function to replace: have it upload the file and return the picture's address.
+// Every upload goes through BlogMedia.shrink() first and joins the article as a data: address.
+// When the article is saved, the server writes each picture to blog/uploads/<article id>/ and keeps
+// only its address (blog/private/lib/media.php).
 
 const BlogMedia = (() => {
     // Longest side in pixels and JPEG quality, tried in turn until the picture is small enough.
