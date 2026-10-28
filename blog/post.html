@@ -1959,10 +1959,11 @@
 
         // openOf: the number of photos in the viewer, when this picture opens it as photo 1 (the article's main picture).
         function postMedia(post, extraClass = '', openOf = 0) {
-            const image = `<img src="${esc(post.image)}" alt="">`;
+            const caption = String(post.imageCaption || '').trim();
+            const image = `<img src="${esc(post.image)}" alt="${esc(caption)}">`;
             const picture = !post.image
                 ? `<span class="post-media__word" aria-hidden="true">${esc(categoryLabel(categoryKey(post)))}</span>`
-                : openOf ? `<button type="button" class="post-hero__open" data-photo data-caption="" aria-label="Open photo 1 of ${openOf}">${image}</button>` : image;
+                : openOf ? `<button type="button" class="post-hero__open" data-photo data-caption="${esc(caption)}" aria-label="Open photo 1 of ${openOf}${caption ? `: ${esc(caption)}` : ''}">${image}</button>` : image;
             return `<div class="post-media ${extraClass}">${picture}</div>`;
         }
 
