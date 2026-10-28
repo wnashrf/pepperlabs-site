@@ -3979,7 +3979,7 @@
                         <a class="media-tile__img" href="${esc(item.url)}" target="_blank" rel="noopener" aria-label="Open picture full size"><img src="${esc(item.url)}" alt="" loading="lazy"></a>
                         <div class="media-tile__info">
                             ${where}
-                            <small>${mediaSize(item.size)} · ${esc(shortDate(item.createdAt))}${item.uploadedBy ? ` · ${esc(item.uploadedBy)}` : ''}</small>
+                            <small>${mediaSize(item.size)} · ${esc(shortDate(item.createdAt))} · ${item.uploadedBy ? esc(item.uploadedBy) : 'Imported'}</small>
                             ${item.post && !item.used ? '<span class="media-tile__flag">No longer in the article</span>' : ''}
                         </div>
                         ${deletable ? `<button type="button" class="pl-btn pl-btn--ghost" data-media-delete="${item.id}">Delete</button>` : ''}

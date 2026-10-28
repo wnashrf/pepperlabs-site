@@ -37,7 +37,8 @@ function save_picture(string $bytes, ?int $postId, ?int $userId): ?string
         throw new RuntimeException("Cannot write $dir/$name");
     }
     $url = UPLOADS_URL . "/$folder/$name";
-    db()->prepare('INSERT IGNORE INTO media (post_id, url, mime, size, uploaded_by) VALUES (?, ?, ?, ?, ?)')
+    // A picture saved before keeps its row; any other database error is reported, not swallowed like INSERT IGNORE would.
+    db()->prepare('INSERT INTO media (post_id, url, mime, size, uploaded_by) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id = id')
         ->execute([$postId, $url, $info['mime'], strlen($bytes), $userId]);
     return $url;
 }
