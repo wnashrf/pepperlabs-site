@@ -79,10 +79,15 @@ const BlogMedia = (() => {
         if (editor) caret = { editor, range: selection.getRangeAt(0).cloneRange() };
     });
 
-    // Shrinks the chosen files and places them where the cursor last was in the editor (or at the end).
+    // Shrinks the chosen files and places them in the editor.
     async function insertImages(editor, files) {
         const sources = [];
         for (const file of files) sources.push(await shrink(file));
+        insertSources(editor, sources);
+    }
+
+    // Places pictures (shrunk uploads or saved addresses) where the cursor last was in the editor (or at the end).
+    function insertSources(editor, sources) {
         if (!sources.length) return;
 
         editor.focus();
@@ -157,7 +162,8 @@ const BlogMedia = (() => {
     }
 
     // The box where a writer adds, captions, reorders and removes the extra photos.
-    function galleryEditor(root, { onChange = () => {} } = {}) {
+    // pick, if given, resolves with the address of a picture chosen from the library (or nothing).
+    function galleryEditor(root, { onChange = () => {}, pick = null } = {}) {
         let items = [];
         const inputId = `${root.id}-input`;
 
@@ -175,6 +181,7 @@ const BlogMedia = (() => {
                     </li>`).join('')}</ul>
                 <input class="media-file-input" id="${inputId}" type="file" accept="image/*" multiple>
                 <label class="pl-btn pl-btn--ghost" for="${inputId}">Add photos</label>
+                ${pick ? '<button type="button" class="pl-btn pl-btn--ghost" data-pick>From library</button>' : ''}
                 <p class="media-editor__note" role="status">${esc(note)}</p>`;
         }
 
@@ -183,7 +190,15 @@ const BlogMedia = (() => {
             if (row && event.target.type === 'text') items[Number(row.dataset.index)].caption = event.target.value;
         });
 
-        root.addEventListener('click', event => {
+        root.addEventListener('click', async event => {
+            if (event.target.closest('[data-pick]')) {
+                const src = await pick();
+                if (!src) return;
+                items.push({ src, caption: '' });
+                draw();
+                onChange();
+                return;
+            }
             const button = event.target.closest('[data-move], [data-remove]');
             if (!button) return;
             const index = Number(button.closest('.media-editor__item').dataset.index);
@@ -304,5 +319,5 @@ const BlogMedia = (() => {
         return { html: doc.body.innerHTML.trim(), removed, body: doc.body };
     }
 
-    return { shrink, insertImages, tidy, prepare, list, galleryHtml, galleryEditor, sanitize };
+    return { shrink, insertImages, insertSources, tidy, prepare, list, galleryHtml, galleryEditor, sanitize };
 })();

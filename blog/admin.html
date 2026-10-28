@@ -1835,6 +1835,127 @@
             background: #000;
         }
 
+        /* ---------- Media tab and picture picker ---------- */
+
+        .media-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .panel__card .media-toolbar .pl-btn {
+            margin-top: 0;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        /* .panel__card ul would otherwise squeeze the grid and indent it like a bulleted list. */
+        .panel__card .media-grid {
+            gap: 1rem;
+            padding: 0;
+        }
+
+        .media-tile {
+            display: grid;
+            align-content: start;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .media-tile__img,
+        .media-pick {
+            display: block;
+            aspect-ratio: 4 / 3;
+            overflow: hidden;
+            border: 1px solid var(--pl-line);
+            border-radius: 10px;
+            background: var(--pl-canvas);
+        }
+
+        .media-tile__img img,
+        .media-pick img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-tile__info {
+            display: grid;
+            gap: 0.15rem;
+            min-width: 0;
+            font-size: 0.8rem;
+        }
+
+        .media-tile__info strong,
+        .media-tile__info a {
+            overflow: hidden;
+            color: var(--pl-heading);
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .media-tile__info small {
+            color: var(--pl-body);
+        }
+
+        .media-tile__flag {
+            color: var(--pl-primary);
+            font-weight: 600;
+        }
+
+        .panel__card .media-tile .pl-btn {
+            justify-self: start;
+            margin-top: 0;
+        }
+
+        @media (max-width: 480px) {
+            .media-grid,
+            .media-grid--pick {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .media-picker {
+            width: min(52rem, calc(100% - 2rem));
+            max-height: calc(100dvh - 2rem);
+            overflow-y: auto;
+        }
+
+        .media-grid--pick {
+            grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+        }
+
+        .media-pick {
+            width: 100%;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .media-pick:hover,
+        .media-pick:focus-visible {
+            border-color: var(--pl-heading);
+            outline: 2px solid var(--pl-heading);
+        }
+
+        .media-pick__caption {
+            display: block;
+            margin-top: 0.3rem;
+            overflow: hidden;
+            color: var(--pl-body);
+            font-size: 0.75rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         /* ---------- Narrower review pane: details move under the article ---------- */
 
         @container (max-width: 56rem) {
@@ -2059,11 +2180,11 @@
                 <h1>Admin</h1>
             </div>
 
-            <!-- Comments, Media and Subscribers are placeholders. Users and roles is for admins only. -->
+            <!-- Comments and Subscribers are placeholders. Users and roles is for admins only. -->
             <nav class="tabs" aria-label="Admin sections">
                 <a href="#articles">Articles<span class="tab__count" id="tab-pending" hidden></span></a>
                 <a href="#comments">Comments<span class="tab__soon">Soon</span></a>
-                <a href="#media">Media<span class="tab__soon">Soon</span></a>
+                <a href="#media">Media</a>
                 <a href="#categories">Categories</a>
                 <a href="#subscribers">Subscribers<span class="tab__soon">Soon</span></a>
                 <a href="#team" data-admin-only hidden>Users and roles</a>
@@ -2148,23 +2269,17 @@
         <section class="panel" data-tab="media" aria-labelledby="panel-media-title" hidden>
             <div class="panel__inner">
                 <div class="panel__head">
-                    <span class="chip">Coming soon</span>
                     <h2 id="panel-media-title">Media</h2>
-                    <p class="panel__lede">Pictures you add to an article are saved as files on the server, in a folder for that article. This page will be the one place to browse and manage them.</p>
+                    <p class="panel__lede">Pictures saved on the server. Each article keeps its own copies in its own folder; the library holds pictures added here, ready for any article through "From library" in the editor.</p>
                 </div>
-                <div class="panel__grid">
-                    <div class="panel__card">
-                        <h3>What this page will do</h3>
-                        <ul>
-                            <li>Upload photos once and use them in any article</li>
-                            <li>See which articles use each picture</li>
-                            <li>Record photo credits and permission to use</li>
-                        </ul>
+                <div class="panel__card">
+                    <div class="media-toolbar">
+                        <div class="status-nav" id="media-filter" role="group" aria-label="Show pictures"></div>
+                        <input class="visually-hidden" id="media-upload" type="file" accept="image/*" multiple aria-labelledby="media-upload-label">
+                        <label class="pl-btn pl-btn--primary" id="media-upload-label" for="media-upload">Add to library</label>
                     </div>
-                    <div class="panel__card">
-                        <h3>What it needs</h3>
-                        <p>The upload folder and the media table (each file's address, size and article) are in place. Still to add: credits, and using one picture in several articles.</p>
-                    </div>
+                    <p class="field__hint" id="media-note" role="status"></p>
+                    <ul class="media-grid" id="media-grid"><li>Loading…</li></ul>
                 </div>
             </div>
         </section>
@@ -2314,8 +2429,17 @@
         </form>
     </dialog>
 
+    <dialog class="confirm media-picker" id="media-picker" aria-labelledby="media-picker-title">
+        <h2 id="media-picker-title">Choose a picture</h2>
+        <p>From the library and other articles. Saving the article gives it its own copy.</p>
+        <ul class="media-grid media-grid--pick" id="media-picker-list"></ul>
+        <form method="dialog">
+            <button class="pl-btn pl-btn--ghost" value="cancel">Cancel</button>
+        </form>
+    </dialog>
+
     <script src="/blog/data/posts.js?v=20261011-5"></script>
-    <script src="/blog/media.js?v=20261024-1"></script>
+    <script src="/blog/media.js?v=20261028-1"></script>
     <script>
         // Posts live in the blog database and come through /blog/api/posts.php, which also checks every permission.
         // Before the database, posts were kept in each browser under this key; Settings can import them once.
@@ -3076,6 +3200,7 @@
                                     <div class="edit__thumb" id="edit-thumb"></div>
                                     <input class="visually-hidden" id="edit-image" type="file" accept="image/*" aria-labelledby="edit-image-label">
                                     <label class="pl-btn pl-btn--ghost" for="edit-image">Choose image</label>
+                                    <button type="button" class="pl-btn pl-btn--ghost" data-action="pick-image">From library</button>
                                     <button type="button" class="pl-btn pl-btn--ghost" id="edit-image-remove" data-action="remove-image">Remove</button>
                                 </div>
                                 <p class="field__hint" id="edit-image-hint">Shown on blog cards and at the top of the article. Large photos are shrunk for you.</p>
@@ -3103,6 +3228,7 @@
                                         <button type="button" data-command="insertOrderedList" aria-label="Numbered list">${ICON.numbers}</button>
                                         <button type="button" data-action="open-link" aria-label="Add link" aria-expanded="false" aria-controls="editor-link">${ICON.link}</button>
                                         <button type="button" data-action="insert-image" aria-label="Insert picture at the cursor" title="Insert picture at the cursor">${ICON.picture}</button>
+                                        <button type="button" data-action="insert-library" title="Insert a picture from the library at the cursor">Library</button>
                                         <button type="button" data-command="undo" aria-label="Undo">${ICON.undo}</button>
                                         <button type="button" data-command="redo" aria-label="Redo">${ICON.redo}</button>
                                         <span class="spacer"></span>
@@ -3134,7 +3260,7 @@
                     </div>
                 </div>`;
 
-            editGallery = BlogMedia.galleryEditor(document.getElementById('edit-gallery'), { onChange: markDirty });
+            editGallery = BlogMedia.galleryEditor(document.getElementById('edit-gallery'), { onChange: markDirty, pick: pickFromLibrary });
             editGallery.items = post.gallery;
             sourcePictures = [];
             updateEditThumb();
@@ -3674,12 +3800,27 @@
                 visual.hidden = toHtml;
                 element.setAttribute('aria-pressed', String(toHtml));
                 document.getElementById('editor-link').hidden = true;
-                review.querySelectorAll('.editor__toolbar [data-command], .editor__toolbar [data-action="open-link"], .editor__toolbar [data-action="insert-image"]').forEach(control => { control.disabled = toHtml; });
+                review.querySelectorAll('.editor__toolbar [data-command], .editor__toolbar [data-action="open-link"], .editor__toolbar [data-action="insert-image"], .editor__toolbar [data-action="insert-library"]').forEach(control => { control.disabled = toHtml; });
                 (toHtml ? source : visual).focus();
             },
 
             'insert-image'() {
                 document.getElementById('edit-insert-image').click();
+            },
+
+            async 'insert-library'() {
+                const src = await pickFromLibrary();
+                if (!src) return;
+                BlogMedia.insertSources(document.getElementById('edit-body'), [src]);
+                markDirty();
+            },
+
+            async 'pick-image'() {
+                const src = await pickFromLibrary();
+                if (!src) return;
+                editImage = src;
+                updateEditThumb();
+                markDirty();
             },
 
             'open-link'(element) {
@@ -3798,6 +3939,145 @@
             card.hidden = !source;
             if (source) document.getElementById('import-body').textContent = `The blog's database is empty. ${source.label} (${plural(source.posts.length, 'article')})`;
         }
+
+        /* ---------- Media ---------- */
+
+        // Pictures from /blog/api/media.php: all for an admin; the library and their own articles' pictures for an author.
+        let media = [];
+        let mediaFilter = 'all';
+        const MEDIA_FILTERS = {
+            all: { label: 'All', test: () => true },
+            articles: { label: 'In articles', test: item => item.post && item.used },
+            library: { label: 'Library', test: item => !item.post },
+            unused: { label: 'Not used', test: item => item.post && !item.used }
+        };
+
+        async function loadMedia() {
+            media = (await api('media.php')).media;
+        }
+
+        function mediaSize(bytes) {
+            return bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+        }
+
+        function renderMedia() {
+            document.getElementById('media-filter').innerHTML = Object.entries(MEDIA_FILTERS).map(([key, filter]) => `
+                <button type="button" class="status-tab" data-media-filter="${key}" aria-pressed="${key === mediaFilter}">
+                    <span class="status-tab__label">${filter.label}</span>
+                    <span class="status-tab__count">${media.filter(filter.test).length}</span>
+                </button>`).join('');
+
+            const items = media.filter(MEDIA_FILTERS[mediaFilter].test);
+            document.getElementById('media-grid').innerHTML = items.map(item => {
+                const where = item.post
+                    ? `<a href="/blog/admin.html?post=${encodeURIComponent(item.post.slug)}" title="${esc(item.post.title)}">${esc(item.post.title || 'Untitled article')}</a>`
+                    : '<strong>Library</strong>';
+                // Articles keep their own copies, so library pictures and ones an article dropped can go.
+                const deletable = isAdmin() && (!item.post || !item.used);
+                return `
+                    <li class="media-tile">
+                        <a class="media-tile__img" href="${esc(item.url)}" target="_blank" rel="noopener" aria-label="Open picture full size"><img src="${esc(item.url)}" alt="" loading="lazy"></a>
+                        <div class="media-tile__info">
+                            ${where}
+                            <small>${mediaSize(item.size)} · ${esc(shortDate(item.createdAt))}${item.uploadedBy ? ` · ${esc(item.uploadedBy)}` : ''}</small>
+                            ${item.post && !item.used ? '<span class="media-tile__flag">No longer in the article</span>' : ''}
+                        </div>
+                        ${deletable ? `<button type="button" class="pl-btn pl-btn--ghost" data-media-delete="${item.id}">Delete</button>` : ''}
+                    </li>`;
+            }).join('') || `<li>${mediaFilter === 'unused' ? 'Every picture is still in its article.' : 'No pictures here yet.'}</li>`;
+        }
+
+        async function showMedia() {
+            try {
+                await loadMedia();
+                renderMedia();
+            } catch (error) {
+                document.getElementById('media-grid').innerHTML = `<li>${esc(error.message)}</li>`;
+            }
+        }
+
+        document.getElementById('media-filter').addEventListener('click', event => {
+            const chip = event.target.closest('[data-media-filter]');
+            if (!chip) return;
+            mediaFilter = chip.dataset.mediaFilter;
+            renderMedia();
+        });
+
+        document.getElementById('media-upload').addEventListener('change', async event => {
+            const files = [...event.target.files];
+            const note = document.getElementById('media-note');
+            let added = 0;
+            for (const [index, file] of files.entries()) {
+                note.textContent = `Adding ${index + 1} of ${files.length}…`;
+                try {
+                    media = (await api('media.php', { method: 'POST', body: { image: await BlogMedia.shrink(file) } })).media;
+                    added += 1;
+                } catch (error) {
+                    toast(`${file.name}: ${error.message}`, { error: true });
+                }
+            }
+            event.target.value = '';
+            note.textContent = '';
+            if (added) {
+                mediaFilter = 'library';
+                toast(`${plural(added, 'picture')} added to the library.`);
+            }
+            renderMedia();
+        });
+
+        document.getElementById('media-grid').addEventListener('click', async event => {
+            const button = event.target.closest('[data-media-delete]');
+            if (!button) return;
+            const item = media.find(each => each.id === Number(button.dataset.mediaDelete));
+            const sure = await confirmDialog({
+                title: 'Delete this picture?',
+                body: item.post
+                    ? `It is no longer in "${item.post.title || 'its article'}". The file is removed from the server.`
+                    : 'It is removed from the library. Articles that used it keep their own copy.',
+                confirmLabel: 'Delete picture'
+            });
+            if (!sure) return;
+            try {
+                media = (await api(`media.php?id=${item.id}`, { method: 'DELETE' })).media;
+                toast('Picture deleted.');
+            } catch (error) {
+                toast(error.message, { error: true });
+            }
+            renderMedia();
+        });
+
+        // The editor's "From library" buttons: resolves with the chosen picture's address, or '' if cancelled.
+        const mediaPicker = document.getElementById('media-picker');
+
+        function pickFromLibrary() {
+            const list = document.getElementById('media-picker-list');
+            list.innerHTML = '<li>Loading…</li>';
+            mediaPicker.returnValue = '';
+            const chosen = new Promise(resolve => {
+                mediaPicker.addEventListener('close', () => resolve(mediaPicker.returnValue === 'cancel' ? '' : mediaPicker.returnValue), { once: true });
+            });
+            mediaPicker.showModal();
+            loadMedia().then(() => {
+                // The same picture can sit in several articles' folders under one file name; it is offered once.
+                const seen = new Set();
+                const unique = media.filter(item => {
+                    const name = item.url.split('/').pop();
+                    return !seen.has(name) && seen.add(name);
+                });
+                list.innerHTML = unique.map(item => {
+                    const label = item.post ? item.post.title || 'Untitled article' : 'Library';
+                    return `<li><button type="button" class="media-pick" value="${esc(item.url)}" aria-label="Use this picture (${esc(label)})"><img src="${esc(item.url)}" alt="" loading="lazy"></button><span class="media-pick__caption">${esc(label)}</span></li>`;
+                }).join('') || '<li>No pictures yet. Add some in the Media tab.</li>';
+            }).catch(error => {
+                list.innerHTML = `<li>${esc(error.message)}</li>`;
+            });
+            return chosen;
+        }
+
+        mediaPicker.addEventListener('click', event => {
+            const button = event.target.closest('.media-pick');
+            if (button) mediaPicker.close(button.value);
+        });
 
         /* ---------- Users and roles (admins) ---------- */
 
@@ -4160,6 +4440,8 @@
             desk.dataset.tab = tab;
             document.querySelectorAll('.tabs a').forEach(link => link.setAttribute('aria-current', link.hash === `#${tab}` ? 'page' : 'false'));
             document.querySelectorAll('.panel').forEach(panel => { panel.hidden = panel.dataset.tab !== tab; });
+            // Saving articles changes which pictures are in use, so the list is fetched fresh each time.
+            if (tab === 'media' && session.user) showMedia();
         }
 
         window.addEventListener('hashchange', showTab);

@@ -44,10 +44,11 @@ CREATE TABLE IF NOT EXISTS post_history (
     CONSTRAINT post_history_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Pictures saved as files in blog/uploads/<post id>/. The article's data uses the same address (url).
+-- Pictures saved as files in blog/uploads/<post id>/, or blog/uploads/library/ (post_id NULL) for the Media tab's library.
+-- The article's data uses the same address (url).
 CREATE TABLE IF NOT EXISTS media (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    post_id INT UNSIGNED NOT NULL,
+    post_id INT UNSIGNED NULL,
     url VARCHAR(255) NOT NULL,
     mime VARCHAR(30) NOT NULL,
     size INT UNSIGNED NOT NULL,

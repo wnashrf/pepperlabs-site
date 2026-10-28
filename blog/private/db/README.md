@@ -9,7 +9,7 @@ blog/
 ├── post.html, post.php one article at /blog/<article>; post.php fills in the page's <head>
 ├── admin.html, login.html, media.js, media.css
 ├── sitemap.php         /blog/sitemap.xml
-├── api/                auth.php, posts.php, users.php: the only PHP that browsers call directly
+├── api/                auth.php, posts.php, users.php, media.php: the only PHP that browsers call directly
 ├── data/images/        pictures of the sample articles
 ├── uploads/            pictures added in the admin page, one folder per article (not in git)
 └── private/            never served to browsers (private/.htaccess)
@@ -110,9 +110,13 @@ Pictures uploaded in the admin page are saved as files (see Notes), so link prev
 
 - Passwords are stored with PHP's `password_hash`. Five wrong passwords lock that email out for 15 minutes.
 - Pictures: the admin page sends them inside the article, and on save the server writes each one to `blog/uploads/<article id>/` and lists it in the `media` table. The article keeps only the address.
+  The Media tab lists them, adds pictures to `blog/uploads/library/`, and lets admins delete library pictures and ones an article no longer uses.
+  A picture picked "From library" (or from another article) is copied into the article's own folder on save, so deleting one never breaks another.
   Deleting an article deletes its folder. A picture removed from an article stays on disk.
   The folder is not in git and deploys don't touch it, so **back up `blog/uploads/` together with the database**. PHP must be able to write to `blog/uploads/`.
   An article with many photos is sent in one request, so it can hit the server's upload limit (`post_max_size` in PHP settings).
 - Databases made before the `media` table: import `schema.sql` again (it only adds missing tables), then run `php blog/private/cli/move-pictures.php` once to move pictures saved inside older articles into files.
+- Databases made before the Media tab (28 Oct 2026, mock included): run this once in phpMyAdmin > SQL, or adding to the library fails:
+  `ALTER TABLE media MODIFY post_id INT UNSIGNED NULL;`
 - `blog/private/.htaccess` stops browsers opening that folder. If the server does not allow it, Apache answers with an error instead, which still keeps the folder closed.
   On `php -S`, PHP files there run and print nothing, and `dev-router.php` blocks the folder.
