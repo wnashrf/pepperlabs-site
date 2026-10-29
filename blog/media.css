@@ -24,6 +24,13 @@
     text-align: center;
 }
 
+/* While editing, the picture sits on its own line like a word, so the text cursor beside it is drawn along its
+   bottom edge (as in Word) rather than at its top corner. */
+[contenteditable] .post-figure img {
+    display: inline-block;
+    vertical-align: bottom;
+}
+
 /* While editing, an empty caption stays tall enough to click into and says what it is for. */
 [contenteditable] .post-figure figcaption {
     min-height: 1.45em;
@@ -329,4 +336,65 @@
 /* Keep the focus ring on the pill's shape (the pages' global :focus-visible sets 4px corners). */
 .site-footer__admin:focus-visible {
     border-radius: 999px;
+}
+
+/* ---------- Dropping picture files ---------- */
+
+/* Where dropped pictures will land in the article. */
+.media-drop-line {
+    position: fixed;
+    z-index: 60;
+    height: 3px;
+    border-radius: 3px;
+    background: #e56e25;
+    box-shadow: 0 0 0 3px rgba(229, 110, 37, 0.2);
+    pointer-events: none;
+}
+
+.media-drop-line::after {
+    content: "Drop to place the picture here";
+    position: absolute;
+    top: -11px;
+    right: 0;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: #e56e25;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.media-drop-line[hidden] {
+    display: none;
+}
+
+.is-drop-target {
+    outline: 2px dashed #e56e25;
+    outline-offset: 4px;
+    border-radius: 10px;
+}
+
+/* ---------- Pictures that open the full-size viewer ---------- */
+
+/* A picture inside a published article (post.html wraps it in this button). */
+.post-figure__open {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    cursor: zoom-in;
+}
+
+.post-figure__open:focus-visible {
+    outline: 3px solid #e56e25;
+    outline-offset: 3px;
+}
+
+/* While editing, a click on a picture opens it full size too. */
+[contenteditable] .post-figure img,
+.media-editor__item img {
+    cursor: zoom-in;
 }

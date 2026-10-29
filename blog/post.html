@@ -1734,7 +1734,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="/blog/media.css?v=20261011-2">
+    <link rel="stylesheet" href="/blog/media.css?v=20261029-3">
     <link rel="stylesheet" href="/assets/nav-ai-dropdown.css?v=20261023-no-nav-flash">
 </head>
 <body>
@@ -1929,7 +1929,7 @@
         </section>
     </div>
 
-    <script src="/blog/media.js?v=20261028-2"></script>
+    <script src="/blog/media.js?v=20261029-7"></script>
     <script>
         // Published posts by slug, from the blog database through /blog/api/posts.php (loaded at the bottom of this script).
         const posts = {};
@@ -1957,13 +1957,13 @@
             return `/blog/${encodeURIComponent(slug)}`;
         }
 
-        // openOf: the number of photos in the viewer, when this picture opens it as photo 1 (the article's main picture).
-        function postMedia(post, extraClass = '', openOf = 0) {
+        // openable: the picture opens the photo viewer (the article's main picture); renderPost numbers the buttons.
+        function postMedia(post, extraClass = '', openable = false) {
             const caption = String(post.imageCaption || '').trim();
             const image = `<img src="${esc(post.image)}" alt="${esc(caption)}">`;
             const picture = !post.image
                 ? `<span class="post-media__word" aria-hidden="true">${esc(categoryLabel(categoryKey(post)))}</span>`
-                : openOf ? `<button type="button" class="post-hero__open" data-photo data-caption="${esc(caption)}" aria-label="Open photo 1 of ${openOf}${caption ? `: ${esc(caption)}` : ''}">${image}</button>` : image;
+                : openable ? `<button type="button" class="post-hero__open" data-photo data-caption="${esc(caption)}">${image}</button>` : image;
             return `<div class="post-media ${extraClass}">${picture}</div>`;
         }
 
@@ -2023,9 +2023,9 @@
                     <p class="post-byline">By <strong>${esc(post.author)}</strong>${post.sourceName ? ` · Source: <strong>${esc(post.sourceName)}</strong>` : ''}</p>
                 </header>
 
-                <div class="post-top" data-photos>
-                    ${postMedia(post, 'post-hero', 1 + BlogMedia.list(post.gallery).length)}
-                    ${BlogMedia.galleryHtml(post.gallery, post.image ? 1 : 0)}
+                <div class="post-top">
+                    ${postMedia(post, 'post-hero', true)}
+                    ${BlogMedia.galleryHtml(post.gallery)}
                 </div>
 
                 <div class="post-body">
@@ -2096,7 +2096,23 @@
                             </section>
             `;
 
-            document.getElementById('post-container').innerHTML = html;
+            const container = document.getElementById('post-container');
+            container.innerHTML = html;
+
+            // The pictures inside the article open the viewer as well, each with its caption. With the main picture
+            // and More photos they make one set, in the order the page shows them.
+            container.querySelectorAll('.article-body figure.post-figure img').forEach(img => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'post-figure__open';
+                button.dataset.photo = '';
+                button.dataset.caption = img.closest('figure').querySelector('figcaption')?.textContent.trim() || '';
+                img.replaceWith(button);
+                button.append(img);
+            });
+            container.setAttribute('data-photos', '');
+            const photos = [...container.querySelectorAll('[data-photo]')];
+            photos.forEach((button, index) => button.setAttribute('aria-label', `Open photo ${index + 1} of ${photos.length}${button.dataset.caption ? `: ${button.dataset.caption}` : ''}`));
 
             // A small photo is shown at no more than twice its own width, so it does not turn blurry on a
             // wide page. When that leaves room beside it, the extra photos sit there instead of underneath.
