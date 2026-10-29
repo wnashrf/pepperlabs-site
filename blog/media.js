@@ -270,6 +270,27 @@ const BlogMedia = (() => {
             changed('insertParagraph');
         });
 
+        // A picture at the very end of the article leaves nowhere for the cursor to go from its caption. Right arrow
+        // at the end of the caption, or Down arrow in it, then starts a new line under the picture.
+        editor.addEventListener('keydown', event => {
+            if ((event.key !== 'ArrowRight' && event.key !== 'ArrowDown') || event.shiftKey || event.isComposing) return;
+            const at = cursorInFigure();
+            const selection = getSelection();
+            if (!at || at.side !== 'caption' || at.figure.nextElementSibling || !selection.isCollapsed) return;
+            if (event.key === 'ArrowRight') {
+                const rest = document.createRange();
+                rest.setStart(selection.anchorNode, selection.anchorOffset);
+                rest.setEnd(at.figure.querySelector('figcaption'), at.figure.querySelector('figcaption').childNodes.length);
+                if (rest.toString()) return;
+            }
+            event.preventDefault();
+            const line = emptyLine();
+            at.figure.after(line);
+            placeCursor(line, 0);
+            line.scrollIntoView({ block: 'nearest' });
+            changed('insertParagraph');
+        });
+
         // Text typed beside a picture would land inside its frame, so it goes on the line above or below instead.
         editor.addEventListener('beforeinput', event => {
             if (event.inputType !== 'insertText' || !event.data) return;
