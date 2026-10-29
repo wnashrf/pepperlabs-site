@@ -800,6 +800,51 @@
             display: none;
         }
 
+        /* The one article that leads the blog, marked wherever it appears. */
+        .pin-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.12rem 0.5rem 0.12rem 0.4rem;
+            border-radius: 999px;
+            background: #fdeee4;
+            color: var(--pl-primary-dark);
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .pin-tag svg {
+            width: 0.85rem;
+            height: 0.85rem;
+        }
+
+        /* Above the Published list: which article is pinned, and a quick way to unpin it. */
+        .queue__pinned {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 0.5rem 0.5rem;
+            padding: 0.45rem 0.6rem;
+            border: 1px solid #f6d5bf;
+            border-radius: var(--pl-radius-sm);
+            background: #fffaf6;
+            font-size: 0.8rem;
+        }
+
+        .queue__pinned[hidden] {
+            display: none;
+        }
+
+        .queue__pinned-title {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .queue-item__note {
             display: block;
             overflow: hidden;
@@ -2318,6 +2363,7 @@
                     </button>
                 </div>
                 <div class="queue__body">
+                    <div class="queue__pinned" id="queue-pinned" hidden></div>
                     <ul class="queue__list" id="queue-list" aria-labelledby="queue-title"></ul>
                     <div id="queue-empty"></div>
                 </div>
@@ -3011,11 +3057,20 @@
                 ? `${list.length} of ${total} match`
                 : total > 1 ? `${total} articles, ${status.order}` : total === 1 ? '1 article' : '';
 
+            // Admins see which article leads the blog, with a quick way to stop pinning it.
+            const pinned = state.posts.find(post => post.pinned);
+            const pinnedStrip = document.getElementById('queue-pinned');
+            pinnedStrip.hidden = !(pinned && isAdmin() && state.status === 'published');
+            pinnedStrip.innerHTML = pinnedStrip.hidden ? '' : `
+                <span class="pin-tag">${ICON.pin}Pinned</span>
+                <span class="queue__pinned-title" title="${esc(pinned.title)}">${esc(pinned.title || 'Untitled article')}</span>
+                <button type="button" class="text-btn" data-action="unpin" data-id="${esc(pinned.id)}">Unpin</button>`;
+
             queueList.innerHTML = list.map(post => {
                 const analysis = analyse(post);
                 const foot = [];
                 if (state.status === 'pending' && waitLabel(post)) foot.push(`<span>${esc(waitLabel(post))}</span>`);
-                if (post.pinned) foot.push('<span>Pinned</span>');
+                if (post.pinned) foot.push(`<span class="pin-tag">${ICON.pin}Pinned</span>`);
                 if (analysis.issues) foot.push(`<span class="flag">${ICON.warn}${plural(analysis.issues, 'check')} to look at</span>`);
                 if (state.status === 'returned' && post.reviewNote) foot.push(`<span class="queue-item__note">Note: ${esc(post.reviewNote)}</span>`);
                 return `
@@ -3198,6 +3253,7 @@
                         <div class="review__status">
                             <button type="button" class="text-btn review__back" data-action="back">${ICON.back}All articles</button>
                             <span class="status-chip status-chip--${status}">${STATUSES[status].icon}${STATUSES[status].label}</span>
+                            ${post.pinned ? `<span class="pin-tag">${ICON.pin}Pinned to the top of the blog</span>${isAdmin() ? '<button type="button" class="text-btn" data-action="toggle-pin">Unpin</button>' : ''}` : ''}
                             ${wait ? `<span>${esc(wait)}</span>` : ''}
                             ${analysis.issues ? `<button type="button" class="text-btn" data-action="jump-checks">${plural(analysis.issues, 'check')} to look at</button>` : '<span>All checks passed</span>'}
                             <span class="spacer"></span>
@@ -3908,8 +3964,17 @@
                     if (pin) state.posts.forEach(other => { if (other.pinned) other.pinned = false; });
                     post.pinned = pin;
                     record(post, pin ? 'pinned' : 'unpinned');
-                }, pin ? 'Pinned to the top of the blog.' : 'Unpinned.');
+                }, pin ? 'Pinned to the top of the blog.' : UNPINNED);
                 review.querySelector('[data-action="toggle-pin"]')?.focus({ preventScroll: true });
+            },
+
+            unpin(element) {
+                const post = state.posts.find(each => String(each.id) === element.dataset.id);
+                if (!post) return;
+                commit(() => {
+                    post.pinned = false;
+                    record(post, 'unpinned');
+                }, UNPINNED);
             },
 
             'toggle-comments'() {
@@ -4048,7 +4113,9 @@
         };
 
         // Reviewing and publishing are admin decisions. The server refuses them anyway; this keeps the page honest.
-        const ADMIN_ACTIONS = ['approve', 'republish', 'unpublish', 'open-sendback', 'delete', 'toggle-pin', 'toggle-comments', 'import'];
+        const ADMIN_ACTIONS = ['approve', 'republish', 'unpublish', 'open-sendback', 'delete', 'toggle-pin', 'unpin', 'toggle-comments', 'import'];
+        // With nothing pinned, the blog home leads with its newest article, labelled "Latest".
+        const UNPINNED = 'Unpinned. The blog now leads with its newest article.';
 
         document.addEventListener('click', event => {
             const element = event.target.closest('[data-action]');
