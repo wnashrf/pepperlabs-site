@@ -152,8 +152,10 @@
 
         /* Same structure, measurements and breakpoints as the main site's React header, so the bar sits in the
            same place on both. /assets/nav-ai-dropdown.js then groups the links exactly as it does there. */
+        /* Sticky from the first pixel, as on the blog home, so the bar stays on screen for the whole article. */
         .site-header-wrap {
-            position: relative;
+            position: sticky;
+            top: 0;
             z-index: 800;
             width: 100%;
         }
@@ -164,19 +166,26 @@
             background: #fff;
             color: var(--pl-primary);
             line-height: 1.5;
+            transition: box-shadow 0.3s ease;
         }
 
+        /* The shadow only shows once the page has moved under the bar. */
         .site-header.is-sticky {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* How far through the article the reader is, along the very top of the window (as on the blog home). */
+        .scroll-progress {
             position: fixed;
             top: 0;
             left: 0;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-            animation: headerSlideDown 0.5s ease-in-out;
-        }
-
-        @keyframes headerSlideDown {
-            from { margin-top: -150px; }
-            to { margin-top: 0; }
+            z-index: 950;
+            width: 100%;
+            height: 6px;
+            background: var(--pl-primary);
+            transform: scaleX(var(--progress, 0));
+            transform-origin: 0 50%;
+            pointer-events: none;
         }
 
         .site-header__container,
@@ -435,7 +444,6 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .site-header.is-sticky,
             .scroll-top {
                 animation: none;
             }
@@ -1734,7 +1742,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="/blog/media.css?v=20261011-2">
+    <link rel="stylesheet" href="/blog/media.css?v=20261029-3">
     <link rel="stylesheet" href="/assets/nav-ai-dropdown.css?v=20261023-no-nav-flash">
 </head>
 <body>
@@ -1771,6 +1779,8 @@
         </header>
     </div>
     <script src="/assets/nav-ai-dropdown.js?v=20261023-no-nav-flash"></script>
+
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
 
     <button type="button" class="scroll-top" id="scroll-top" aria-label="Back to top" hidden>
         <svg viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M214.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 109.3V480c0 17.7 14.3 32 32 32s32-14.3 32-32V109.3l73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128z"/></svg>
@@ -1929,7 +1939,7 @@
         </section>
     </div>
 
-    <script src="/blog/media.js?v=20261028-2"></script>
+    <script src="/blog/media.js?v=20261029-8"></script>
     <script>
         // Published posts by slug, from the blog database through /blog/api/posts.php (loaded at the bottom of this script).
         const posts = {};
@@ -1957,13 +1967,13 @@
             return `/blog/${encodeURIComponent(slug)}`;
         }
 
-        // openOf: the number of photos in the viewer, when this picture opens it as photo 1 (the article's main picture).
-        function postMedia(post, extraClass = '', openOf = 0) {
+        // openable: the picture opens the photo viewer (the article's main picture); renderPost numbers the buttons.
+        function postMedia(post, extraClass = '', openable = false) {
             const caption = String(post.imageCaption || '').trim();
             const image = `<img src="${esc(post.image)}" alt="${esc(caption)}">`;
             const picture = !post.image
                 ? `<span class="post-media__word" aria-hidden="true">${esc(categoryLabel(categoryKey(post)))}</span>`
-                : openOf ? `<button type="button" class="post-hero__open" data-photo data-caption="${esc(caption)}" aria-label="Open photo 1 of ${openOf}${caption ? `: ${esc(caption)}` : ''}">${image}</button>` : image;
+                : openable ? `<button type="button" class="post-hero__open" data-photo data-caption="${esc(caption)}">${image}</button>` : image;
             return `<div class="post-media ${extraClass}">${picture}</div>`;
         }
 
@@ -2023,9 +2033,9 @@
                     <p class="post-byline">By <strong>${esc(post.author)}</strong>${post.sourceName ? ` · Source: <strong>${esc(post.sourceName)}</strong>` : ''}</p>
                 </header>
 
-                <div class="post-top" data-photos>
-                    ${postMedia(post, 'post-hero', 1 + BlogMedia.list(post.gallery).length)}
-                    ${BlogMedia.galleryHtml(post.gallery, post.image ? 1 : 0)}
+                <div class="post-top">
+                    ${postMedia(post, 'post-hero', true)}
+                    ${BlogMedia.galleryHtml(post.gallery)}
                 </div>
 
                 <div class="post-body">
@@ -2096,7 +2106,23 @@
                             </section>
             `;
 
-            document.getElementById('post-container').innerHTML = html;
+            const container = document.getElementById('post-container');
+            container.innerHTML = html;
+
+            // The pictures inside the article open the viewer as well, each with its caption. With the main picture
+            // and More photos they make one set, in the order the page shows them.
+            container.querySelectorAll('.article-body figure.post-figure img').forEach(img => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'post-figure__open';
+                button.dataset.photo = '';
+                button.dataset.caption = img.closest('figure').querySelector('figcaption')?.textContent.trim() || '';
+                img.replaceWith(button);
+                button.append(img);
+            });
+            container.setAttribute('data-photos', '');
+            const photos = [...container.querySelectorAll('[data-photo]')];
+            photos.forEach((button, index) => button.setAttribute('aria-label', `Open photo ${index + 1} of ${photos.length}${button.dataset.caption ? `: ${button.dataset.caption}` : ''}`));
 
             // A small photo is shown at no more than twice its own width, so it does not turn blurry on a
             // wide page. When that leaves room beside it, the extra photos sit there instead of underneath.
@@ -2178,14 +2204,22 @@
             event.currentTarget.setAttribute('aria-expanded', String(isOpen));
         });
 
-        // Same thresholds as the main site: the header pins after 250px on wide screens, the button shows after 300px.
+        // As on the blog home: the header is always sticky and gains its shadow once scrolled. The button shows after 300px.
         const siteHeader = document.querySelector('.site-header');
         const scrollTopButton = document.getElementById('scroll-top');
-        const wideScreen = matchMedia('(min-width: 992px)');
+        const scrollProgress = document.getElementById('scroll-progress');
+        function updateScrollProgress() {
+            const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+            scrollProgress.style.setProperty('--progress', scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
+        }
         window.addEventListener('scroll', () => {
-            siteHeader.classList.toggle('is-sticky', window.scrollY >= 250 && wideScreen.matches);
+            siteHeader.classList.toggle('is-sticky', window.scrollY > 0);
             scrollTopButton.hidden = window.scrollY <= 300;
+            updateScrollProgress();
         }, { passive: true });
+        // The page height changes as the article and its pictures load, so recompute on resize and load too.
+        window.addEventListener('resize', updateScrollProgress);
+        window.addEventListener('load', updateScrollProgress);
         scrollTopButton.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
         const postModal = document.getElementById('post-modal');

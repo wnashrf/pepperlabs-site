@@ -1594,6 +1594,51 @@
             gap: 1.25rem 1rem;
         }
 
+        /* Writing on the left and the article's details beside it; one column, details last, when the pane is narrow. */
+        .edit__layout {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .edit__main,
+        .edit__side {
+            display: grid;
+            align-content: start;
+            gap: 1.25rem;
+            min-width: 0;
+        }
+
+        .edit__side {
+            padding: 1.1rem 1.25rem 1.25rem;
+            border: 1px solid var(--pl-line);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-canvas);
+        }
+
+        .edit__side h3 {
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
+        }
+
+        @container (min-width: 56rem) {
+            .edit__layout {
+                grid-template-columns: minmax(0, 1fr) 21rem;
+                align-items: start;
+            }
+
+            .edit__side .edit__row {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        /* The title reads like the article's headline. */
+        .field--title input:not([type="file"]) {
+            min-height: 3.25rem;
+            font-size: clamp(1.35rem, 1.2rem + 0.8vw, 1.9rem);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
         .edit__image {
             display: flex;
             flex-wrap: wrap;
@@ -1618,6 +1663,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            cursor: zoom-in;
         }
 
         .editor {
@@ -1948,6 +1994,42 @@
             outline: 2px solid var(--pl-heading);
         }
 
+        .float-bar {
+            position: fixed;
+            z-index: 40;
+            display: flex;
+            gap: 2px;
+            padding: 4px;
+            border-radius: 10px;
+            background: var(--pl-heading);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+        }
+
+        .float-bar button {
+            display: grid;
+            place-items: center;
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0 0.4rem;
+            border: 0;
+            border-radius: 7px;
+            background: none;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .float-bar button:hover,
+        .float-bar button[aria-pressed="true"] {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .float-bar button svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
         .media-pick__caption {
             display: block;
             margin-top: 0.3rem;
@@ -2172,7 +2254,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="/blog/media.css?v=20261011-1">
+    <link rel="stylesheet" href="/blog/media.css?v=20261029-3">
 </head>
 <body class="is-loading">
     <div class="desk" id="desk" data-view="list">
@@ -2431,6 +2513,15 @@
         </form>
     </dialog>
 
+    <!-- Floats above selected article text; the fixed toolbar above the article does the same and more. -->
+    <div class="float-bar" id="float-bar" role="toolbar" aria-label="Format the selected text" hidden>
+        <button type="button" data-float="bold" aria-label="Bold" title="Bold (Ctrl+B)"><strong>B</strong></button>
+        <button type="button" data-float="italic" aria-label="Italic" title="Italic (Ctrl+I)"><em>I</em></button>
+        <button type="button" data-float="h2" aria-label="Heading" title="Heading">H</button>
+        <button type="button" data-float="blockquote" aria-label="Quote" title="Quote">&ldquo;</button>
+        <button type="button" data-float="link" aria-label="Add link" title="Add link"></button>
+    </div>
+
     <dialog class="confirm media-picker" id="media-picker" aria-labelledby="media-picker-title">
         <h2 id="media-picker-title">Choose a picture</h2>
         <p>From the library and other articles. Saving the article gives it its own copy.</p>
@@ -2441,7 +2532,7 @@
     </dialog>
 
     <script src="/blog/data/posts.js?v=20261011-5"></script>
-    <script src="/blog/media.js?v=20261028-2"></script>
+    <script src="/blog/media.js?v=20261029-8"></script>
     <script>
         // Posts live in the blog database and come through /blog/api/posts.php, which also checks every permission.
         // Before the database, posts were kept in each browser under this key; Settings can import them once.
@@ -3162,93 +3253,106 @@
                         <form class="edit" id="edit-form" novalidate>
                             <h2 class="edit__heading" id="review-title" tabindex="-1">${post === draft ? 'New article' : 'Edit article'}</h2>
 
-                            <div class="field">
-                                <label for="edit-title">Title</label>
-                                <input id="edit-title" name="title" type="text" maxlength="255" value="${esc(post.title)}" aria-describedby="edit-title-error">
-                                <p class="field__error" id="edit-title-error" hidden>${ICON.warn}Give the article a title.</p>
-                            </div>
-
-                            <div class="field">
-                                <label for="edit-excerpt">Excerpt</label>
-                                <textarea id="edit-excerpt" name="excerpt" rows="3" aria-describedby="edit-excerpt-hint">${esc(post.excerpt)}</textarea>
-                                <p class="field__hint" id="edit-excerpt-hint">Shown on blog cards and under the headline. <span id="edit-excerpt-count"></span></p>
-                            </div>
-
-                            <div class="edit__row">
-                                <div class="field">
-                                    <label for="edit-category">Category</label>
-                                    <select id="edit-category" name="category">
-                                        ${categories.map(key => `<option value="${esc(key)}" ${key === categoryKey(post) ? 'selected' : ''}>${esc(categoryLabel(key))}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="field">
-                                    <label for="edit-author">Author</label>
-                                    <input id="edit-author" name="author" type="text" maxlength="100" value="${esc(post.author)}">
-                                </div>
-                                <div class="field">
-                                    <label for="edit-date">Publish date</label>
-                                    <input id="edit-date" name="publishDate" type="date" value="${esc(isoDate)}">
-                                </div>
-                                <div class="field">
-                                    <label for="edit-source">Source name</label>
-                                    <input id="edit-source" name="sourceName" type="text" maxlength="100" value="${esc(post.sourceName)}" aria-describedby="edit-source-hint">
-                                    <p class="field__hint" id="edit-source-hint">Optional. Shown as "Source: ..." on the blog.</p>
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <span class="field__label" id="edit-image-label">Main image</span>
-                                <div class="edit__image">
-                                    <div class="edit__thumb" id="edit-thumb"></div>
-                                    <input class="visually-hidden" id="edit-image" type="file" accept="image/*" aria-labelledby="edit-image-label">
-                                    <label class="pl-btn pl-btn--ghost" for="edit-image">Choose image</label>
-                                    <button type="button" class="pl-btn pl-btn--ghost" data-action="pick-image">From library</button>
-                                    <button type="button" class="pl-btn pl-btn--ghost" id="edit-image-remove" data-action="remove-image">Remove</button>
-                                </div>
-                                <input id="edit-image-caption" name="imageCaption" type="text" maxlength="200" value="${esc(post.imageCaption)}" placeholder="Caption (optional)" aria-label="Caption for the main image">
-                                <p class="field__hint" id="edit-image-hint">Shown on blog cards and at the top of the article. Large photos are shrunk for you.</p>
-                            </div>
-
-                            <div class="field">
-                                <span class="field__label">More photos</span>
-                                <div id="edit-gallery"></div>
-                                <p class="field__hint">Optional. Shown as thumbnails under the main image. To place a picture inside the text, use the picture button above the article.</p>
-                            </div>
-
-                            <div class="field">
-                                <span class="field__label" id="edit-body-label">Article</span>
-                                <div class="editor">
-                                    <div class="editor__toolbar" role="toolbar" aria-label="Formatting">
-                                        <select aria-label="Text style" data-command="formatBlock">
-                                            <option value="P">Paragraph</option>
-                                            <option value="H2">Heading</option>
-                                            <option value="H3">Subheading</option>
-                                            <option value="BLOCKQUOTE">Quote</option>
-                                        </select>
-                                        <button type="button" data-command="bold" aria-label="Bold"><strong>B</strong></button>
-                                        <button type="button" data-command="italic" aria-label="Italic"><em>I</em></button>
-                                        <button type="button" data-command="insertUnorderedList" aria-label="Bulleted list">${ICON.bullets}</button>
-                                        <button type="button" data-command="insertOrderedList" aria-label="Numbered list">${ICON.numbers}</button>
-                                        <button type="button" data-action="open-link" aria-label="Add link" aria-expanded="false" aria-controls="editor-link">${ICON.link}</button>
-                                        <button type="button" data-action="insert-image" aria-label="Insert picture at the cursor" title="Insert picture at the cursor">${ICON.picture}</button>
-                                        <button type="button" data-action="insert-library" title="Insert a picture from the library at the cursor">Library</button>
-                                        <button type="button" data-command="undo" aria-label="Undo">${ICON.undo}</button>
-                                        <button type="button" data-command="redo" aria-label="Redo">${ICON.redo}</button>
-                                        <span class="spacer"></span>
-                                        <button type="button" data-action="toggle-html" aria-pressed="false">HTML</button>
+                            <div class="edit__layout">
+                                <div class="edit__main">
+                                    <div class="field field--title">
+                                        <label for="edit-title">Title</label>
+                                        <input id="edit-title" name="title" type="text" maxlength="255" value="${esc(post.title)}" aria-describedby="edit-title-error">
+                                        <p class="field__error" id="edit-title-error" hidden>${ICON.warn}Give the article a title.</p>
                                     </div>
-                                    <div class="editor__link" id="editor-link" hidden>
-                                        <input type="url" id="editor-link-url" placeholder="https://" aria-label="Link address" aria-describedby="editor-link-error">
-                                        <button type="button" class="pl-btn pl-btn--ghost" data-action="apply-link">Add link</button>
-                                        <button type="button" class="pl-btn pl-btn--ghost" data-action="close-link">Cancel</button>
-                                        <p class="field__error" id="editor-link-error" hidden>${ICON.warn}Enter a full address starting with https://</p>
+
+
+                                    <div class="field">
+                                        <label for="edit-excerpt">Excerpt</label>
+                                        <textarea id="edit-excerpt" name="excerpt" rows="3" aria-describedby="edit-excerpt-hint">${esc(post.excerpt)}</textarea>
+                                        <p class="field__hint" id="edit-excerpt-hint">Shown on blog cards and under the headline. <span id="edit-excerpt-count"></span></p>
                                     </div>
-                                    <div class="editor__content article-body" id="edit-body" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="edit-body-label" aria-describedby="edit-body-error">${BlogMedia.prepare(analyse(post).html)}</div>
-                                    <input class="visually-hidden" id="edit-insert-image" type="file" accept="image/*" multiple tabindex="-1" aria-hidden="true">
-                                    <textarea class="editor__source" id="edit-source-html" aria-label="Article HTML" spellcheck="false" hidden></textarea>
+
+
+                                    <div class="field">
+                                        <span class="field__label" id="edit-body-label">Article</span>
+                                        <div class="editor">
+                                            <div class="editor__toolbar" role="toolbar" aria-label="Formatting">
+                                                <select aria-label="Text style" data-command="formatBlock">
+                                                    <option value="P">Paragraph</option>
+                                                    <option value="H2">Heading</option>
+                                                    <option value="H3">Subheading</option>
+                                                    <option value="BLOCKQUOTE">Quote</option>
+                                                </select>
+                                                <button type="button" data-command="bold" aria-label="Bold"><strong>B</strong></button>
+                                                <button type="button" data-command="italic" aria-label="Italic"><em>I</em></button>
+                                                <button type="button" data-command="insertUnorderedList" aria-label="Bulleted list">${ICON.bullets}</button>
+                                                <button type="button" data-command="insertOrderedList" aria-label="Numbered list">${ICON.numbers}</button>
+                                                <button type="button" data-action="open-link" aria-label="Add link" aria-expanded="false" aria-controls="editor-link">${ICON.link}</button>
+                                                <button type="button" data-action="insert-image" aria-label="Insert picture at the cursor" title="Insert picture at the cursor">${ICON.picture}</button>
+                                                <button type="button" data-action="insert-library" title="Insert a picture from the library at the cursor">Library</button>
+                                                <button type="button" data-command="undo" aria-label="Undo">${ICON.undo}</button>
+                                                <button type="button" data-command="redo" aria-label="Redo">${ICON.redo}</button>
+                                                <span class="spacer"></span>
+                                                <button type="button" data-action="toggle-html" aria-pressed="false">HTML</button>
+                                            </div>
+                                            <div class="editor__link" id="editor-link" hidden>
+                                                <input type="url" id="editor-link-url" placeholder="https://" aria-label="Link address" aria-describedby="editor-link-error">
+                                                <button type="button" class="pl-btn pl-btn--ghost" data-action="apply-link">Add link</button>
+                                                <button type="button" class="pl-btn pl-btn--ghost" data-action="close-link">Cancel</button>
+                                                <p class="field__error" id="editor-link-error" hidden>${ICON.warn}Enter a full address starting with https://</p>
+                                            </div>
+                                            <div class="editor__content article-body" id="edit-body" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="edit-body-label" aria-describedby="edit-body-error">${BlogMedia.prepare(analyse(post).html) || '<p><br></p>'}</div>
+                                            <input class="visually-hidden" id="edit-insert-image" type="file" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+                                            <textarea class="editor__source" id="edit-source-html" aria-label="Article HTML" spellcheck="false" hidden></textarea>
+                                        </div>
+                                        <p class="field__error" id="edit-insert-error" hidden></p>
+                                        <p class="field__error" id="edit-body-error" hidden>${ICON.warn}The article needs some text.</p>
+                                    </div>
                                 </div>
-                                <p class="field__error" id="edit-insert-error" hidden></p>
-                                <p class="field__error" id="edit-body-error" hidden>${ICON.warn}The article needs some text.</p>
+
+                                <aside class="edit__side" aria-labelledby="edit-side-title">
+                                    <h3 id="edit-side-title">Details</h3>
+
+                                    <div class="edit__row">
+                                        <div class="field">
+                                            <label for="edit-category">Category</label>
+                                            <select id="edit-category" name="category">
+                                                ${categories.map(key => `<option value="${esc(key)}" ${key === categoryKey(post) ? 'selected' : ''}>${esc(categoryLabel(key))}</option>`).join('')}
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="edit-author">Author</label>
+                                            <input id="edit-author" name="author" type="text" maxlength="100" value="${esc(post.author)}">
+                                        </div>
+                                        <div class="field">
+                                            <label for="edit-date">Publish date</label>
+                                            <input id="edit-date" name="publishDate" type="date" value="${esc(isoDate)}">
+                                        </div>
+                                        <div class="field">
+                                            <label for="edit-source">Source name</label>
+                                            <input id="edit-source" name="sourceName" type="text" maxlength="100" value="${esc(post.sourceName)}" aria-describedby="edit-source-hint">
+                                            <p class="field__hint" id="edit-source-hint">Optional. Shown as "Source: ..." on the blog.</p>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="field">
+                                        <span class="field__label" id="edit-image-label">Main image</span>
+                                        <div class="edit__image">
+                                            <div class="edit__thumb" id="edit-thumb"></div>
+                                            <input class="visually-hidden" id="edit-image" type="file" accept="image/*" aria-labelledby="edit-image-label">
+                                            <label class="pl-btn pl-btn--ghost" for="edit-image">Choose image</label>
+                                            <button type="button" class="pl-btn pl-btn--ghost" data-action="pick-image">From library</button>
+                                            <button type="button" class="pl-btn pl-btn--ghost" id="edit-image-remove" data-action="remove-image">Remove</button>
+                                        </div>
+                                        <input id="edit-image-caption" name="imageCaption" type="text" maxlength="200" value="${esc(post.imageCaption)}" placeholder="Caption (optional)" aria-label="Caption for the main image">
+                                        <p class="field__hint" id="edit-image-hint">Shown on blog cards and at the top of the article. Drop a picture file here or choose one; large photos are shrunk for you.</p>
+                                    </div>
+
+
+                                    <div class="field">
+                                        <span class="field__label">More photos</span>
+                                        <div id="edit-gallery"></div>
+                                        <p class="field__hint">Optional. Shown as thumbnails under the main image; drop picture files here to add them. To place a picture inside the text, drop it into the article or use the picture button above it.</p>
+                                    </div>
+
+                                </aside>
                             </div>
                         </form>
                     </div>
@@ -3264,6 +3368,8 @@
                 </div>`;
 
             editGallery = BlogMedia.galleryEditor(document.getElementById('edit-gallery'), { onChange: markDirty, pick: pickFromLibrary });
+            BlogMedia.acceptPictures(document.getElementById('edit-body'), { onError: showInsertError });
+            BlogMedia.dropZone(review.querySelector('.edit__image'), files => setMainImage(files[0]));
             editGallery.items = post.gallery;
             sourcePictures = [];
             updateEditThumb();
@@ -3448,6 +3554,31 @@
             thumb.innerHTML = editImage ? `<img src="${esc(editImage)}" alt="Current image">` : 'No image';
             document.getElementById('edit-image-remove').hidden = !editImage;
             document.getElementById('edit-image-caption').hidden = !editImage;
+        }
+
+        // From "Choose image" or a file dropped on the main image. Resolves false if the file is not a usable picture.
+        function setMainImage(file) {
+            const hint = document.getElementById('edit-image-hint');
+            if (!file) {
+                hint.textContent = 'Only picture files can be used as the main image.';
+                return Promise.resolve(false);
+            }
+            return BlogMedia.shrink(file).then(shrunk => {
+                editImage = shrunk;
+                hint.textContent = 'Shown on blog cards and at the top of the article. Drop a picture file here or choose one; large photos are shrunk for you.';
+                updateEditThumb();
+                markDirty();
+                return true;
+            }).catch(error => {
+                hint.textContent = error.message;
+                return false;
+            });
+        }
+
+        function showInsertError(problem) {
+            const error = document.getElementById('edit-insert-error');
+            error.textContent = problem.message;
+            error.hidden = false;
         }
 
         function setFieldError(inputId, errorId, invalid) {
@@ -3951,6 +4082,94 @@
             if (source) document.getElementById('import-body').textContent = `The blog's database is empty. ${source.label} (${plural(source.posts.length, 'article')})`;
         }
 
+        /* ---------- Pictures full size while editing ---------- */
+
+        // Every picture in the form, in the order the article page shows them: main picture, More photos, then the text's.
+        function editorPhotos() {
+            const photos = [];
+            const thumb = document.querySelector('#edit-thumb img');
+            if (thumb) photos.push({ element: thumb, caption: document.getElementById('edit-image-caption').value.trim() });
+            document.querySelectorAll('#edit-gallery .media-editor__item').forEach(item => {
+                photos.push({ element: item.querySelector('img'), caption: item.querySelector('input[type="text"]').value.trim() });
+            });
+            document.querySelectorAll('#edit-body figure.post-figure img').forEach(img => {
+                photos.push({ element: img, caption: img.closest('figure').querySelector('figcaption')?.textContent.trim() || '' });
+            });
+            return photos;
+        }
+
+        review.addEventListener('click', event => {
+            const img = event.target.closest('#edit-thumb img, #edit-gallery .media-editor__item img, #edit-body figure.post-figure img');
+            if (!img) return;
+            const photos = editorPhotos();
+            BlogMedia.openViewer(photos.map(photo => ({ src: photo.element.src, caption: photo.caption })), Math.max(0, photos.findIndex(photo => photo.element === img)));
+        });
+
+        /* ---------- Floating format bar ---------- */
+
+        // Shown above selected article text, like Word's mini toolbar. Touch screens keep only the fixed toolbar,
+        // because their own copy and paste menu appears in the same spot.
+        const floatBar = document.getElementById('float-bar');
+        const touchScreen = matchMedia('(pointer: coarse)');
+        floatBar.querySelector('[data-float="link"]').innerHTML = ICON.link;
+
+        function selectedBlock() {
+            const node = getSelection().anchorNode;
+            return (node?.nodeType === 1 ? node : node?.parentElement)?.closest('#edit-body > *');
+        }
+
+        function floatActive(name) {
+            if (name === 'bold' || name === 'italic') return document.queryCommandState(name);
+            if (name === 'h2' || name === 'blockquote') return selectedBlock()?.tagName === name.toUpperCase();
+            return false;
+        }
+
+        function placeFloatBar() {
+            const editor = document.getElementById('edit-body');
+            const selection = getSelection();
+            const range = selection.rangeCount ? selection.getRangeAt(0) : null;
+            const inEditor = editor && !editor.hidden && range && !range.collapsed && editor.contains(range.commonAncestorContainer);
+            // Captions are plain text, so the bar stays away from them.
+            const inCaption = inEditor && (range.commonAncestorContainer.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement).closest('figcaption');
+            if (!inEditor || inCaption || touchScreen.matches) {
+                floatBar.hidden = true;
+                return;
+            }
+            floatBar.hidden = false;
+            const text = range.getBoundingClientRect();
+            const bar = floatBar.getBoundingClientRect();
+            const above = text.top - bar.height - 8;
+            floatBar.style.top = `${above < 8 ? text.bottom + 8 : above}px`;
+            floatBar.style.left = `${Math.min(Math.max(text.left + text.width / 2 - bar.width / 2, 8), innerWidth - bar.width - 8)}px`;
+            floatBar.querySelectorAll('[data-float]').forEach(button => button.setAttribute('aria-pressed', String(floatActive(button.dataset.float))));
+        }
+
+        document.addEventListener('selectionchange', placeFloatBar);
+        review.addEventListener('scroll', placeFloatBar, true);
+        window.addEventListener('resize', placeFloatBar);
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') floatBar.hidden = true;
+        });
+
+        // Pressing a button must not take the selection away from the text it formats.
+        floatBar.addEventListener('mousedown', event => event.preventDefault());
+        floatBar.addEventListener('click', event => {
+            const button = event.target.closest('[data-float]');
+            if (!button) return;
+            const name = button.dataset.float;
+            if (name === 'link') {
+                document.querySelector('#edit-form [data-action="open-link"]').click();
+                floatBar.hidden = true;
+                return;
+            }
+            if (name === 'h2' || name === 'blockquote') {
+                document.execCommand('formatBlock', false, floatActive(name) ? 'P' : name.toUpperCase());
+            } else {
+                document.execCommand(name);
+            }
+            placeFloatBar();
+        });
+
         /* ---------- Media ---------- */
 
         // Pictures from /blog/api/media.php: all for an admin; the library and their own articles' pictures for an author.
@@ -4239,6 +4458,11 @@
 
         review.addEventListener('input', event => {
             if (!event.target.closest('#edit-form') || event.target.id === 'editor-link-url') return;
+            // Text typed straight into an emptied article is not yet in a paragraph; it is put in one, like every other line.
+            const line = getSelection().anchorNode;
+            if (event.target.id === 'edit-body' && line?.nodeType === 3 && line.parentNode === event.target) {
+                document.execCommand('formatBlock', false, 'P');
+            }
             markDirty();
             if (event.target.id === 'edit-excerpt') updateExcerptCount();
         });
@@ -4246,29 +4470,15 @@
         review.addEventListener('change', event => {
             if (event.target.id === 'edit-image') {
                 const file = event.target.files[0];
-                const hint = document.getElementById('edit-image-hint');
-                if (!file) return;
-                BlogMedia.shrink(file).then(shrunk => {
-                    editImage = shrunk;
-                    hint.textContent = 'Shown on blog cards and at the top of the article. Large photos are shrunk for you.';
-                    updateEditThumb();
-                    markDirty();
-                }).catch(error => {
-                    event.target.value = '';
-                    hint.textContent = error.message;
-                });
+                if (file) setMainImage(file).then(ok => { if (!ok) event.target.value = ''; });
                 return;
             }
             // Pictures chosen from the toolbar go into the article where the cursor was.
             if (event.target.id === 'edit-insert-image') {
-                const error = document.getElementById('edit-insert-error');
-                error.hidden = true;
+                document.getElementById('edit-insert-error').hidden = true;
                 BlogMedia.insertImages(document.getElementById('edit-body'), [...event.target.files])
                     .then(markDirty)
-                    .catch(problem => {
-                        error.textContent = problem.message;
-                        error.hidden = false;
-                    })
+                    .catch(showInsertError)
                     .finally(() => { event.target.value = ''; });
                 return;
             }
@@ -4460,6 +4670,8 @@
         /* ---------- Start ---------- */
 
         applyLayout();
+        BlogMedia.guardPage();
+        document.execCommand('defaultParagraphSeparator', false, 'p');
 
         (async () => {
             // Nothing shows until the server confirms who is signed in.

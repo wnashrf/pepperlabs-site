@@ -79,21 +79,22 @@ const BlogMedia = (() => {
         if (editor) caret = { editor, range: selection.getRangeAt(0).cloneRange() };
     });
 
-    // Shrinks the chosen files and places them in the editor.
-    async function insertImages(editor, files) {
+    // Shrinks the chosen files and places them in the editor (at `at`, a range, when given).
+    async function insertImages(editor, files, at = null) {
         const sources = [];
         for (const file of files) sources.push(await shrink(file));
-        insertSources(editor, sources);
+        insertSources(editor, sources, at);
     }
 
-    // Places pictures (shrunk uploads or saved addresses) where the cursor last was in the editor (or at the end).
-    function insertSources(editor, sources) {
+    // Places pictures (shrunk uploads or saved addresses) at `at`, or where the cursor last was in the editor (or at the end).
+    function insertSources(editor, sources, at = null) {
         if (!sources.length) return;
 
         editor.focus();
         const selection = getSelection();
-        if (caret && caret.editor === editor && editor.contains(caret.range.startContainer)) {
-            const range = caret.range;
+        const target = at || (caret && caret.editor === editor ? caret.range : null);
+        if (target && editor.contains(target.startContainer)) {
+            const range = target;
             // A picture never goes inside another picture's caption.
             const start = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
             const figure = start?.closest('.post-figure');
@@ -107,6 +108,255 @@ const BlogMedia = (() => {
         }
         // The empty paragraph gives the writer somewhere to carry on typing below the picture.
         document.execCommand('insertHTML', false, sources.map(src => `<figure class="post-figure"><img src="${esc(src)}" alt=""><figcaption></figcaption></figure>`).join('') + '<p><br></p>');
+    }
+
+    /* ---------- Dropping and pasting picture files ---------- */
+
+    const draggingFiles = event => [...(event.dataTransfer?.types || [])].includes('Files');
+    const pictureFiles = files => [...(files || [])].filter(file => String(file.type).startsWith('image/'));
+
+    // The line that shows where dropped pictures will land in the article.
+    let dropLine = null;
+
+    function showDropLine(editor, { block, after }) {
+        if (!dropLine) {
+            dropLine = document.createElement('div');
+            dropLine.className = 'media-drop-line';
+            dropLine.setAttribute('aria-hidden', 'true');
+            document.body.append(dropLine);
+        }
+        const box = editor.getBoundingClientRect();
+        const edge = block ? block.getBoundingClientRect()[after ? 'bottom' : 'top'] : box.bottom - 12;
+        const y = Math.min(Math.max(edge, box.top + 4), box.bottom - 4);
+        dropLine.style.cssText = `top: ${Math.round(y)}px; left: ${Math.round(box.left + 12)}px; width: ${Math.round(box.width - 24)}px;`;
+        dropLine.hidden = false;
+    }
+
+    function hideDropLine() {
+        if (dropLine) dropLine.hidden = true;
+    }
+
+    // Pictures go between paragraphs, never into the middle of one: before the block under the pointer, or after it.
+    function dropPoint(editor, y) {
+        const blocks = [...editor.children];
+        const block = blocks.find(each => y < each.getBoundingClientRect().top + each.getBoundingClientRect().height / 2);
+        return block ? { block, after: false } : { block: blocks[blocks.length - 1] || null, after: true };
+    }
+
+    function rangeAt(editor, { block, after }) {
+        const range = document.createRange();
+        if (!block) {
+            range.selectNodeContents(editor);
+            range.collapse(false);
+        } else {
+            after ? range.setStartAfter(block) : range.setStartBefore(block);
+            range.collapse(true);
+        }
+        return range;
+    }
+
+    // Every picture in the article is a figure with a caption line, whatever put it there. A picture dragged in
+    // from a web page, or moved within the article, arrives from the browser as a bare <img>.
+    function keepFigures(editor) {
+        editor.querySelectorAll('img').forEach(img => {
+            if (img.closest('.post-figure')) return;
+            const figure = document.createElement('figure');
+            figure.className = 'post-figure';
+            const block = [...editor.children].find(child => child !== img && child.contains(img));
+            if (block) {
+                figure.append(img, document.createElement('figcaption'));
+                // The picture's own line goes; a paragraph with words in it keeps them, with the picture after it.
+                block.textContent.trim() || block.querySelector('img') ? block.after(figure) : block.replaceWith(figure);
+            } else {
+                img.before(figure);
+                figure.append(img, document.createElement('figcaption'));
+            }
+        });
+        editor.querySelectorAll('figure.post-figure').forEach(figure => {
+            if (!figure.querySelector('img')) figure.remove();
+            else if (!figure.querySelector('figcaption')) figure.append(document.createElement('figcaption'));
+        });
+    }
+
+    // Picture files dropped on the article land at the line shown; copied pictures can be pasted at the cursor.
+    function acceptPictures(editor, { onError = () => {} } = {}) {
+        editor.addEventListener('input', () => keepFigures(editor));
+        // Where the cursor is in one of the article's picture frames: before or after the picture, or in its caption.
+        function cursorInFigure() {
+            const selection = getSelection();
+            const node = selection.anchorNode;
+            const element = node?.nodeType === 1 ? node : node?.parentElement;
+            const figure = element?.closest('.post-figure');
+            if (!figure || !editor.contains(figure)) return null;
+            if (element.closest('figcaption')) return { figure, side: 'caption' };
+            const upToCursor = document.createRange();
+            upToCursor.setStart(figure, 0);
+            upToCursor.setEnd(node, selection.anchorOffset);
+            return { figure, side: upToCursor.cloneContents().querySelector('img') ? 'after' : 'before' };
+        }
+
+        const emptyLine = () => {
+            const line = document.createElement('p');
+            line.append(document.createElement('br'));
+            return line;
+        };
+
+        function placeCursor(node, offset) {
+            const range = document.createRange();
+            range.setStart(node, offset);
+            range.collapse(true);
+            getSelection().removeAllRanges();
+            getSelection().addRange(range);
+        }
+
+        const changed = inputType => editor.dispatchEvent(new InputEvent('input', { bubbles: true, inputType }));
+
+        // The box that scrolls the editor: a scrolling panel around it, or the page itself.
+        function scroller() {
+            for (let node = editor.parentElement; node; node = node.parentElement) {
+                if (/(auto|scroll)/.test(getComputedStyle(node).overflowY) && node.scrollHeight > node.clientHeight) return node;
+            }
+            return document.scrollingElement;
+        }
+
+        // Beside a picture the cursor is as tall as the picture, so moving the cursor into a tall picture's frame makes
+        // the browser jump to show all of it. Instead the view stays where it was while any of the picture is on screen,
+        // and otherwise moves only far enough to bring the near edge of the picture into view.
+        const REVEAL = 64;
+
+        function holdView() {
+            const box = scroller();
+            const top = box.scrollTop;
+            requestAnimationFrame(() => {
+                const at = cursorInFigure();
+                if (!at || at.side === 'caption' || box.scrollTop === top) return;
+                const view = box === document.scrollingElement ? { top: 0, bottom: innerHeight } : box.getBoundingClientRect();
+                // Where the picture was on screen before the browser scrolled.
+                const shift = box.scrollTop - top;
+                const picture = at.figure.querySelector('img').getBoundingClientRect();
+                const pictureTop = picture.top + shift;
+                const pictureBottom = picture.bottom + shift;
+                const reveal = Math.min(REVEAL, picture.height);
+                if (pictureBottom > view.top && pictureTop < view.bottom) {
+                    box.scrollTop = top;
+                } else if (pictureTop >= view.bottom) {
+                    box.scrollTop = top + (pictureTop - view.bottom) + reveal;
+                } else {
+                    box.scrollTop = top - (view.top - pictureBottom) - reveal;
+                }
+            });
+        }
+
+        editor.addEventListener('keydown', event => {
+            if (/^(Arrow|Page|Home|End)/.test(event.key)) holdView();
+        });
+        editor.addEventListener('mousedown', holdView);
+
+        // Enter in a picture's frame works as in Word. Before the picture: an empty line is left above it and the
+        // cursor stays with the picture. After the picture or in its caption: a new line below, with the cursor on it.
+        editor.addEventListener('keydown', event => {
+            if (event.key !== 'Enter' || event.isComposing) return;
+            const at = cursorInFigure();
+            if (!at) return;
+            event.preventDefault();
+            if (at.side === 'before') {
+                at.figure.before(emptyLine());
+            } else {
+                const line = emptyLine();
+                at.figure.after(line);
+                placeCursor(line, 0);
+                line.scrollIntoView({ block: 'nearest' });
+            }
+            changed('insertParagraph');
+        });
+
+        // A picture at the very end of the article leaves nowhere for the cursor to go from its caption. Right arrow
+        // at the end of the caption, or Down arrow in it, then starts a new line under the picture.
+        editor.addEventListener('keydown', event => {
+            if ((event.key !== 'ArrowRight' && event.key !== 'ArrowDown') || event.shiftKey || event.isComposing) return;
+            const at = cursorInFigure();
+            const selection = getSelection();
+            if (!at || at.side !== 'caption' || at.figure.nextElementSibling || !selection.isCollapsed) return;
+            if (event.key === 'ArrowRight') {
+                const rest = document.createRange();
+                rest.setStart(selection.anchorNode, selection.anchorOffset);
+                rest.setEnd(at.figure.querySelector('figcaption'), at.figure.querySelector('figcaption').childNodes.length);
+                if (rest.toString()) return;
+            }
+            event.preventDefault();
+            const line = emptyLine();
+            at.figure.after(line);
+            placeCursor(line, 0);
+            line.scrollIntoView({ block: 'nearest' });
+            changed('insertParagraph');
+        });
+
+        // Text typed beside a picture would land inside its frame, so it goes on the line above or below instead.
+        editor.addEventListener('beforeinput', event => {
+            if (event.inputType !== 'insertText' || !event.data) return;
+            const at = cursorInFigure();
+            if (!at || at.side === 'caption') return;
+            event.preventDefault();
+            const next = at.side === 'before' ? at.figure.previousElementSibling : at.figure.nextElementSibling;
+            const reuse = next?.tagName === 'P' && !next.textContent.trim();
+            const line = reuse ? next : emptyLine();
+            if (!reuse) at.side === 'before' ? at.figure.before(line) : at.figure.after(line);
+            line.textContent = event.data;
+            placeCursor(line.firstChild, event.data.length);
+            line.scrollIntoView({ block: 'nearest' });
+            changed('insertText');
+        });
+        editor.addEventListener('dragover', event => {
+            if (!draggingFiles(event)) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+            showDropLine(editor, dropPoint(editor, event.clientY));
+        });
+        editor.addEventListener('dragleave', event => {
+            if (!editor.contains(event.relatedTarget)) hideDropLine();
+        });
+        editor.addEventListener('drop', event => {
+            if (!draggingFiles(event)) return;
+            event.preventDefault();
+            hideDropLine();
+            const files = pictureFiles(event.dataTransfer.files);
+            if (!files.length) return onError(new Error('Only picture files can be dropped into the article.'));
+            insertImages(editor, files, rangeAt(editor, dropPoint(editor, event.clientY))).catch(onError);
+        });
+        editor.addEventListener('paste', event => {
+            const files = pictureFiles(event.clipboardData?.files);
+            if (!files.length) return;
+            event.preventDefault();
+            insertImages(editor, files).catch(onError);
+        });
+    }
+
+    // Any other area that takes picture files (the main image, More photos): highlighted while files are over it.
+    function dropZone(element, onFiles) {
+        element.addEventListener('dragover', event => {
+            if (!draggingFiles(event)) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+            element.classList.add('is-drop-target');
+        });
+        element.addEventListener('dragleave', event => {
+            if (!element.contains(event.relatedTarget)) element.classList.remove('is-drop-target');
+        });
+        element.addEventListener('drop', event => {
+            if (!draggingFiles(event)) return;
+            event.preventDefault();
+            element.classList.remove('is-drop-target');
+            onFiles(pictureFiles(event.dataTransfer.files));
+        });
+    }
+
+    // A file dropped anywhere else would make the browser open it in place of the page, losing unsaved edits.
+    function guardPage() {
+        ['dragover', 'drop'].forEach(type => window.addEventListener(type, event => {
+            if (draggingFiles(event)) event.preventDefault();
+        }));
+        window.addEventListener('dragend', hideDropLine);
+        window.addEventListener('drop', hideDropLine);
     }
 
     function eachFigure(html, visit) {
@@ -212,9 +462,13 @@ const BlogMedia = (() => {
             onChange();
         });
 
-        root.addEventListener('change', async event => {
-            if (event.target.id !== inputId) return;
-            const files = [...event.target.files];
+        root.addEventListener('change', event => {
+            if (event.target.id === inputId) addFiles([...event.target.files]);
+        });
+        dropZone(root, files => addFiles(files));
+
+        async function addFiles(files) {
+            if (!files.length) return draw('Only picture files can be added here.');
             let failed = 0;
             for (const file of files) {
                 try {
@@ -225,7 +479,7 @@ const BlogMedia = (() => {
             }
             draw(failed ? `${failed} of ${files.length} could not be read as a picture.` : '');
             if (failed < files.length) onChange();
-        });
+        }
 
         draw();
         return {
@@ -283,10 +537,10 @@ const BlogMedia = (() => {
         viewer.showModal();
     }
 
-    // Every [data-photo] inside one [data-photos] block (or one gallery) is a single set to step through.
+    // Every [data-photo] inside one [data-photos] block (or, without one, one gallery) is a single set to step through.
     document.addEventListener('click', event => {
         const button = event.target.closest('[data-photo]');
-        const group = button?.closest('[data-photos], .post-gallery');
+        const group = button && (button.closest('[data-photos]') || button.closest('.post-gallery'));
         if (!group) return;
         const buttons = [...group.querySelectorAll('[data-photo]')];
         openViewer(buttons.map(each => ({ src: each.querySelector('img').src, caption: each.dataset.caption || '' })), buttons.indexOf(button));
@@ -322,5 +576,5 @@ const BlogMedia = (() => {
         return { html: doc.body.innerHTML.trim(), removed, body: doc.body };
     }
 
-    return { shrink, insertImages, insertSources, tidy, prepare, list, galleryHtml, galleryEditor, sanitize };
+    return { shrink, insertImages, insertSources, acceptPictures, dropZone, guardPage, openViewer, tidy, prepare, list, galleryHtml, galleryEditor, sanitize };
 })();
