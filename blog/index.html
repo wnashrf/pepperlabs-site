@@ -818,8 +818,11 @@
             display: none;
         }
 
+        /* Both stories stretch to the taller one's height; align-content keeps the label and picture at the top
+           instead of spreading the spare height between rows, so a short title does not push its picture down. */
         .featured-post--spotlight {
             grid-template-columns: minmax(0, 1fr);
+            align-content: start;
             align-items: start;
             gap: 1.5rem;
             counter-increment: spotlight;
