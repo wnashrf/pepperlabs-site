@@ -20261,6 +20261,9 @@ const Cw = [
         period: "10 March 2017",
         image: "/images/pepperlabs%20(1).png",
         imageAlt: "Pepper Labs logo",
+        // Who We Are is dark: the white logo there, and no blurred backdrop.
+        imageDark: "/assets/pepper-labs-logo/black-and-white.png",
+        noBackdrop: true,
         title: "Pepper Labs is incorporated",
         description:
           "Pepper Labs Sdn. Bhd. was incorporated in Malaysia.",
@@ -20324,6 +20327,7 @@ const Cw = [
         title: "First Dapur Digital kitchens",
         description:
           "The first five kitchens were activated. Over roughly 15 months, they generated about RM2 million in sales.",
+        highlight: "about RM2 million in sales",
         source: "DisruptR",
       },
       {
@@ -20334,6 +20338,7 @@ const Cw = [
         title: "Dapur Digital expands",
         description:
           "Prime Minister Anwar Ibrahim announced funding for 25 additional kitchens in the national budget. Ten more began operating, bringing the total to 15 in Kuala Lumpur, with further state expansion planned for 2026.",
+        highlight: "bringing the total to 15 in Kuala Lumpur",
         source: "DisruptR",
       },
       {
@@ -20354,6 +20359,7 @@ const Cw = [
         title: "AI Opportunity Fund: Asia-Pacific",
         description:
           "Selected as one of 18 local training providers for Phase 2, backed by AVPN, Google.org, and the Asian Development Bank, to provide free AI upskilling to 50,000 Malaysians. Pepper Labs reported having reached more than 350,000 learners.",
+        highlight: "more than 350,000 learners",
         source: "Digital News Asia",
       },
       {
@@ -20374,6 +20380,7 @@ const Cw = [
         title: "11 years and 50,000 AI learning opportunities",
         description:
           "Pepper Labs marked its 11th anniversary and launched 50,000 AI learning opportunities under AI-Ready Malaysia. It also showcased Bisnes.ai and more than 40 agentic-AI solutions for government use.",
+        highlight: "50,000 AI learning opportunities",
         source: "Tech-Critter",
       },
       {
@@ -20389,6 +20396,17 @@ const Cw = [
     ];
     const r = n[e];
     const hasImg = !!r.image && !pf[r.image];
+    const imgSrc = (forWho && r.imageDark) || r.image;
+    // Who We Are: a milestone's key phrase stands out inside its description.
+    const at = forWho && r.highlight ? r.description.indexOf(r.highlight) : -1;
+    const description =
+      at < 0
+        ? r.description
+        : [
+            r.description.slice(0, at),
+            u.jsx("strong", { className: "pl-history-highlight", children: r.highlight }, "hl"),
+            r.description.slice(at + r.highlight.length),
+          ];
     const pad = (x) => String(x).padStart(2, "0");
     // Select a story. Keyboard selection moves focus with it (ARIA tabs, roving tabindex).
     const go = (l, focus) => {
@@ -20440,7 +20458,7 @@ const Cw = [
       });
     };
     const point = (i, l) =>
-      u.jsx(
+      u.jsxs(
         "button",
         {
           type: "button",
@@ -20452,9 +20470,18 @@ const Cw = [
           "aria-controls": "pepper-history-panel",
           className: `pl-history-point${e === l ? " is-active" : ""}`,
           onClick: () => go(l),
-          children: u.jsx("span", {
-            className: "pl-history-dot",
-          }),
+          children: [
+            u.jsx("span", {
+              className: "pl-history-dot",
+            }),
+            // Who We Are: each dot's period sits under it (already in aria-label).
+            forWho &&
+              u.jsx("span", {
+                className: "pl-history-point-label",
+                "aria-hidden": "true",
+                children: i.period,
+              }),
+          ],
         },
         i.period,
       );
@@ -20483,6 +20510,20 @@ const Cw = [
       id: "pepper-labs-journey",
       className: `pl-history-section${forWho ? " pl-history-section--who" : ""}`,
       children: [
+        // Who We Are: the whole section is the stage. Behind it, the story's
+        // photo (dimmed, remounted per story so it fades in).
+        forWho &&
+          hasImg &&
+          !r.noBackdrop &&
+          u.jsx(
+            "div",
+            {
+              className: "pl-history-backdrop",
+              "aria-hidden": "true",
+              children: u.jsx("img", { src: imgSrc, alt: "", decoding: "async" }),
+            },
+            `backdrop-${e}`,
+          ),
         u.jsxs("div", {
           className: "Container",
           children: [
@@ -20500,8 +20541,6 @@ const Cw = [
                 }),
               ],
             }),
-            // Who We Are: the timeline sits above the story card, which hangs from it.
-            forWho && navigation,
             u.jsxs("div", {
               className: "pl-history-stage",
               children: [
@@ -20521,7 +20560,7 @@ const Cw = [
                         className: "pl-history-media",
                         children: [
                           u.jsx("img", {
-                            src: r.image,
+                            src: imgSrc,
                             alt: r.imageAlt || "",
                             loading: "lazy",
                             decoding: "async",
@@ -20545,7 +20584,7 @@ const Cw = [
                         u.jsx("h3", { children: r.title }),
                         u.jsx("p", {
                           className: "pl-history-description",
-                          children: r.description,
+                          children: description,
                         }),
                         u.jsx("p", {
                           className: "pl-history-source",
@@ -20556,11 +20595,14 @@ const Cw = [
                   ],
                 }),
                 !forWho && navigation,
-                // Previous/next sit on the card's left and right borders (styled in css/history-drag.css).
-                forWho && step("Previous story", "M12.5 4.5 7 10l5.5 5.5", e - 1, e === 0, "prev"),
-                forWho && step("Next story", "M7.5 4.5 13 10l-5.5 5.5", e + 1, e === n.length - 1, "next"),
               ],
             }),
+            // Who We Are: the timeline runs along the bottom of the section.
+            forWho && navigation,
+            // Previous/next sit on the section's left and right edges (styled in
+            // css/history-drag.css); after the timeline in tab order.
+            forWho && step("Previous story", "M12.5 4.5 7 10l5.5 5.5", e - 1, e === 0, "prev"),
+            forWho && step("Next story", "M7.5 4.5 13 10l-5.5 5.5", e + 1, e === n.length - 1, "next"),
           ],
         }),
       ],

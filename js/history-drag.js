@@ -8,25 +8,33 @@
   // The wave spans this many dot gaps on each side of the handle: down under
   // the handle, back through the line, and up a little at the neighbouring dots.
   var DIP_SPAN = 2.2;
-  var AUTOPLAY_MS = 6000;
+  // Autoplay gives each story time to be read: about 250ms a word (title and
+  // description), never less than 8s.
+  var AUTOPLAY_MIN_MS = 8000;
+  var AUTOPLAY_MS_PER_WORD = 250;
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  // Unlabelled chapters of the story, from the logo's palette, alternating dark
-  // and light so neighbouring chapters stand apart. `from` is the index of each
-  // era's first story in the bundle's list: update it if stories are added or
-  // reordered.
+  // Unlabelled chapters of the story, coloured along the string. Colours from
+  // the logo's palette, lifted to read on the dark backdrop, with violet for the
+  // latest stretch; next-door chapters differ in hue so they stand apart.
+  // `from` is the index of each chapter's first story in the bundle's list:
+  // update it if stories are added or reordered.
   var ERAS = [
-    { from: 0, color: "#b52a25" }, // Masala Wheels: deep red
-    { from: 1, color: "#f9a826" }, // Pepper Labs: gold
-    { from: 5, color: "#ef4136" }, // Dapur Digital: logo red
-    { from: 9, color: "#414042" }, // AI: the logo's charcoal
+    { from: 0, color: "#ff7a59" }, // warm coral
+    { from: 1, color: "#f9a826" }, // gold
+    { from: 5, color: "#ef4136" }, // logo red
+    { from: 9, color: "#b197fc" }, // violet
   ];
 
-  function eraColor(index) {
-    var color = ERAS[0].color;
-    ERAS.forEach(function (era) {
-      if (index >= era.from) color = era.color;
+  function eraOf(index) {
+    var found = 0;
+    ERAS.forEach(function (era, k) {
+      if (index >= era.from) found = k;
     });
-    return color;
+    return found;
+  }
+
+  function eraColor(index) {
+    return ERAS[eraOf(index)].color;
   }
 
   function mount(track) {
@@ -48,7 +56,7 @@
     handle.className = "pl-drag-handle";
     handle.setAttribute("aria-hidden", "true");
     track.append(svg, handle);
-    // The story card hangs below the timeline; its pointer follows the handle.
+    // The story (text and photo) sits above the timeline in the same section.
     var section = track.closest(".pl-history-section");
     var stage = section && section.querySelector(".pl-history-stage");
 
@@ -100,9 +108,12 @@
       el.textContent = text.replace("N", count);
       el.style.setProperty("--pl-era", eraColor(index));
       peek.style.setProperty("--pl-era", eraColor(index));
-      // On the dots' centre line, which sits below the count row.
+      // On the dots' centre line, which sits below the count row; the count
+      // sits in line with the "07 / 14" row.
       var first = points()[0];
       peek.style.top = track.offsetTop + first.offsetTop + first.offsetHeight / 2 + "px";
+      var label = track.parentNode.querySelector(".pl-history-active-label");
+      if (label) el.style.top = label.offsetTop + "px";
     }
 
     function updateMap() {
@@ -208,9 +219,10 @@
       return dipDepth * bell * (1 - room + room * Math.cos(1.5 * Math.PI * u));
     }
 
-    // One line that sags under the handle, as if the story card hanging below
-    // pulls it down. The dots ride on it, so the dot under the handle sinks
-    // into it instead of showing a second bullet beside it.
+    // One line that lifts under the handle towards the story above it, in a
+    // wave. The dots ride on it, so the dot under the handle rises into it
+    // instead of showing a second bullet beside it. (dip() is measured
+    // downwards, so it is subtracted.)
     function draw() {
       // Measured from the last dot, not scrollWidth: the SVG itself counts in
       // scrollWidth, so after the window narrows it would keep its old width.
@@ -226,34 +238,24 @@
       var end = centre(last);
       var left = Math.max(start, x - dipLeft);
       var right = Math.min(end, x + dipRight);
-      var d = "M" + start + " " + (mid + dip(start)) + "H" + left;
+      var d = "M" + start + " " + (mid - dip(start)) + "H" + left;
       for (var px = left + 4; px < right; px += 4) {
-        d += "L" + px + " " + (mid + dip(px));
+        d += "L" + px + " " + (mid - dip(px));
       }
-      path.setAttribute("d", d + "L" + right + " " + (mid + dip(right)) + "H" + end);
+      path.setAttribute("d", d + "L" + right + " " + (mid - dip(right)) + "H" + end);
       svg.setAttribute("height", track.clientHeight);
       points().forEach(function (point) {
         var dot = point.querySelector(".pl-history-dot");
         var cx = centre(point);
-        dot.style.transform = "translateY(" + dip(cx) + "px)";
+        dot.style.transform = "translateY(" + -dip(cx) + "px)";
         // Fade dots as the handle reaches them so none peeks out from under it.
         dot.style.opacity = Math.min(1, Math.max(0, (Math.abs(cx - x) - 18) / 22));
       });
-      handle.style.translate = x + "px " + (mid + dipDepth) + "px";
+      handle.style.translate = x + "px " + (mid - dipDepth) + "px";
       // The handle takes the colour of the era it is passing through.
       var all = points();
       paintEras(all, width);
       handle.style.setProperty("--pl-era", eraColor(Array.prototype.indexOf.call(all, nearest(x))));
-      if (stage) {
-        // Point the card at the handle, kept clear of the card's rounded corners.
-        var corners = getComputedStyle(stage);
-        var tail = track.getBoundingClientRect().left - stage.getBoundingClientRect().left + x - track.scrollLeft;
-        tail = Math.min(
-          Math.max(tail, parseFloat(corners.borderTopLeftRadius) + 14),
-          stage.clientWidth - parseFloat(corners.borderTopRightRadius) - 14,
-        );
-        stage.style.setProperty("--pl-tail-x", tail + "px");
-      }
     }
 
     // Ease towards the target each frame: the handle trails the pointer slightly.
@@ -337,6 +339,7 @@
     }
 
     track.addEventListener("pointerdown", function (event) {
+      stopAutoplay();
       if (event.button !== 0) return;
       drag = { id: event.pointerId, startX: event.clientX, moved: false };
       restartAutoplay();
@@ -400,13 +403,15 @@
       if (!drag) toActive(true);
     }).observe(track);
 
-    // Autoplay: move to the next story every AUTOPLAY_MS, looping at the end.
-    // A pause/play button (required for motion longer than 5s, WCAG 2.2.2) sits
-    // in the story card, with a ring that fills as the next move approaches.
-    // It holds still until the timeline is scrolled into view, and while the
-    // pointer is over the story card, anything in the section has focus, a drag is under
-    // way, or the tab is hidden; it starts paused for visitors who prefer
-    // reduced motion.
+    // Autoplay: move to the next story once it has had time to be read, and stop
+    // at the last one. A pause/play button (required for motion longer than 5s,
+    // WCAG 2.2.2) sits beside the heading, with a ring that fills as the next
+    // move approaches. It holds still until the timeline is scrolled into view,
+    // and while the pointer is over the story, anything in the section has
+    // focus, a drag is under way, or the tab is hidden. Once the visitor takes
+    // over (touches the timeline or an arrow, or uses the keys) it
+    // stops for good, until they press play. It starts paused for visitors who
+    // prefer reduced motion.
     var playing = !reducedMotion.matches;
     var hovering = false;
     var focused = false;
@@ -416,33 +421,62 @@
     var toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "pl-autoplay";
-    toggle.style.setProperty("--pl-autoplay-ms", AUTOPLAY_MS + "ms");
     toggle.innerHTML =
       '<svg class="pl-autoplay-ring" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="12" pathLength="100"/></svg>' +
       '<svg class="pl-autoplay-icon pl-autoplay-icon--pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5v10M13 5v10"/></svg>' +
       '<svg class="pl-autoplay-icon pl-autoplay-icon--play" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 5.5v9l7-4.5z"/></svg>';
-    // In the story card's bottom-right corner.
-    if (stage) stage.appendChild(toggle);
+    // Beside the section heading, top right.
+    var heading = section && section.querySelector(".pl-history-heading");
+    if (heading) heading.appendChild(toggle);
 
     function showState() {
       toggle.classList.toggle("is-playing", playing);
       toggle.setAttribute("aria-label", playing ? "Pause the timeline" : "Play the timeline");
     }
 
+    function activeIndex() {
+      return Array.prototype.indexOf.call(points(), track.querySelector(".pl-history-point.is-active"));
+    }
+
+    // Reading time for the story on show.
+    function readingMs() {
+      var words = 0;
+      if (section) {
+        section.querySelectorAll(".pl-history-copy h3, .pl-history-copy .pl-history-description").forEach(function (el) {
+          words += el.textContent.trim().split(/\s+/).length;
+        });
+      }
+      return Math.max(AUTOPLAY_MIN_MS, words * AUTOPLAY_MS_PER_WORD);
+    }
+
     function restartAutoplay() {
       clearTimeout(timer);
       toggle.classList.remove("is-counting");
+      // At the last story autoplay is done: it rests there instead of looping.
+      if (playing && activeIndex() === points().length - 1) {
+        playing = false;
+        showState();
+      }
       if (!playing || hovering || focused || !inView || drag || document.hidden) return;
+      var ms = readingMs();
+      toggle.style.setProperty("--pl-autoplay-ms", ms + "ms");
       void toggle.offsetWidth; // restart the ring's fill animation
       toggle.classList.add("is-counting");
-      timer = setTimeout(advance, AUTOPLAY_MS);
+      timer = setTimeout(advance, ms);
+    }
+
+    function stopAutoplay() {
+      if (!playing) return;
+      playing = false;
+      showState();
+      restartAutoplay();
     }
 
     // Select the next story. Scroll only the track, never the page.
     function advance() {
       var all = points();
       var active = track.querySelector(".pl-history-point.is-active");
-      var next = all[(Array.prototype.indexOf.call(all, active) + 1) % all.length];
+      var next = all[Math.min(Array.prototype.indexOf.call(all, active) + 1, all.length - 1)];
       next.scrollIntoView = function () {};
       next.click();
       delete next.scrollIntoView;
@@ -455,10 +489,32 @@
     toggle.addEventListener("click", function () {
       playing = !playing;
       showState();
+      // Play from the last story starts over from the first.
+      if (playing && activeIndex() === points().length - 1) {
+        var first = points()[0];
+        first.scrollIntoView = function () {};
+        first.click();
+        delete first.scrollIntoView;
+        track.scrollTo({ left: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
+        // React switches stories a moment later; that change restarts the
+        // countdown (here the last story would still count as active).
+        return;
+      }
       restartAutoplay();
     });
 
-    // Hovering pauses only over the story card, where people read.
+    // The visitor taking over stops autoplay for good. isTrusted skips the
+    // clicks the script itself sends (autoplay, drag preview).
+    if (section) {
+      section.addEventListener("click", function (event) {
+        if (event.isTrusted && event.target.closest(".pl-history-step")) stopAutoplay();
+      });
+    }
+    track.addEventListener("keydown", function (event) {
+      if (event.isTrusted && /^(Arrow|Home|End)/.test(event.key)) stopAutoplay();
+    });
+
+    // Hovering pauses only over the story (text and photo), where people read.
     if (stage) {
       stage.addEventListener("pointerenter", function (event) {
         if (event.pointerType !== "mouse") return;
