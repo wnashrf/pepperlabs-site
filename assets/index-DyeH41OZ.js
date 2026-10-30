@@ -20389,6 +20389,96 @@ const Cw = [
     ];
     const r = n[e];
     const hasImg = !!r.image && !pf[r.image];
+    const pad = (x) => String(x).padStart(2, "0");
+    // Select a story. Keyboard selection moves focus with it (ARIA tabs, roving tabindex).
+    const go = (l, focus) => {
+      const k = Math.max(0, Math.min(n.length - 1, l));
+      t(k);
+      const a = document.getElementById(`pepper-history-point-${k}`);
+      if (!a) return;
+      a.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      if (focus) a.focus({ preventScroll: true });
+    };
+    const onTrackKey = (ev) => {
+      const to = { ArrowRight: e + 1, ArrowLeft: e - 1, Home: 0, End: n.length - 1 }[ev.key];
+      if (to === undefined) return;
+      ev.preventDefault();
+      go(to, true);
+    };
+    // Previous/next. Each carries its destination's period: shown as a tag on
+    // hover/focus and included in the accessible name.
+    const step = (label, path, to, disabled, side) => {
+      const dest = n[to];
+      return u.jsxs("button", {
+        type: "button",
+        className: `pl-history-step pl-history-step--${side}`,
+        "aria-label": dest ? `${label}: ${dest.period}` : label,
+        disabled,
+        onClick: () => go(to),
+        children: [
+          u.jsx("svg", {
+            viewBox: "0 0 20 20",
+            width: 20,
+            height: 20,
+            "aria-hidden": "true",
+            children: u.jsx("path", {
+              d: path,
+              fill: "none",
+              stroke: "currentColor",
+              strokeWidth: 2.5,
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+            }),
+          }),
+          dest &&
+            u.jsx("span", {
+              className: "pl-history-step-peek",
+              "aria-hidden": "true",
+              children: dest.period,
+            }),
+        ],
+      });
+    };
+    const point = (i, l) =>
+      u.jsx(
+        "button",
+        {
+          type: "button",
+          id: `pepper-history-point-${l}`,
+          role: "tab",
+          tabIndex: e === l ? 0 : -1,
+          "aria-label": `${i.period}: ${i.title}`,
+          "aria-selected": e === l,
+          "aria-controls": "pepper-history-panel",
+          className: `pl-history-point${e === l ? " is-active" : ""}`,
+          onClick: () => go(l),
+          children: u.jsx("span", {
+            className: "pl-history-dot",
+          }),
+        },
+        i.period,
+      );
+    const navigation = u.jsxs("div", {
+      className: "pl-history-navigation",
+      children: [
+        u.jsxs("div", {
+          className: "pl-history-active-label",
+          children: [
+            u.jsx("span", {
+              children: forWho ? `${pad(e + 1)} / ${pad(n.length)}` : pad(e + 1),
+            }),
+            u.jsx("span", { children: r.period }),
+          ],
+        }),
+        u.jsx("div", {
+          className: "pl-history-track",
+          role: "tablist",
+          "aria-label": "Pepper Labs chronology",
+          onKeyDown: onTrackKey,
+          children: n.map((i, l) => point(i, l)),
+        }),
+      ],
+    });
     return u.jsxs("section", {
       id: "pepper-labs-journey",
       className: `pl-history-section${forWho ? " pl-history-section--who" : ""}`,
@@ -20410,6 +20500,8 @@ const Cw = [
                 }),
               ],
             }),
+            // Who We Are: the timeline sits above the story card, which hangs from it.
+            forWho && navigation,
             u.jsxs("div", {
               className: "pl-history-stage",
               children: [
@@ -20420,7 +20512,6 @@ const Cw = [
                 u.jsxs("div", {
                   key: e,
                   className: `pl-history-feature${hasImg ? " has-media" : ""}`,
-                  "aria-live": "polite",
                   role: "tabpanel",
                   id: "pepper-history-panel",
                   "aria-labelledby": `pepper-history-point-${e}`,
@@ -20464,55 +20555,10 @@ const Cw = [
                     }),
                   ],
                 }),
-                u.jsxs("div", {
-                  className: "pl-history-navigation",
-                  children: [
-                    u.jsxs("div", {
-                      className: "pl-history-active-label",
-                      children: [
-                        u.jsx("span", {
-                          children: String(e + 1).padStart(2, "0"),
-                        }),
-                        u.jsx("span", { children: r.period }),
-                      ],
-                    }),
-                    u.jsx("div", {
-                      className: "pl-history-track",
-                      role: "tablist",
-                      "aria-label": "Pepper Labs chronology",
-                      children: n.map((i, l) =>
-                        u.jsx(
-                          "button",
-                          {
-                            type: "button",
-                            id: `pepper-history-point-${l}`,
-                            role: "tab",
-                            "aria-label": `${i.period}: ${i.title}`,
-                            "aria-selected": e === l,
-                            "aria-controls": "pepper-history-panel",
-                            className: `pl-history-point${e === l ? " is-active" : ""}`,
-                            onClick: () => {
-                              t(l);
-                              const a = document.getElementById(
-                                `pepper-history-point-${l}`,
-                              );
-                              if (a)
-                                a.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "nearest",
-                                  inline: "center",
-                                });
-                            },
-                            children: u.jsx("span", {
-                              className: "pl-history-dot",
-                            }),
-                          },
-                          i.period,
-                        ),
-                      ),
-                    }),
-                  ],
-                }),
+                !forWho && navigation,
+                // Previous/next sit on the card's left and right borders (styled in css/history-drag.css).
+                forWho && step("Previous story", "M12.5 4.5 7 10l5.5 5.5", e - 1, e === 0, "prev"),
+                forWho && step("Next story", "M7.5 4.5 13 10l-5.5 5.5", e + 1, e === n.length - 1, "next"),
               ],
             }),
           ],
