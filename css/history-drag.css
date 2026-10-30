@@ -1,4 +1,388 @@
-/* Draggable handle for the "Our story, over time" timeline (js/history-drag.js). */
+/* "Our story, over time" on Who We Are: the drag handle (js/history-drag.js),
+   previous/next and the calmer card. Everything is scoped to
+   .pl-history-section--who, so the homepage timeline is unchanged. */
+
+/* The story card hangs below the timeline like a dialog: one border, no grid
+   texture or glow, and a pointer on its top edge aimed at the handle. Not
+   clipped, so the pointer and the previous/next buttons can sit on its border. */
+.pl-history-section--who .pl-history-stage {
+  min-height: 0;
+  overflow: visible;
+  padding: 44px clamp(22px, 6vw, 80px);
+  border-color: rgba(239, 65, 54, 0.38);
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(92, 31, 28, 0.08);
+}
+
+.pl-history-section--who .pl-history-stage::before,
+.pl-history-section--who .pl-history-stage-glow {
+  display: none;
+}
+
+/* The pointer: a square turned 45deg, bordered on its two outer sides only,
+   sliding along the top edge with the handle (--pl-tail-x, set by the script). */
+.pl-history-section--who .pl-history-stage::after {
+  inset: auto;
+  top: -12px;
+  left: var(--pl-tail-x, 50%);
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(239, 65, 54, 0.38);
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 3px 0 0 0;
+  background: #fff;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* The timeline above the card: count, then the string the card hangs from. */
+.pl-history-section--who .pl-history-navigation {
+  position: relative;
+  inset: auto;
+  margin-bottom: 8px;
+}
+
+/* The string is a window onto the timeline: dots keep a fixed gap however many
+   stories there are, so adding stories never squeezes them. The window scrolls
+   (by dragging near an edge, or when a story is chosen), and fades at its
+   edges to show there is more. The end padding keeps the first and last dots
+   off the card's rounded top corners, so the pointer can sit under them. */
+.pl-history-section--who .pl-history-track {
+  justify-content: flex-start;
+  gap: clamp(36px, 10vw, 140px);
+  overflow-x: hidden;
+  /* Room below the dots for the deep dip and the handle's halo. */
+  padding: 12px 48px 32px;
+  --pl-fade: 40px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--pl-fade-start), #000 calc(100% - var(--pl-fade-end)), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--pl-fade-start), #000 calc(100% - var(--pl-fade-end)), transparent);
+  --pl-fade-start: var(--pl-fade);
+  --pl-fade-end: var(--pl-fade);
+  transition:
+    --pl-fade-start 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    --pl-fade-end 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* At a true end nothing lies beyond, so that edge stops fading (smoothly: the
+   widths are registered so they can transition). */
+@property --pl-fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 40px;
+}
+
+@property --pl-fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 40px;
+}
+
+.pl-history-section--who .pl-history-track.is-at-start {
+  --pl-fade-start: 0px;
+}
+
+.pl-history-section--who .pl-history-track.is-at-end {
+  --pl-fade-end: 0px;
+}
+
+/* Autoplay pause/play, in the story card's bottom-right corner. The ring fills
+   over one autoplay interval (--pl-autoplay-ms, set by the script) so the next
+   move is visible coming; it empties while paused. */
+.pl-autoplay {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: #211d1d;
+  cursor: pointer;
+}
+
+.pl-autoplay:hover {
+  color: var(--pepper-red-dark, #b52a25);
+}
+
+.pl-autoplay:focus-visible {
+  outline: 2px solid var(--pepper-red);
+  outline-offset: 2px;
+}
+
+.pl-autoplay-ring {
+  position: absolute;
+  inset: 0;
+  rotate: -90deg;
+}
+
+.pl-autoplay-ring circle {
+  fill: none;
+  stroke: var(--pepper-red);
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  stroke-width: 2;
+}
+
+/* The faint full circle behind the filling ring. */
+.pl-autoplay::before {
+  position: absolute;
+  inset: 2px;
+  border: 2px solid #f2d8d6;
+  border-radius: 50%;
+  content: "";
+}
+
+.pl-autoplay.is-counting .pl-autoplay-ring circle {
+  animation: pl-autoplay-fill var(--pl-autoplay-ms, 6000ms) linear forwards;
+}
+
+@keyframes pl-autoplay-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.pl-autoplay-icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+}
+
+.pl-autoplay-icon--play {
+  stroke-width: 1.5;
+}
+
+.pl-autoplay.is-playing .pl-autoplay-icon--play,
+.pl-autoplay:not(.is-playing) .pl-autoplay-icon--pause {
+  display: none;
+}
+
+/* Dots peeking in at an end of the string while more stories lie beyond it:
+   three, shrinking and fading outwards, in the colour of the next chapter. */
+.pl-drag-peek {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  translate: 0 -50%;
+  pointer-events: none;
+}
+
+.pl-drag-peek[hidden],
+.pl-drag-peek i[hidden] {
+  display: none;
+}
+
+.pl-drag-peek i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pl-era);
+}
+
+.pl-drag-peek i:nth-child(2) {
+  width: 6px;
+  height: 6px;
+  opacity: 0.6;
+}
+
+.pl-drag-peek i:nth-child(3) {
+  width: 4px;
+  height: 4px;
+  opacity: 0.35;
+}
+
+/* Later: the trail runs out to the right. Earlier: mirrored, out to the left. */
+.pl-drag-peek--later {
+  right: 2px;
+}
+
+.pl-drag-peek--earlier {
+  left: 2px;
+  flex-direction: row-reverse;
+}
+
+/* "‹ 3 earlier" / "8 later ›" at the ends of the count row: how many stories
+   lie out of view on each side, each marked with the colour of the chapter
+   just beyond that edge. Hidden when nothing is left on that side. */
+.pl-drag-more {
+  position: absolute;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #4b3f3a;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.pl-drag-more[hidden] {
+  display: none;
+}
+
+.pl-drag-more::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pl-era);
+  content: "";
+}
+
+.pl-drag-more--earlier {
+  left: 0;
+}
+
+.pl-drag-more--later {
+  right: 0;
+  flex-direction: row-reverse;
+}
+
+/* Small text dark enough for 4.5:1 on white. */
+.pl-history-section--who .pl-history-eyebrow {
+  color: var(--pepper-red-dark, #b52a25);
+}
+
+.pl-history-section--who .pl-history-source {
+  color: #6b5f5f;
+  font-size: 13px;
+}
+
+.pl-history-section--who .pl-history-source::before {
+  content: "Source: ";
+}
+
+/* "01 / 14  Pre-2017" above the dots. */
+.pl-history-section--who .pl-history-active-label {
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.pl-history-section--who .pl-history-active-label span:first-child {
+  color: var(--pepper-red-dark, #b52a25);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Previous/next: centred on the card's left and right borders, in the drag
+   handle's language (solid pepper red, the same soft red halo), so the two
+   read as one set of controls. */
+.pl-history-step {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pepper-red);
+  box-shadow: 0 0 0 6px rgba(239, 65, 54, 0.14);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.25s ease;
+}
+
+.pl-history-step--prev {
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+
+.pl-history-step--next {
+  right: 0;
+  transform: translate(50%, -50%);
+}
+
+.pl-history-step svg {
+  transition: translate 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pl-history-step:hover:not(:disabled) {
+  background: var(--pepper-red-dark, #b52a25);
+  box-shadow: 0 0 0 9px rgba(239, 65, 54, 0.16);
+}
+
+/* The chevron leans the way it goes. */
+.pl-history-step--prev:hover:not(:disabled) svg {
+  translate: -3px 0;
+}
+
+.pl-history-step--next:hover:not(:disabled) svg {
+  translate: 3px 0;
+}
+
+.pl-history-step:focus-visible {
+  outline: 2px solid var(--pepper-red-dark, #b52a25);
+  outline-offset: 9px;
+}
+
+/* Where the arrow leads: the destination's period, in the photo-credit tag
+   style, slides out on hover or keyboard focus. */
+.pl-history-step-peek {
+  position: absolute;
+  top: 50%;
+  padding: 5px 10px;
+  border-radius: 3px;
+  background: rgba(33, 29, 29, 0.88);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, translate 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pl-history-step--prev .pl-history-step-peek {
+  left: calc(100% + 16px);
+  translate: -8px -50%;
+}
+
+.pl-history-step--next .pl-history-step-peek {
+  right: calc(100% + 16px);
+  translate: 8px -50%;
+}
+
+.pl-history-step:focus-visible .pl-history-step-peek {
+  opacity: 1;
+  translate: 0 -50%;
+}
+
+/* Only real hover: on touch screens a tap would leave the tag stuck open. */
+@media (hover: hover) {
+  .pl-history-step:hover:not(:disabled) .pl-history-step-peek {
+    opacity: 1;
+    translate: 0 -50%;
+  }
+}
+
+/* At the first/last story the arrow goes pale and flat. */
+.pl-history-step:disabled {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #f2d8d6;
+  color: #d9cdcb;
+  cursor: default;
+}
+
+/* Drag handle and the line it rides. */
 
 .pl-history-track[data-drag] {
   cursor: grab;
@@ -25,29 +409,38 @@
   pointer-events: none;
 }
 
+/* No CSS stroke: it would override the era gradient the script sets on the path. */
 .pl-drag-line path {
   fill: none;
-  stroke: rgba(190, 58, 51, 0.4);
-  stroke-width: 1.5;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .pl-history-track[data-drag] .pl-history-point {
   z-index: 1;
 }
 
+/* Dots keep one size and grow with `scale`, which composes with the inline
+   translateY the drag script sets, and avoids animating layout. */
+.pl-history-track[data-drag] .pl-history-dot {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+  border-color: var(--pl-era, var(--pepper-red));
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, scale 0.2s ease;
+}
+
 /* The handle marks the active story, so its dot goes back to normal. */
 .pl-history-track[data-drag] .pl-history-point.is-active .pl-history-dot {
-  width: 10px;
-  height: 10px;
   background: #fff;
   box-shadow: none;
 }
 
 .pl-history-track[data-drag]:not(.is-dragging) .pl-history-point:not(.is-active):hover .pl-history-dot {
-  width: 18px;
-  height: 18px;
-  background: var(--pepper-red, #ef4136);
-  box-shadow: 0 0 0 7px rgba(239, 65, 54, 0.16);
+  background: var(--pl-era, var(--pepper-red));
+  box-shadow: none;
+  scale: 1.8;
 }
 
 .pl-drag-handle {
@@ -55,22 +448,28 @@
   top: 0;
   left: 0;
   z-index: 2;
-  width: 26px;
-  height: 26px;
-  border: 2px solid var(--pepper-red, #ef4136);
+  width: 30px;
+  height: 30px;
+  /* The era colour (--pl-era, set by the script) eases in as the handle crosses into a new era. */
+  border: 3px solid var(--pl-era, #ef4136);
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 0 0 6px rgba(239, 65, 54, 0.14);
+  box-shadow: 0 0 0 7px color-mix(in srgb, var(--pl-era, #ef4136) 16%, transparent);
   pointer-events: none;
-  transition: width 0.2s ease, height 0.2s ease;
+  /* The script places the handle's centre with `translate`; centring it with
+     transform and scaling from that point lets `scale` grow it in place. */
+  transform: translate(-50%, -50%);
+  transform-origin: 0 0;
+  transition: scale 0.2s ease, border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
 .pl-drag-handle::after {
   position: absolute;
   inset: 5px;
   border-radius: 50%;
-  background: var(--pepper-red, #ef4136);
+  background: var(--pl-era, #ef4136);
   content: "";
+  transition: background-color 0.35s ease;
 }
 
 /* The active dot sits under the raised handle, so its focus ring goes on the handle. */
@@ -84,12 +483,47 @@
 }
 
 .is-dragging .pl-drag-handle {
-  width: 32px;
-  height: 32px;
+  scale: 1.2;
+}
+
+/* Phones: a tighter card, inset so the half of each button outside the
+   border still fits on screen. */
+@media (max-width: 767px) {
+  /* Side padding wider than the arrows' inner half, so they never cover text. */
+  .pl-history-section--who .pl-history-stage {
+    margin-inline: 14px;
+    padding: 26px 26px 28px;
+  }
+
+  /* Same inset as the card, so the pointer can reach the first and last dots. */
+  .pl-history-section--who .pl-history-navigation {
+    margin-inline: 14px;
+  }
+
+  .pl-history-section--who .pl-history-track {
+    padding-inline: 34px;
+    --pl-fade: 18px;
+  }
+
+  .pl-drag-more {
+    gap: 5px;
+    font-size: 11px;
+  }
+
+  .pl-history-step {
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 0 0 4px rgba(239, 65, 54, 0.14);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pl-drag-handle {
+  .pl-drag-handle,
+  .pl-history-step,
+  .pl-history-step svg,
+  .pl-history-step-peek,
+  .pl-history-track[data-drag] .pl-history-dot,
+  .pl-history-section--who .pl-history-track {
     transition: none;
   }
 }
