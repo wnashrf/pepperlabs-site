@@ -1,0 +1,95 @@
+/* Draggable handle for the "Our story, over time" timeline (js/history-drag.js). */
+
+.pl-history-track[data-drag] {
+  cursor: grab;
+  /* Horizontal swipes drag the handle; vertical ones still scroll the page. */
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.pl-history-track[data-drag].is-dragging {
+  cursor: grabbing;
+}
+
+/* The SVG line with the bump replaces the straight line. */
+.pl-history-track[data-drag]::before {
+  display: none;
+}
+
+.pl-drag-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.pl-drag-line path {
+  fill: none;
+  stroke: rgba(190, 58, 51, 0.4);
+  stroke-width: 1.5;
+}
+
+.pl-history-track[data-drag] .pl-history-point {
+  z-index: 1;
+}
+
+/* The handle marks the active story, so its dot goes back to normal. */
+.pl-history-track[data-drag] .pl-history-point.is-active .pl-history-dot {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.pl-history-track[data-drag]:not(.is-dragging) .pl-history-point:not(.is-active):hover .pl-history-dot {
+  width: 18px;
+  height: 18px;
+  background: var(--pepper-red, #ef4136);
+  box-shadow: 0 0 0 7px rgba(239, 65, 54, 0.16);
+}
+
+.pl-drag-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--pepper-red, #ef4136);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 6px rgba(239, 65, 54, 0.14);
+  pointer-events: none;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+.pl-drag-handle::after {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--pepper-red, #ef4136);
+  content: "";
+}
+
+/* The active dot sits under the raised handle, so its focus ring goes on the handle. */
+.pl-history-track[data-drag] .pl-history-point.is-active:focus-visible {
+  outline: none;
+}
+
+.pl-history-track[data-drag]:has(.pl-history-point.is-active:focus-visible) .pl-drag-handle {
+  outline: 2px solid var(--pepper-red, #ef4136);
+  outline-offset: 4px;
+}
+
+.is-dragging .pl-drag-handle {
+  width: 32px;
+  height: 32px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-drag-handle {
+    transition: none;
+  }
+}

@@ -1,0 +1,21 @@
+# Pepper Labs - SPA routing (safe version for Plesk)
+# Only uses mod_rewrite, so it can't trigger a 500 from AllowOverride limits.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Canonical blog URL is /blog: send /blog/ there
+  RewriteCond %{THE_REQUEST} \s/blog/(\?\S*)?\s
+  RewriteRule ^blog/$ /blog [R=301,L]
+
+  # Serve the blog index at /blog
+  RewriteRule ^blog$ blog/index.html [L]
+
+  # Real files and folders are served as-is
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/blog/
+
+  # Everything else -> React app
+  RewriteRule ^ index.html [L]
+</IfModule>

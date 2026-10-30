@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <!-- Hidden when shown inside another site's frame, so nobody can be tricked into clicking here (clickjacking). -->
+    <style id="unframed">html { display: none !important; }</style>
+    <script>if (window.top === window.self) document.getElementById('unframed').remove(); else try { window.top.location = location.href; } catch {}</script>
+    <title>Sign in - Pepper Labs Blog</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;600;700&display=swap">
+    <style>
+        /* Same tokens as admin.html, so signing in and the admin desk feel like one place. */
+        :root {
+            --pl-primary: #e56e25;
+            --pl-primary-dark: #b7581e;
+            --pl-primary-ink: #96461a;
+            --pl-heading: #1b1a1a;
+            --pl-body: #666666;
+            --pl-control: #bdbdbd;
+            --pl-bg: #ffffff;
+            --pl-canvas: #eef0f3;
+            --pl-line: #dde1e6;
+            --pl-shadow-card: 0 1px 2px rgba(27, 26, 26, 0.06);
+            --pl-radius: 16px;
+            --pl-radius-sm: 8px;
+            color-scheme: light;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        body {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            padding: 1.5rem 1rem;
+            font-family: "Epilogue", "Segoe UI", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background: var(--pl-canvas);
+            color: var(--pl-heading);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            accent-color: var(--pl-primary);
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--pl-heading);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        button,
+        input {
+            font: inherit;
+            color: inherit;
+        }
+
+        .card {
+            display: grid;
+            gap: 1.25rem;
+            width: 100%;
+            max-width: 24rem;
+            padding: 2rem 1.75rem;
+            border: 1px solid var(--pl-line);
+            border-radius: var(--pl-radius);
+            background: var(--pl-bg);
+            box-shadow: var(--pl-shadow-card);
+        }
+
+        .card__logo img {
+            display: block;
+            width: 8.5rem;
+            height: auto;
+        }
+
+        .card h1 {
+            font-size: 1.4rem;
+            letter-spacing: -0.02em;
+        }
+
+        .card__lede {
+            margin-top: 0.3rem;
+            color: var(--pl-body);
+        }
+
+        form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .field {
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .field label {
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .field input {
+            width: 100%;
+            min-height: 2.75rem;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--pl-control);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-bg);
+        }
+
+        .field input:focus-visible {
+            outline-offset: 1px;
+            border-radius: var(--pl-radius-sm);
+        }
+
+        .field__hint {
+            color: var(--pl-body);
+            font-size: 0.8rem;
+        }
+
+        .pl-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 2.75rem;
+            padding: 0.55rem 1.1rem;
+            border: 0;
+            border-radius: 999px;
+            background: var(--pl-primary-dark);
+            box-shadow: 0 8px 18px rgba(229, 110, 37, 0.18);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .pl-btn:hover {
+            background: var(--pl-primary-ink);
+        }
+
+        .pl-btn:disabled {
+            background: #e4e4e4;
+            box-shadow: none;
+            color: #6f6f6f;
+            cursor: progress;
+        }
+
+        .message {
+            padding: 0.7rem 0.85rem;
+            border-left: 3px solid var(--pl-primary-dark);
+            border-radius: var(--pl-radius-sm);
+            background: rgba(229, 110, 37, 0.1);
+            font-weight: 600;
+        }
+
+        .back {
+            color: var(--pl-body);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <a class="card__logo" href="/blog/"><img src="/assets/logos/pepperlabs.png" alt="Pepper Labs blog" width="4000" height="1600"></a>
+
+        <div>
+            <h1 id="heading">Sign in</h1>
+            <p class="card__lede" id="lede">For Pepper Labs staff who write or review blog articles.</p>
+        </div>
+
+        <p class="message" id="message" role="alert" hidden></p>
+
+        <form id="login-form" hidden>
+            <div class="field">
+                <label for="login-email">Email</label>
+                <input id="login-email" name="email" type="email" autocomplete="username" required>
+            </div>
+            <div class="field">
+                <label for="login-password">Password</label>
+                <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="pl-btn" type="submit">Sign in</button>
+        </form>
+
+        <!-- Shown only while the blog has no accounts at all. -->
+        <form id="setup-form" hidden>
+            <div class="field">
+                <label for="setup-name">Your name</label>
+                <input id="setup-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div class="field">
+                <label for="setup-email">Email</label>
+                <input id="setup-email" name="email" type="email" autocomplete="username" required>
+            </div>
+            <div class="field">
+                <label for="setup-password">Password</label>
+                <input id="setup-password" name="password" type="password" autocomplete="new-password" minlength="10" required aria-describedby="setup-password-hint">
+                <p class="field__hint" id="setup-password-hint">At least 10 characters.</p>
+            </div>
+            <div class="field">
+                <label for="setup-key">Setup key</label>
+                <input id="setup-key" name="setupKey" type="password" autocomplete="off" required aria-describedby="setup-key-hint">
+                <p class="field__hint" id="setup-key-hint">The <code>setup_key</code> in <code>blog/private/config.local.php</code> on the server.</p>
+            </div>
+            <button class="pl-btn" type="submit">Create admin account</button>
+        </form>
+
+        <a class="back" href="/blog/">Back to the blog</a>
+    </main>
+
+    <script>
+        const message = document.getElementById('message');
+
+        // Only pages on this blog are allowed as the place to return to.
+        function nextPage() {
+            const next = new URLSearchParams(location.search).get('next') || '';
+            return /^\/blog\/[^/]/.test(next) && !next.startsWith('//') ? next : '/blog/admin.html';
+        }
+
+        function show(text) {
+            message.textContent = text;
+            message.hidden = !text;
+        }
+
+        async function send(form, body) {
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+            show('');
+            try {
+                const response = await fetch('/blog/api/auth.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json().catch(() => ({}));
+                if (response.ok) {
+                    location.replace(nextPage());
+                    return;
+                }
+                show(data.error || 'Signing in did not work. Please try again.');
+            } catch {
+                show('The server could not be reached. Check your connection and try again.');
+            }
+            button.disabled = false;
+        }
+
+        document.getElementById('login-form').addEventListener('submit', event => {
+            event.preventDefault();
+            const data = Object.fromEntries(new FormData(event.target));
+            send(event.target, { action: 'login', ...data });
+        });
+
+        document.getElementById('setup-form').addEventListener('submit', event => {
+            event.preventDefault();
+            const data = Object.fromEntries(new FormData(event.target));
+            send(event.target, { action: 'setup', ...data });
+        });
+
+        (async () => {
+            try {
+                const response = await fetch('/blog/api/auth.php', { credentials: 'same-origin' });
+                if (response.ok) {
+                    location.replace(nextPage());
+                    return;
+                }
+                const data = await response.json().catch(() => ({}));
+                if (data.needsSetup) {
+                    document.getElementById('heading').textContent = 'Create the first admin';
+                    document.getElementById('lede').textContent = 'The blog has no accounts yet. The first one is an admin, who can then add everyone else.';
+                    document.getElementById('setup-form').hidden = false;
+                    document.getElementById('setup-name').focus();
+                    return;
+                }
+                if (response.status === 503) show(data.error);
+                // shortcut: staging-only one-click sign-in from the "Admin (demo)" button; remove with that button before launch.
+                else if (new URLSearchParams(location.search).has('demo')) {
+                    const demo = await fetch('/blog/api/auth.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ action: 'demo' })
+                    });
+                    if (demo.ok) {
+                        location.replace(nextPage());
+                        return;
+                    }
+                    show((await demo.json().catch(() => ({}))).error || 'Demo sign-in did not work. Sign in below.');
+                }
+            } catch {
+                show('The server could not be reached. Check your connection and try again.');
+            }
+            document.getElementById('login-form').hidden = false;
+            document.getElementById('login-email').focus();
+        })();
+    </script>
+</body>
+</html>

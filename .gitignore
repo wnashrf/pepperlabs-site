@@ -1,0 +1,27 @@
+# OS files
+.DS_Store
+DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors and AI/test tool output
+.vscode/
+*.code-workspace
+.playwright-mcp/
+.impeccable/
+.agents/
+
+# Blog comments are written by the server at runtime and hold visitor names/emails
+blog/data/comments/
+
+# Secrets, in case any are added later
+.env
+.env.*
+*.key
+*.pem
+
+# Archives and old snapshots
+*.zip
+
+# Blog database settings and password (copy blog/private/config.example.php)
+blog/private/config.local.php
