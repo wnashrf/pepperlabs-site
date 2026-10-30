@@ -5,9 +5,9 @@
   "use strict";
 
   var SVG = "http://www.w3.org/2000/svg";
-  // The dip spans this many dot gaps on each side of the handle, so the
-  // neighbouring dots sink slightly too: one long, gentle valley.
-  var DIP_SPAN = 1.6;
+  // The wave spans this many dot gaps on each side of the handle: down under
+  // the handle, back through the line, and up a little at the neighbouring dots.
+  var DIP_SPAN = 2.2;
   var AUTOPLAY_MS = 6000;
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   // Unlabelled chapters of the story, from the logo's palette, alternating dark
@@ -195,12 +195,17 @@
       dipRight = Math.max(MIN_SIDE, Math.min(dipWidth, high - x));
     }
 
-    // How far the line dips at px: a smooth bell centred on the handle.
+    // How far the line dips at px: a wave centred on the handle (1 -> 0 -> -1
+    // -> 0) under a bell envelope that fades it out, so the crest on each side
+    // rises only about a third as far as the trough sinks. A side squeezed
+    // against an edge has no room for a crest, so it eases back into the bell.
     function dip(px) {
       var span = px < x ? dipLeft : dipRight;
-      var distance = Math.abs(px - x);
-      if (distance >= span) return 0;
-      return (dipDepth * (1 + Math.cos((Math.PI * distance) / span))) / 2;
+      var u = Math.abs(px - x) / span;
+      if (u >= 1) return 0;
+      var bell = (1 + Math.cos(Math.PI * u)) / 2;
+      var room = Math.max(0, (span - MIN_SIDE) / (dipWidth - MIN_SIDE));
+      return dipDepth * bell * (1 - room + room * Math.cos(1.5 * Math.PI * u));
     }
 
     // One line that sags under the handle, as if the story card hanging below
