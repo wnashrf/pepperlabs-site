@@ -1,0 +1,20 @@
+[
+  {
+    "id": "comment-1234567890-5678",
+    "author": "John Doe",
+    "email": "john@example.com",
+    "content": "Great article! This really helped me understand AI better.",
+    "timestamp": "2026-09-24T10:30:00Z",
+    "status": "approved",
+    "parentCommentId": null
+  },
+  {
+    "id": "comment-1234567890-5679",
+    "author": "Jane Smith",
+    "email": "jane@example.com",
+    "content": "Thanks for sharing! I'm looking forward to more posts like this.",
+    "timestamp": "2026-09-24T14:15:00Z",
+    "status": "approved",
+    "parentCommentId": null
+  }
+]

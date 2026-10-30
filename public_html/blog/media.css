@@ -1,0 +1,332 @@
+/* Pictures in blog posts, shared by index.html, post.html and admin.html,
+   plus the footer "Admin" link used by index.html and post.html.
+   Covers pictures placed inside an article, the "More photos" gallery under the main picture,
+   the full-size viewer, and the box that edits the gallery. Colours come from each page's --pl-* tokens. */
+
+/* ---------- A picture placed inside the article ---------- */
+
+.post-figure {
+    margin: 2rem 0;
+}
+
+.post-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.post-figure figcaption {
+    margin-top: 0.6rem;
+    color: var(--pl-body);
+    font-size: 0.85rem;
+    line-height: 1.45;
+    text-align: center;
+}
+
+/* While editing, an empty caption stays tall enough to click into and says what it is for. */
+[contenteditable] .post-figure figcaption {
+    min-height: 1.45em;
+}
+
+[contenteditable] .post-figure figcaption:empty::before {
+    content: "Add a caption (optional)";
+    opacity: 0.6;
+}
+
+/* ---------- More photos: thumbnails under the main picture ---------- */
+
+.post-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+    gap: 0.75rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.post-gallery button {
+    display: block;
+    overflow: hidden;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: var(--pl-surface);
+    cursor: zoom-in;
+}
+
+.post-gallery img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.post-gallery button:hover img {
+    transform: scale(1.04);
+}
+
+/* ---------- Full-size viewer ---------- */
+
+.media-lightbox {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 3.5rem 4.5rem 1.5rem;
+    border: 0;
+    background: rgba(27, 26, 26, 0.92);
+    color: #fff;
+}
+
+.media-lightbox[open] {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    justify-items: center;
+    gap: 1rem;
+}
+
+.media-lightbox img {
+    align-self: center;
+    max-width: 100%;
+    max-height: 100%;
+    min-height: 0;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.media-lightbox p {
+    max-width: 60ch;
+    min-height: 1.5em;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.media-lightbox button {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    cursor: pointer;
+}
+
+.media-lightbox button:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.media-lightbox button:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+.media-lightbox button[hidden] {
+    display: none;
+}
+
+.media-lightbox svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.media-lightbox__close {
+    top: 0.75rem;
+    right: 0.75rem;
+}
+
+.media-lightbox__prev,
+.media-lightbox__next {
+    top: calc(50% - 1.375rem);
+}
+
+.media-lightbox__prev {
+    left: 0.75rem;
+}
+
+.media-lightbox__next {
+    right: 0.75rem;
+}
+
+/* ---------- Gallery editor ---------- */
+
+.media-editor {
+    display: grid;
+    justify-items: start;
+    gap: 0.6rem;
+}
+
+.media-editor__list {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.media-editor__list:empty {
+    display: none;
+}
+
+.media-editor__item {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.media-editor__item img {
+    display: block;
+    width: 3.5rem;
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.media-editor__item input {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.25rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid #dcdcdc;
+    border-radius: var(--pl-radius-sm);
+    background: #fff;
+    color: var(--pl-heading);
+    font: inherit;
+    font-size: 0.85rem;
+}
+
+.media-editor__tools {
+    display: flex;
+    gap: 0.15rem;
+}
+
+.media-editor__tools button {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--pl-body);
+    cursor: pointer;
+}
+
+.media-editor__tools button:hover:not(:disabled) {
+    background: rgba(27, 26, 26, 0.07);
+    color: var(--pl-heading);
+}
+
+.media-editor__tools button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.media-editor__tools svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.media-editor .pl-btn {
+    min-height: 2.25rem;
+    padding: 0 0.9rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.media-editor__note {
+    color: var(--pl-body);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.media-editor__note:empty {
+    display: none;
+}
+
+/* Hidden but still focusable, so its label works from the keyboard. */
+.media-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.media-file-input:focus-visible + label {
+    outline: 3px solid var(--pl-heading);
+    outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+    .media-lightbox {
+        padding: 3.5rem 0.75rem 1rem;
+    }
+
+    .media-lightbox__prev,
+    .media-lightbox__next {
+        top: auto;
+        bottom: 0.75rem;
+    }
+}
+
+/* ---------- Footer admin link (index.html, post.html) ---------- */
+
+/* The copyright and the admin link travel together, so the bottom row keeps its two-part layout. */
+.site-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 1rem;
+}
+
+/* Sized and coloured like the social circles beside it; quiet until hovered. */
+.site-footer__admin {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    padding: 0 0.85rem 0 0.75rem;
+    border-radius: 999px;
+    background: var(--pl-surface);
+    color: var(--pl-body);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.site-footer__admin svg {
+    flex: none;
+    width: 0.95rem;
+    height: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.site-footer__admin:hover {
+    background: var(--pl-tint);
+    color: var(--pl-heading);
+}
+
+.site-footer__admin:hover svg {
+    color: var(--pl-primary);
+}
+
+/* Keep the focus ring on the pill's shape (the pages' global :focus-visible sets 4px corners). */
+.site-footer__admin:focus-visible {
+    border-radius: 999px;
+}

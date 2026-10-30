@@ -1,0 +1,3165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Moderation - Pepper Labs Blog</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pl-primary: #e56e25;
+            --pl-primary-dark: #b7581e;
+            /* Orange text small enough to need 4.5:1 against white or the tint. */
+            --pl-primary-ink: #96461a;
+            --pl-red-deep: #c93a1e;
+            /* Same quote face as the post page, so the preview matches what readers see. */
+            --pl-font-quote: "Instrument Serif", Georgia, serif;
+            --pl-heading: #1b1a1a;
+            --pl-body: #666666;
+            --pl-border: #ededed;
+            --pl-control: #bdbdbd;
+            --pl-bg: #ffffff;
+            --pl-surface: #f8f8f8;
+            --pl-tint: rgba(229, 110, 37, 0.1);
+            /* Gray canvas with white cards on it, so each area of the desk reads as its own space. */
+            --pl-canvas: #eef0f3;
+            --pl-panel: #f6f7f9;
+            --pl-line: #dde1e6;
+            --pl-shadow-card: 0 1px 2px rgba(27, 26, 26, 0.06);
+            --pl-radius: 16px;
+            --pl-radius-sm: 8px;
+            --pl-ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --pl-shadow-float: 0 12px 32px rgba(27, 26, 26, 0.18);
+            color-scheme: light;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: "Epilogue", "Segoe UI", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background: var(--pl-surface);
+            color: var(--pl-heading);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            accent-color: var(--pl-primary);
+            caret-color: var(--pl-primary);
+        }
+
+        ::selection {
+            background: rgba(229, 110, 37, 0.22);
+            color: var(--pl-heading);
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--pl-heading);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+            color: inherit;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        svg {
+            flex: none;
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
+        /* The panes scroll on their own, so their scrollbars stay neutral; orange is kept for things to act on. */
+        * {
+            scrollbar-color: #c4c4c4 transparent;
+            scrollbar-width: thin;
+        }
+
+        /* ---------- Buttons ---------- */
+
+        .pl-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 2.5rem;
+            padding: 0.55rem 1.1rem;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            background: transparent;
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1;
+            text-decoration: none;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* Deep orange at rest, so the white label passes 4.5:1. */
+        .pl-btn--primary {
+            background: var(--pl-primary-dark);
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(229, 110, 37, 0.18);
+        }
+
+        .pl-btn--primary:hover {
+            background: var(--pl-primary-ink);
+        }
+
+        .pl-btn--ghost {
+            border-color: var(--pl-control);
+            color: var(--pl-heading);
+        }
+
+        .pl-btn--ghost:hover {
+            border-color: var(--pl-heading);
+            background: var(--pl-surface);
+        }
+
+        .pl-btn:active {
+            transform: translateY(1px);
+        }
+
+        .pl-btn:disabled {
+            background: #e4e4e4;
+            border-color: transparent;
+            box-shadow: none;
+            color: #6f6f6f;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .pl-btn .short {
+            display: none;
+        }
+
+        /* ---------- Shell ---------- */
+
+        .desk {
+            display: grid;
+            grid-template-rows: auto auto minmax(0, 1fr);
+            height: 100dvh;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.6rem 1.25rem;
+            border-top: 3px solid var(--pl-primary);
+            border-bottom: 1px solid var(--pl-line);
+            background: var(--pl-bg);
+        }
+
+        .topbar__brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            min-width: 0;
+        }
+
+        .topbar__brand a {
+            display: block;
+            border-radius: 4px;
+        }
+
+        .topbar__brand img {
+            display: block;
+            width: auto;
+            height: 2rem;
+        }
+
+        .topbar__brand h1 {
+            padding-left: 0.85rem;
+            border-left: 1px solid var(--pl-control);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.6;
+        }
+
+        .topbar__actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            border-bottom: 1px solid var(--pl-line);
+            background: var(--pl-panel);
+            color: var(--pl-body);
+            font-size: 0.8rem;
+        }
+
+        .notice svg {
+            margin-top: 0.1rem;
+        }
+
+        .notice strong {
+            color: var(--pl-heading);
+            font-weight: 600;
+        }
+
+        .desk__panes {
+            display: grid;
+            position: relative;
+            grid-template-columns: min(var(--queue-w, 20rem), 45vw) minmax(0, 1fr);
+            min-height: 0;
+        }
+
+        /* ---------- Dividers: drag to give a pane more or less room ---------- */
+
+        .splitter {
+            position: relative;
+            cursor: col-resize;
+            outline: none;
+            touch-action: none;
+        }
+
+        .splitter::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 3px;
+            margin-left: -1.5px;
+            border-radius: 3px;
+            background: transparent;
+            transition: background 0.2s ease;
+        }
+
+        .splitter:hover::after,
+        .splitter.is-dragging::after {
+            background: var(--pl-primary);
+        }
+
+        .splitter:focus-visible::after {
+            background: var(--pl-heading);
+        }
+
+        /* Sits over the queue's right border, leaning into the review pane so the list's scrollbar stays free. */
+        .splitter--queue {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: calc(min(var(--queue-w, 20rem), 45vw) - 2px);
+            z-index: 5;
+            width: 0.5rem;
+        }
+
+        .splitter--queue::after {
+            left: 0;
+            margin-left: 0;
+        }
+
+        .splitter--rail {
+            align-self: stretch;
+        }
+
+        .desk.is-resizing {
+            cursor: col-resize;
+            user-select: none;
+        }
+
+        /* ---------- Queue ---------- */
+
+        .queue {
+            display: grid;
+            grid-template-rows: auto auto auto minmax(0, 1fr);
+            min-height: 0;
+            border-right: 1px solid var(--pl-line);
+            background: var(--pl-panel);
+        }
+
+        .status-nav {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem;
+            padding: 1rem 1rem 0.75rem;
+        }
+
+        .status-tab {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            min-height: 2.5rem;
+            padding: 0 0.85rem;
+            border: 1px solid #dcdcdc;
+            border-radius: 999px;
+            background: var(--pl-bg);
+            color: var(--pl-body);
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .status-tab:hover {
+            border-color: var(--pl-heading);
+            color: var(--pl-heading);
+        }
+
+        .status-tab[aria-pressed="true"] {
+            border-color: var(--pl-heading);
+            background: var(--pl-heading);
+            color: #fff;
+        }
+
+        .status-tab__label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* The one live coal: something is waiting for a decision. */
+        .status-tab__dot {
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 50%;
+            background: var(--pl-primary);
+        }
+
+        .status-tab__count {
+            font-weight: 400;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .queue__search {
+            position: relative;
+            padding: 0 1rem;
+        }
+
+        .queue__search svg {
+            position: absolute;
+            top: 50%;
+            left: 1.75rem;
+            color: var(--pl-body);
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .queue__search input {
+            width: 100%;
+            min-height: 2.5rem;
+            padding: 0 0.75rem 0 2.25rem;
+            border: 1px solid var(--pl-control);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-bg);
+        }
+
+        .queue__search input::placeholder {
+            color: var(--pl-body);
+            opacity: 1;
+        }
+
+        .queue__head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 1.1rem 1rem 0.5rem;
+        }
+
+        .queue__head h2 {
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .queue__head span {
+            color: var(--pl-body);
+            font-size: 0.75rem;
+            text-align: right;
+        }
+
+        .queue__body {
+            min-height: 0;
+            overflow-y: auto;
+            padding: 0 0.5rem 1rem;
+        }
+
+        .queue__list {
+            display: grid;
+            gap: 0.4rem;
+            list-style: none;
+        }
+
+        .queue-item {
+            display: grid;
+            gap: 0.4rem;
+            width: 100%;
+            padding: 0.8rem 0.75rem;
+            border: 1px solid var(--pl-line);
+            border-radius: 12px;
+            background: var(--pl-bg);
+            box-shadow: var(--pl-shadow-card);
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .queue-item:hover {
+            border-color: var(--pl-control);
+        }
+
+        .queue-item:focus-visible {
+            outline-offset: -3px;
+            border-radius: 12px;
+        }
+
+        .queue-item[aria-current="true"] {
+            background: var(--pl-bg);
+            border-color: var(--pl-primary);
+            box-shadow: inset 4px 0 0 var(--pl-primary), 0 4px 12px rgba(27, 26, 26, 0.08);
+        }
+
+        .queue-item__title {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            font-size: 0.9rem;
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+
+        .queue-item[aria-current="true"] .queue-item__title {
+            font-weight: 700;
+        }
+
+        .queue-item__meta,
+        .queue-item__foot {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.25rem 0.6rem;
+            color: var(--pl-body);
+            font-size: 0.75rem;
+            line-height: 1.3;
+        }
+
+        .queue-item__foot:empty {
+            display: none;
+        }
+
+        .queue-item__note {
+            display: block;
+            overflow: hidden;
+            max-width: 100%;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .flag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--pl-primary-ink);
+            font-weight: 600;
+        }
+
+        .flag svg {
+            width: 0.85rem;
+            height: 0.85rem;
+        }
+
+        .chip {
+            display: inline-block;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            background: var(--pl-tint);
+            color: var(--pl-primary-ink);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+
+        .empty {
+            display: grid;
+            justify-items: start;
+            gap: 0.4rem;
+            margin: 0.5rem;
+            padding: 1.25rem;
+            border: 1px dashed #c9c9c9;
+            border-radius: var(--pl-radius);
+            color: var(--pl-body);
+        }
+
+        .empty h3 {
+            color: var(--pl-heading);
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .empty .pl-btn {
+            margin-top: 0.5rem;
+        }
+
+        /* ---------- Review pane ---------- */
+
+        .review {
+            display: grid;
+            grid-template-rows: minmax(0, 1fr) auto;
+            min-width: 0;
+            min-height: 0;
+            background: var(--pl-canvas);
+        }
+
+        .review__scroll {
+            overflow-y: auto;
+            container-type: inline-size;
+        }
+
+        .review__inner {
+            padding: 1.25rem 1.5rem 3rem;
+        }
+
+        .review__status {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem 0.9rem;
+            min-height: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--pl-body);
+            font-size: 0.8rem;
+        }
+
+        .review__status .spacer {
+            flex: 1;
+        }
+
+        .text-btn.review__back {
+            display: none;
+        }
+
+        .text-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            min-height: 2rem;
+            border: 0;
+            background: none;
+            color: var(--pl-heading);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: underline;
+            text-decoration-color: var(--pl-primary);
+            text-decoration-thickness: 2px;
+            text-underline-offset: 0.22em;
+            cursor: pointer;
+        }
+
+        .text-btn:hover {
+            text-decoration-color: var(--pl-heading);
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.7rem;
+            border: 1px solid #dcdcdc;
+            border-radius: 999px;
+            background: var(--pl-bg);
+            color: var(--pl-heading);
+            font-size: 0.75rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .status-chip svg {
+            width: 0.85rem;
+            height: 0.85rem;
+        }
+
+        .status-chip--pending {
+            border-color: transparent;
+            background: var(--pl-tint);
+            color: var(--pl-primary-ink);
+        }
+
+        .status-chip--returned,
+        .status-chip--unpublished {
+            background: var(--pl-surface);
+            color: var(--pl-body);
+        }
+
+        .review__grid {
+            display: grid;
+            /* The middle column is the divider, standing in for the gap between article and rail. */
+            grid-template-columns: minmax(0, 1fr) 1.5rem var(--rail-w, 15rem);
+            align-items: start;
+            gap: 2.5rem 0;
+        }
+
+        /* ---------- Article preview: the public post page, one size down ---------- */
+
+        .preview,
+        .edit {
+            min-width: 0;
+            padding: 1.5rem;
+            border: 1px solid var(--pl-line);
+            border-radius: var(--pl-radius);
+            background: var(--pl-bg);
+            box-shadow: var(--pl-shadow-card);
+        }
+
+        .sent-note {
+            margin-bottom: 1.75rem;
+            padding: 1rem 1.15rem;
+            border: 1px solid var(--pl-border);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-surface);
+        }
+
+        .sent-note h3 {
+            margin-bottom: 0.3rem;
+            font-size: 0.8rem;
+        }
+
+        .sent-note p {
+            color: var(--pl-body);
+            white-space: pre-wrap;
+        }
+
+        .preview__meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem 0.7rem;
+            color: var(--pl-body);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* The post page's title and summary on a 1440px screen (82.24px and 19.2px beside a 1152px article),
+           scaled with the article below so their lines break in the same places too. */
+        .preview__title {
+            max-width: 22ch;
+            margin: 1rem auto 0;
+            font-size: min(82.24px, calc(100cqi * 82.24 / 1152));
+            line-height: 0.98;
+            letter-spacing: -0.05em;
+            text-align: center;
+            text-wrap: balance;
+            outline: none;
+        }
+
+        .preview__lede {
+            max-width: 58ch;
+            margin: 1rem auto 0;
+            text-align: center;
+            color: var(--pl-body);
+            font-size: min(19.2px, calc(100cqi * 19.2 / 1152));
+            line-height: 1.55;
+            text-wrap: pretty;
+        }
+
+        /* The post page's main picture: 21:9, at most the page's 1440px, so it shows the same crop readers see. */
+        .preview__media {
+            display: grid;
+            overflow: hidden;
+            aspect-ratio: 21 / 9;
+            width: 100%;
+            max-width: 1440px;
+            margin: 1.75rem auto 0;
+            border-radius: var(--pl-radius);
+            background: var(--pl-surface);
+        }
+
+        .preview__media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* No photo to judge, so the stand-in stays short and the text starts sooner. */
+        .preview__media--word {
+            aspect-ratio: auto;
+            min-height: 7.5rem;
+            place-items: end start;
+            padding: 1.25rem 1.5rem;
+            border: 1px solid var(--pl-border);
+        }
+
+        .preview__media--word span {
+            color: #c2c2c2;
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        /* The preview's article is laid out exactly as the post page lays it out on a laptop or larger: a 1152px
+           sheet with the same padding and text sizes, so every line breaks on the same word. fitArticle() then
+           shrinks it with a transform to fit the preview and sets the frame to the shrunk height. A transform (not
+           smaller font sizes) keeps the breaks exact, because text drawn at a smaller size isn't quite proportional. */
+        .preview {
+            container-type: inline-size;
+        }
+
+        /* Clips the sheet's full-size layout box, which still reaches past the preview after it is shrunk. */
+        .article-frame {
+            margin-top: 1.75rem;
+            overflow: clip;
+        }
+
+        /* On a screen wide enough to show it at full size, it sits centred, as on the post page. */
+        .article-sheet {
+            width: 72rem;
+            margin-inline: auto;
+            padding: 3.5rem;
+            border: 1px solid var(--pl-border);
+            border-radius: var(--pl-radius);
+            background: var(--pl-surface);
+            transform-origin: 0 0;
+        }
+
+        .article-sheet .article-body {
+            font-size: 1.2rem;
+            line-height: 1.8;
+        }
+
+        .article-sheet .article-body p,
+        .article-sheet .article-body ul,
+        .article-sheet .article-body ol {
+            margin-bottom: 1.4rem;
+        }
+
+        .article-sheet .article-body h2 {
+            margin: 3rem 0 1rem;
+        }
+
+        .article-sheet .article-body h3 {
+            margin: 2.25rem 0 0.7rem;
+        }
+
+        .article-sheet .article-body li {
+            margin-bottom: 0.45rem;
+        }
+
+        .article-sheet .article-body blockquote {
+            margin: 2.5rem 0;
+            padding: 0.2rem 0 0.2rem 1.5rem;
+            font-size: 1.75em;
+        }
+
+        /* The editor keeps ordinary sizes; it is for writing, not for judging line breaks. */
+        .article-body {
+            color: var(--pl-body);
+            font-size: 1rem;
+            line-height: 1.75;
+        }
+
+        .editor__content.article-body {
+            overflow-wrap: break-word;
+        }
+
+        .article-body > :first-child {
+            margin-top: 0;
+        }
+
+        .article-body > :last-child {
+            margin-bottom: 0;
+        }
+
+        .article-body p,
+        .article-body ul,
+        .article-body ol {
+            margin-bottom: 1.2rem;
+        }
+
+        .article-body h2,
+        .article-body h3 {
+            color: var(--pl-heading);
+            text-wrap: balance;
+        }
+
+        .article-body h2 {
+            margin: 2.5rem 0 0.8rem;
+            font-size: 1.85em;
+            line-height: 1.1;
+            letter-spacing: -0.045em;
+        }
+
+        .article-body h3 {
+            margin: 2rem 0 0.6rem;
+            font-size: 1.35em;
+            line-height: 1.2;
+            letter-spacing: -0.035em;
+        }
+
+        .article-body ul,
+        .article-body ol {
+            padding-left: 1.3rem;
+        }
+
+        .article-body li {
+            margin-bottom: 0.4rem;
+        }
+
+        .article-body li::marker {
+            color: var(--pl-primary-dark);
+        }
+
+        .article-body strong {
+            color: var(--pl-heading);
+        }
+
+        .article-body a {
+            color: var(--pl-heading);
+            font-weight: 600;
+            text-decoration: underline;
+            text-decoration-color: var(--pl-primary);
+            text-decoration-thickness: 2px;
+            text-underline-offset: 0.22em;
+        }
+
+        /* Matches the post page: serif italic with a logo-red bar. Also styles quotes inside the editor. */
+        .article-body blockquote {
+            margin: 2rem 0;
+            padding: 0.2rem 0 0.2rem 1.25rem;
+            border-left: 3px solid var(--pl-red-deep);
+            color: var(--pl-heading);
+            font-family: var(--pl-font-quote);
+            font-size: 1.6em;
+            font-style: italic;
+            font-weight: 400;
+            line-height: 1.22;
+            letter-spacing: 0;
+            text-wrap: pretty;
+        }
+
+        .article-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+
+        /* ---------- Rail ---------- */
+
+        .rail {
+            display: grid;
+            gap: 1rem;
+            min-width: 0;
+        }
+
+        .rail > section {
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--pl-line);
+            border-radius: var(--pl-radius);
+            background: var(--pl-bg);
+            box-shadow: var(--pl-shadow-card);
+        }
+
+        .rail h3 {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+            color: var(--pl-body);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .rail h3 span {
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        .checks {
+            display: grid;
+            list-style: none;
+        }
+
+        .checks li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.1rem 0.6rem;
+            padding: 0.6rem 0;
+            border-top: 1px solid var(--pl-border);
+        }
+
+        .checks svg {
+            grid-row: span 2;
+            margin-top: 0.15rem;
+            color: #8a8a8a;
+        }
+
+        .checks strong {
+            font-weight: 600;
+            line-height: 1.35;
+        }
+
+        .checks span {
+            grid-column: 2;
+            color: var(--pl-body);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .checks .is-warn svg,
+        .checks .is-block svg {
+            color: var(--pl-primary-dark);
+        }
+
+        .checks .is-block strong {
+            font-weight: 700;
+        }
+
+        .setting {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 0.15rem 0.9rem;
+            width: 100%;
+            padding: 0.7rem 0;
+            border: 0;
+            border-top: 1px solid var(--pl-border);
+            background: none;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .setting strong {
+            font-weight: 600;
+        }
+
+        .setting small {
+            grid-column: 1;
+            color: var(--pl-body);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .setting__track {
+            position: relative;
+            grid-row: 1 / span 2;
+            grid-column: 2;
+            width: 2.5rem;
+            height: 1.5rem;
+            border: 1px solid #9a9a9a;
+            border-radius: 999px;
+            background: #dedede;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .setting__track::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 1.125rem;
+            height: 1.125rem;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(27, 26, 26, 0.3);
+            transition: transform 0.2s var(--pl-ease);
+        }
+
+        .setting[aria-checked="true"] .setting__track {
+            border-color: var(--pl-heading);
+            background: var(--pl-heading);
+        }
+
+        .setting[aria-checked="true"] .setting__track::after {
+            transform: translateX(1rem);
+        }
+
+        .details {
+            display: grid;
+        }
+
+        .details div {
+            display: grid;
+            grid-template-columns: 6.25rem minmax(0, 1fr);
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border-top: 1px solid var(--pl-border);
+        }
+
+        .details dt {
+            color: var(--pl-body);
+        }
+
+        .details dd {
+            overflow-wrap: anywhere;
+        }
+
+        .history {
+            display: grid;
+            list-style: none;
+        }
+
+        .history li {
+            padding: 0.55rem 0;
+            border-top: 1px solid var(--pl-border);
+        }
+
+        .history time,
+        .history p {
+            display: block;
+            color: var(--pl-body);
+            font-size: 0.8rem;
+        }
+
+        .history p {
+            margin-top: 0.2rem;
+            white-space: pre-wrap;
+        }
+
+        .rail__none {
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--pl-border);
+            color: var(--pl-body);
+            font-size: 0.8rem;
+        }
+
+        /* ---------- Decision bar ---------- */
+
+        .decision {
+            border-top: 1px solid var(--pl-line);
+            background: var(--pl-bg);
+            box-shadow: 0 -4px 12px rgba(27, 26, 26, 0.05);
+        }
+
+        .decision__bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.75rem 2rem;
+        }
+
+        .decision__group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .decision__why {
+            color: var(--pl-body);
+            font-size: 0.8rem;
+            text-align: right;
+        }
+
+        .sendback {
+            display: grid;
+            gap: 0.75rem;
+            padding: 1.1rem 2rem 1rem;
+            animation: rise 0.25s var(--pl-ease);
+        }
+
+        .sendback__head label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .sendback__head p {
+            color: var(--pl-body);
+            font-size: 0.8rem;
+        }
+
+        .reasons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .reason {
+            min-height: 2rem;
+            padding: 0 0.8rem;
+            border: 1px solid #dcdcdc;
+            border-radius: 999px;
+            background: var(--pl-bg);
+            color: var(--pl-body);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .reason:hover {
+            border-color: var(--pl-heading);
+            color: var(--pl-heading);
+        }
+
+        .sendback__actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+        }
+
+        /* ---------- Fields ---------- */
+
+        .field {
+            display: grid;
+            gap: 0.35rem;
+            min-width: 0;
+        }
+
+        .field label,
+        .field .field__label {
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .field input:not([type="file"]),
+        .field select,
+        .field textarea,
+        .sendback textarea {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--pl-control);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-bg);
+            line-height: 1.5;
+        }
+
+        .field input:not([type="file"]),
+        .field select {
+            min-height: 2.5rem;
+        }
+
+        .field textarea,
+        .sendback textarea {
+            resize: vertical;
+        }
+
+        .field :is(input, select, textarea):focus-visible,
+        .sendback textarea:focus-visible,
+        .queue__search input:focus-visible {
+            outline-offset: 1px;
+            border-radius: var(--pl-radius-sm);
+        }
+
+        .field [aria-invalid="true"] {
+            border-color: var(--pl-heading);
+            box-shadow: inset 0 0 0 1px var(--pl-heading);
+        }
+
+        .field__hint {
+            color: var(--pl-body);
+            font-size: 0.8rem;
+        }
+
+        .field__error {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: var(--pl-heading);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .field__error svg {
+            color: var(--pl-primary-dark);
+        }
+
+        /* ---------- Edit form ---------- */
+
+        /* The form uses the whole review area, up to the 1440px the preview's picture also stops at,
+           and sits centred beyond that like the preview. */
+        .edit {
+            display: grid;
+            gap: 1.25rem;
+            max-width: 90rem;
+            margin-inline: auto;
+        }
+
+        .edit__heading {
+            font-size: 1.5rem;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            outline: none;
+        }
+
+        .edit__row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.25rem 1rem;
+        }
+
+        .edit__image {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .edit__thumb {
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            width: 9rem;
+            aspect-ratio: 16 / 9;
+            border: 1px solid var(--pl-border);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-surface);
+            color: var(--pl-body);
+            font-size: 0.75rem;
+        }
+
+        .edit__thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .editor {
+            border: 1px solid var(--pl-control);
+            border-radius: var(--pl-radius-sm);
+            background: var(--pl-bg);
+        }
+
+        .editor__toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.4rem;
+            border-bottom: 1px solid var(--pl-border);
+        }
+
+        .field .editor__toolbar select {
+            width: auto;
+            min-height: 2.25rem;
+            padding: 0 0.5rem;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            background: var(--pl-bg);
+        }
+
+        .editor__toolbar button {
+            display: inline-grid;
+            place-items: center;
+            min-width: 2.25rem;
+            height: 2.25rem;
+            padding: 0 0.5rem;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .editor__toolbar button:hover {
+            background: var(--pl-surface);
+        }
+
+        .editor__toolbar button[aria-pressed="true"] {
+            background: var(--pl-heading);
+            color: #fff;
+        }
+
+        .editor__toolbar button:disabled,
+        .editor__toolbar select:disabled {
+            color: #8a8a8a;
+            cursor: not-allowed;
+        }
+
+        .editor__toolbar .spacer {
+            flex: 1;
+        }
+
+        .editor__link {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--pl-border);
+            background: var(--pl-surface);
+        }
+
+        .editor__link input {
+            flex: 1;
+            min-width: 12rem;
+            min-height: 2.25rem;
+            padding: 0 0.6rem;
+            border: 1px solid var(--pl-control);
+            border-radius: 6px;
+            background: var(--pl-bg);
+        }
+
+        .editor__link .pl-btn {
+            min-height: 2.25rem;
+        }
+
+        .editor__link p {
+            flex-basis: 100%;
+        }
+
+        .editor__content {
+            max-width: none;
+            min-height: 18rem;
+            padding: 1rem 1.1rem;
+            outline: none;
+        }
+
+        .editor:focus-within {
+            outline: 3px solid var(--pl-heading);
+            outline-offset: 1px;
+        }
+
+        .editor__source {
+            display: block;
+            width: 100%;
+            min-height: 18rem;
+            padding: 1rem 1.1rem;
+            border: 0;
+            border-radius: 0 0 var(--pl-radius-sm) var(--pl-radius-sm);
+            background: var(--pl-bg);
+            font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+        }
+
+        /* ---------- Toast and dialog ---------- */
+
+        .toast-region {
+            position: fixed;
+            bottom: 1.25rem;
+            left: 1.25rem;
+            z-index: 50;
+            width: min(21rem, calc(100% - 2.5rem));
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 0.6rem 0.7rem 1rem;
+            border-radius: 12px;
+            background: var(--pl-heading);
+            box-shadow: var(--pl-shadow-float);
+            color: #fff;
+            animation: rise 0.25s var(--pl-ease);
+        }
+
+        .toast > svg {
+            color: var(--pl-primary);
+        }
+
+        .toast span {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .toast button {
+            display: inline-grid;
+            place-items: center;
+            min-width: 2rem;
+            min-height: 2rem;
+            border: 0;
+            border-radius: 6px;
+            background: none;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .toast__undo {
+            padding: 0 0.5rem;
+            text-decoration: underline;
+            text-decoration-color: var(--pl-primary);
+            text-decoration-thickness: 2px;
+            text-underline-offset: 0.22em;
+        }
+
+        .toast button:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .toast button:focus-visible {
+            outline-color: #fff;
+            outline-offset: 1px;
+        }
+
+        .confirm {
+            width: min(26rem, calc(100% - 2rem));
+            margin: auto;
+            padding: 1.5rem;
+            border: 0;
+            border-radius: var(--pl-radius);
+            background: var(--pl-bg);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+            color: var(--pl-heading);
+        }
+
+        .confirm::backdrop {
+            background: rgba(27, 26, 26, 0.58);
+        }
+
+        .confirm h2 {
+            font-size: 1.25rem;
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+            text-wrap: balance;
+        }
+
+        .confirm p {
+            margin-top: 0.5rem;
+            color: var(--pl-body);
+        }
+
+        .confirm form {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .confirm .pl-btn--solid {
+            background: var(--pl-heading);
+            color: #fff;
+        }
+
+        .confirm .pl-btn--solid:hover {
+            background: #000;
+        }
+
+        /* ---------- Narrower review pane: details move under the article ---------- */
+
+        @container (max-width: 56rem) {
+            .review__grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .splitter--rail {
+                display: none;
+            }
+        }
+
+        /* ---------- Phones and small tablets: one pane at a time ---------- */
+
+        @media (max-width: 860px) {
+            html,
+            body {
+                height: auto;
+            }
+
+            .desk {
+                display: block;
+                height: auto;
+                min-height: 100dvh;
+            }
+
+            .desk__panes,
+            .queue,
+            .review {
+                display: block;
+            }
+
+            .queue {
+                border-right: 0;
+            }
+
+            .splitter {
+                display: none;
+            }
+
+            .queue__body,
+            .review__scroll {
+                overflow: visible;
+            }
+
+            .desk[data-view="detail"] .queue,
+            .desk[data-view="detail"] .notice,
+            .desk[data-view="list"] .review {
+                display: none;
+            }
+
+            .topbar,
+            .notice {
+                padding-inline: 1rem;
+            }
+
+            .topbar__brand img {
+                height: 1.6rem;
+            }
+
+            .topbar .pl-btn span {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip-path: inset(50%);
+            }
+
+            .topbar .pl-btn {
+                width: 2.75rem;
+                min-height: 2.75rem;
+                padding: 0;
+            }
+
+            /* No room beside the buttons; the tab title still says Moderation. */
+            .topbar__brand h1 {
+                display: none;
+            }
+
+            .preview,
+            .edit {
+                padding: 1.25rem;
+            }
+
+            .status-tab,
+            .queue__search input {
+                min-height: 2.75rem;
+            }
+
+            .review__inner {
+                padding: 0.75rem 1rem 2rem;
+            }
+
+            .text-btn.review__back {
+                display: inline-flex;
+                flex-basis: 100%;
+                min-height: 2.75rem;
+            }
+
+            .preview__media--word span {
+                font-size: 2rem;
+            }
+
+            .decision {
+                position: sticky;
+                bottom: 0;
+                z-index: 10;
+            }
+
+            .decision__bar,
+            .sendback {
+                padding-inline: 1rem;
+            }
+
+            .decision__bar {
+                flex-wrap: wrap;
+            }
+
+            .decision__group:last-child {
+                flex: 1;
+                justify-content: flex-end;
+            }
+
+            .decision .pl-btn {
+                min-height: 2.75rem;
+            }
+
+            .decision__group--quiet .pl-btn {
+                width: 2.75rem;
+                padding: 0;
+            }
+
+            .decision__group--quiet .pl-btn span {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip-path: inset(50%);
+            }
+
+            .pl-btn .long {
+                display: none;
+            }
+
+            .pl-btn .short {
+                display: inline;
+            }
+
+            .decision__why {
+                flex-basis: 100%;
+                order: -1;
+                text-align: left;
+            }
+
+            .edit__row {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .toast-region {
+                bottom: 5rem;
+                left: 1rem;
+                width: calc(100% - 2rem);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/blog/media.css?v=20261011-1">
+</head>
+<body>
+    <div class="desk" id="desk" data-view="list">
+        <header class="topbar">
+            <div class="topbar__brand">
+                <a href="/blog"><img src="/assets/logos/pepperlabs.png" alt="Pepper Labs blog" width="4000" height="1600" draggable="false"></a>
+                <h1>Moderation</h1>
+            </div>
+            <div class="topbar__actions">
+                <a class="pl-btn pl-btn--ghost" href="/blog" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+                    <span>View blog</span>
+                </a>
+                <button type="button" class="pl-btn pl-btn--primary" data-action="new-article">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    <span>New article</span>
+                </button>
+                <button type="button" class="pl-btn pl-btn--ghost" data-action="export">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
+                    <span>Export backup</span>
+                </button>
+            </div>
+        </header>
+
+        <p class="notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>
+            <span><strong>Saved in this browser only.</strong> Sign-in and shared storage aren't connected yet, so other staff and blog visitors don't see what you decide here.</span>
+        </p>
+
+        <div class="desk__panes">
+            <aside class="queue" aria-label="Articles">
+                <nav class="status-nav" id="status-nav" aria-label="Filter by status"></nav>
+                <div class="queue__search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+                    <input type="search" id="queue-search" placeholder="Search title, author or source" aria-label="Search articles in this list" autocomplete="off">
+                </div>
+                <div class="queue__head">
+                    <h2 id="queue-title"></h2>
+                    <span id="queue-count" role="status"></span>
+                </div>
+                <div class="queue__body">
+                    <ul class="queue__list" id="queue-list" aria-labelledby="queue-title"></ul>
+                    <div id="queue-empty"></div>
+                </div>
+            </aside>
+
+            <main class="review" id="review"></main>
+        </div>
+    </div>
+
+    <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+
+    <dialog class="confirm" id="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+        <h2 id="confirm-title"></h2>
+        <p id="confirm-body"></p>
+        <form method="dialog">
+            <button class="pl-btn pl-btn--ghost" id="confirm-cancel" value="cancel"></button>
+            <button class="pl-btn pl-btn--solid" id="confirm-ok" value="confirm"></button>
+        </form>
+    </dialog>
+
+    <script src="/blog/data/posts.js?v=20261011-5"></script>
+    <script src="/blog/media.js?v=20261011-1"></script>
+    <script>
+        // Posts are shared with index.html and post.html through localStorage key "blog_posts".
+        // Until something is saved there, all three pages start from /blog/data/posts.js.
+        const STORAGE_KEY = 'blog_posts';
+        const CATEGORY_LABELS = { 'ai': 'AI', 'avpn': 'AVPN', 'dapur-digital': 'Dapur Digital', 'youth': 'Youth', 'milestones': 'Milestones' };
+
+        const svg = paths => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+        const ICON = {
+            check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+            warn: svg('<path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.5h.01"/>'),
+            block: svg('<circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/>'),
+            back: svg('<path d="M19 12H5M11 6l-6 6 6 6"/>'),
+            external: svg('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'),
+            pin: svg('<path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v7"/>'),
+            trash: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3"/>'),
+            edit: svg('<path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/>'),
+            sendBack: svg('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'),
+            hidden: svg('<path d="M3 3l18 18M10.6 6.2A9.6 9.6 0 0 1 12 6c5 0 8.5 4 9.5 6a12 12 0 0 1-2.6 3.4M6.3 7.7A12 12 0 0 0 2.5 12c1 2 4.5 6 9.5 6a9 9 0 0 0 3.6-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
+            x: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+            link: svg('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
+            bullets: svg('<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>'),
+            numbers: svg('<path d="M10 6h10M10 12h10M10 18h10M4 5l1.5-1v4M4 14.5c0-2 2.6-1.6 2.6-.2 0 1-2.6 2-2.6 3.2h2.8"/>'),
+            undo: svg('<path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/>'),
+            redo: svg('<path d="M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3"/>'),
+            picture: svg('<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>')
+        };
+
+        const STATUSES = {
+            pending: {
+                label: 'Needs review',
+                icon: '',
+                order: 'longest wait first',
+                emptyTitle: 'Nothing is waiting for review',
+                emptyBody: 'Articles sent in from the blog\'s New post form arrive here. They appear on the blog only after you approve them.'
+            },
+            published: {
+                label: 'Published',
+                icon: ICON.check,
+                order: 'newest first',
+                emptyTitle: 'Nothing is published',
+                emptyBody: 'Approved articles are listed here. You can edit, pin or unpublish them at any time.'
+            },
+            returned: {
+                label: 'Sent back',
+                icon: ICON.sendBack,
+                order: 'newest first',
+                emptyTitle: 'No articles are sent back',
+                emptyBody: 'When you send an article back with a note, it waits here until it is edited and approved.'
+            },
+            unpublished: {
+                label: 'Unpublished',
+                icon: ICON.hidden,
+                order: 'newest first',
+                emptyTitle: 'Nothing has been taken down',
+                emptyBody: 'Articles you unpublish are kept here, hidden from the blog, until you publish them again or delete them.'
+            }
+        };
+
+        const HISTORY_LABELS = {
+            added: 'Written here by a moderator',
+            approved: 'Approved and published',
+            returned: 'Sent back',
+            unpublished: 'Unpublished',
+            republished: 'Published again',
+            edited: 'Edited',
+            pinned: 'Pinned to the top of the blog',
+            unpinned: 'Unpinned',
+            'comments-on': 'Comments allowed',
+            'comments-off': 'Comments turned off'
+        };
+
+        const SEND_BACK_REASONS = {
+            'Needs a source': 'Please link the report or document this article is based on.',
+            'Facts to check': 'Please check the names, dates and figures against the source.',
+            'Image rights': 'Please confirm Pepper Labs can use this photo, or swap it for one of ours.',
+            'Wording': 'Please tighten the wording so it reads in the Pepper Labs voice.'
+        };
+
+        const desk = document.getElementById('desk');
+        const review = document.getElementById('review');
+        const queueList = document.getElementById('queue-list');
+        const searchInput = document.getElementById('queue-search');
+        const phone = matchMedia('(max-width: 860px)');
+
+        const state = {
+            posts: [],
+            status: 'pending',
+            selectedId: null,
+            query: '',
+            mode: 'view',
+            sendBackOpen: false,
+            dirty: false
+        };
+
+        // Edit-mode working copies that live outside the form fields.
+        let editImage = '';
+        let editGallery = null;
+        let savedRange = null;
+        // Pictures stored inside the article, set aside while its HTML is shown so the code stays readable.
+        let sourcePictures = [];
+        // An article being written with New article. It joins state.posts only when saved.
+        let draft = null;
+
+        /* ---------- Helpers ---------- */
+
+        // Posts can be written by anyone, so text is escaped before it reaches innerHTML.
+        function esc(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+        }
+
+        function categoryKey(post) {
+            return String(post.category || '').toLowerCase();
+        }
+
+        function categoryLabel(key) {
+            return CATEGORY_LABELS[key] || key.replace(/-/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase()) || 'Uncategorised';
+        }
+
+        // Anything that is not one of the four known states (old drafts, for example) is kept out of the blog.
+        function statusOf(post) {
+            return post.status in STATUSES ? post.status : 'unpublished';
+        }
+
+        function postTime(post) {
+            return Date.parse(post.publishDate || post.date) || 0;
+        }
+
+        function postUrl(post) {
+            return `/blog/post.html?slug=${encodeURIComponent(post.slug || '')}`;
+        }
+
+        function shortDate(time) {
+            return new Date(time).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function dateAndTime(iso) {
+            const time = Date.parse(iso);
+            return time ? new Date(time).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+        }
+
+        function waitLabel(post) {
+            const submitted = Date.parse(post.submittedAt || '');
+            if (!submitted) return '';
+            const hours = Math.floor((Date.now() - submitted) / 36e5);
+            if (hours < 1) return 'Submitted just now';
+            if (hours < 24) return `Waiting ${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+            const days = Math.floor(hours / 24);
+            return `Waiting ${days} ${days === 1 ? 'day' : 'days'}`;
+        }
+
+        function plural(count, word) {
+            return `${count} ${word}${count === 1 ? '' : 's'}`;
+        }
+
+        function byId(id) {
+            return state.posts.find(post => String(post.id) === String(id)) || null;
+        }
+
+        function selectedPost() {
+            if (state.selectedId === null) return null;
+            return draft && String(draft.id) === String(state.selectedId) ? draft : byId(state.selectedId);
+        }
+
+        /* ---------- Article analysis ---------- */
+
+        const UNSAFE_TAGS = 'script, style, iframe, frame, object, embed, link, meta, base, form, input, button, textarea, select';
+        const URL_ATTRIBUTES = ['href', 'src', 'xlink:href', 'action', 'formaction', 'poster'];
+
+        // The blog inserts the article body as HTML. This removes anything in it that could run code.
+        function sanitize(html) {
+            const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
+            let removed = 0;
+            doc.body.querySelectorAll(UNSAFE_TAGS).forEach(element => {
+                element.remove();
+                removed += 1;
+            });
+            doc.body.querySelectorAll('*').forEach(element => {
+                [...element.attributes].forEach(attribute => {
+                    const name = attribute.name.toLowerCase();
+                    const value = attribute.value.replace(/[\u0000- ]/g, '').toLowerCase();
+                    const badUrl = URL_ATTRIBUTES.includes(name)
+                        && (/^(javascript|vbscript):/.test(value) || (value.startsWith('data:') && !value.startsWith('data:image/')));
+                    if (name.startsWith('on') || badUrl) {
+                        element.removeAttribute(attribute.name);
+                        removed += 1;
+                    }
+                });
+                if (element.tagName === 'A' && element.getAttribute('target') === '_blank') {
+                    element.setAttribute('rel', 'noopener');
+                }
+            });
+            return { html: doc.body.innerHTML.trim(), removed, body: doc.body };
+        }
+
+        let analysisCache = new WeakMap();
+
+        function analyse(post) {
+            if (analysisCache.has(post)) return analysisCache.get(post);
+
+            const clean = sanitize(post.content);
+            const text = clean.body.textContent.replace(/\s+/g, ' ').trim();
+            const words = text ? text.split(' ').length : 0;
+            const minutes = Math.max(1, Math.ceil(words / 200));
+            const title = String(post.title || '').trim();
+            const excerpt = String(post.excerpt || '').trim();
+            const externalLinks = [...clean.body.querySelectorAll('a[href]')].filter(link => /^https?:\/\//i.test(link.getAttribute('href')));
+            const checks = [];
+            const add = (level, label, detail) => checks.push({ level, label, detail });
+
+            if (!post.slug) {
+                add('block', 'No web address', 'This article has no slug, so the blog cannot open it.');
+            } else if (state.posts.some(other => other !== post && other.slug === post.slug)) {
+                add('block', 'Web address already in use', `Another article is also at "${post.slug}". Only one of them can open on the blog.`);
+            }
+
+            if (!title) {
+                add('block', 'No title', 'Add a title before this is published.');
+            } else if (title.length > 80) {
+                add('warn', 'Long title', `${title.length} characters. Blog cards show two lines, so the end will be cut off.`);
+            } else {
+                add('ok', 'Title', `${title.length} characters.`);
+            }
+
+            if (!excerpt) {
+                add('warn', 'No excerpt', 'Blog cards will show the title with no summary under it.');
+            } else if (excerpt.length >= 180 && !/[.!?…"”')]$/.test(excerpt)) {
+                add('warn', 'Excerpt is cut off', 'It was taken from the first 180 characters of the article and stops mid-sentence.');
+            } else {
+                add('ok', 'Excerpt', `${excerpt.length} characters.`);
+            }
+
+            if (words < 50) {
+                add('warn', 'Very short', `${plural(words, 'word')}. Check that the whole article was submitted.`);
+            } else {
+                add('ok', 'Length', `${words.toLocaleString('en-US')} words, about ${minutes} min to read.`);
+            }
+
+            if (post.sourceName || externalLinks.length) {
+                add('ok', post.sourceName ? `Source: ${post.sourceName}` : 'Links out', externalLinks.length ? `${plural(externalLinks.length, 'outside link')} in the article.` : 'Named, but there is no link to it in the article.');
+            } else {
+                add('warn', 'No source linked', 'Articles based on press coverage should link the report they draw on.');
+            }
+
+            // Every picture counts: the main one, those placed in the article, and the extra photos.
+            const placed = [...clean.body.querySelectorAll('img')].map(image => image.getAttribute('src'));
+            const extra = BlogMedia.list(post.gallery).map(photo => photo.src);
+            const pictures = [post.image, ...placed, ...extra].filter(Boolean);
+            const megabytes = pictures.filter(src => String(src).startsWith('data:')).reduce((total, src) => total + src.length, 0) * 0.75 / 1048576;
+            const breakdown = [post.image ? '1 main' : '', placed.length ? `${placed.length} in the article` : '', extra.length ? plural(extra.length, 'more photo') : ''].filter(Boolean).join(', ');
+            const stored = megabytes ? ` ${megabytes.toFixed(1)} MB stored in this browser.` : '';
+            if (!pictures.length) {
+                add('warn', 'No image', 'The blog shows the category name in place of a photo.');
+            } else if (!post.image) {
+                add('warn', 'No main image', `${breakdown}, but blog cards show the category name in place of a photo.${stored}`);
+            } else if (megabytes > 1.5) {
+                add('warn', 'Large images', `${breakdown}.${stored} The browser holds about 5 MB for the whole blog.`);
+            } else if (pictures.length === 1) {
+                add('ok', 'Image', `${stored.trim()} Confirm Pepper Labs may use this photo.`.trim());
+            } else {
+                add('ok', `${pictures.length} images`, `${breakdown}.${stored} Confirm Pepper Labs may use each one.`);
+            }
+
+            if (!postTime(post)) {
+                add('warn', 'No readable date', 'The blog sorts by date, so this article would sink to the bottom.');
+            } else if (postTime(post) > Date.now()) {
+                add('warn', 'Dated in the future', `${shortDate(postTime(post))}. It will still appear on the blog as soon as it is approved.`);
+            }
+
+            if (categoryKey(post) && !(categoryKey(post) in CATEGORY_LABELS)) {
+                add('warn', 'Unfamiliar category', `"${post.category}" is not one of the blog's categories, so it gets a filter of its own.`);
+            } else if (!categoryKey(post)) {
+                add('warn', 'No category', 'The article will not appear under any filter.');
+            }
+
+            if (clean.removed) {
+                add('warn', 'Unsafe code found', `${plural(clean.removed, 'unsafe item')} (scripts or inline handlers) in the article. Left out of this preview, and removed when you approve or save.`);
+            }
+
+            const result = {
+                html: clean.html,
+                text,
+                words,
+                minutes,
+                checks,
+                issues: checks.filter(check => check.level !== 'ok').length,
+                blockers: checks.filter(check => check.level === 'block').length
+            };
+            analysisCache.set(post, result);
+            return result;
+        }
+
+        /* ---------- Storage ---------- */
+
+        function loadPosts() {
+            let stored = null;
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                const parsed = raw === null ? null : JSON.parse(raw);
+                if (Array.isArray(parsed)) stored = blogFillSamplePictures(parsed);
+            } catch {
+            }
+            const posts = (stored || window.BLOG_SAMPLE_POSTS || []).map(post => ({ ...post }));
+            // Every article needs its own id to be selected and acted on.
+            let nextId = Math.max(0, ...posts.map(post => Number(post.id) || 0)) + 1;
+            const seen = new Set();
+            posts.forEach(post => {
+                if (post.id === undefined || post.id === null || seen.has(String(post.id))) post.id = nextId++;
+                seen.add(String(post.id));
+            });
+            state.posts = posts;
+            analysisCache = new WeakMap();
+        }
+
+        function writePosts() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.posts));
+        }
+
+        // Runs a change, saves it, and offers Undo. Returns false and puts everything back if the browser refuses to save.
+        function commit(change, message, { advanceFrom = null } = {}) {
+            const before = JSON.stringify(state.posts);
+            const selectedBefore = state.selectedId;
+            const statusBefore = state.status;
+            const listBefore = visiblePosts().map(post => post.id);
+
+            change();
+            analysisCache = new WeakMap();
+            try {
+                writePosts();
+            } catch {
+                state.posts = JSON.parse(before);
+                render();
+                toast('That could not be saved because this browser\'s storage is full. Remove a large image, then try again.', { error: true });
+                return false;
+            }
+
+            state.mode = 'view';
+            state.dirty = false;
+            state.sendBackOpen = false;
+
+            // When the article leaves the list, move on to whichever one took its place.
+            if (advanceFrom !== null) {
+                const listAfter = visiblePosts();
+                const position = Math.max(0, listBefore.indexOf(advanceFrom));
+                const next = listAfter[Math.min(position, listAfter.length - 1)];
+                state.selectedId = next ? next.id : null;
+                if (!next) desk.dataset.view = 'list';
+            }
+
+            render();
+            focusReview();
+            toast(message, {
+                undo() {
+                    state.posts = JSON.parse(before);
+                    analysisCache = new WeakMap();
+                    try {
+                        writePosts();
+                    } catch {
+                    }
+                    state.status = statusBefore;
+                    state.selectedId = selectedBefore;
+                    state.mode = 'view';
+                    render();
+                    focusReview();
+                    toast('Undone.');
+                }
+            });
+            return true;
+        }
+
+        function record(post, action, note = '') {
+            post.history = [...(Array.isArray(post.history) ? post.history : []), { action, at: new Date().toISOString(), ...(note ? { note } : {}) }];
+        }
+
+        /* ---------- Queue ---------- */
+
+        function visiblePosts() {
+            const query = state.query.trim().toLowerCase();
+            const matches = post => !query || [post.title, post.author, post.sourceName, categoryLabel(categoryKey(post))]
+                .some(value => String(value || '').toLowerCase().includes(query));
+            const list = state.posts.filter(post => statusOf(post) === state.status && matches(post));
+            return state.status === 'pending'
+                ? list.sort((a, b) => (Date.parse(a.submittedAt || '') || 0) - (Date.parse(b.submittedAt || '') || 0) || Number(a.id) - Number(b.id))
+                : list.sort((a, b) => postTime(b) - postTime(a));
+        }
+
+        function renderStatusNav() {
+            document.getElementById('status-nav').innerHTML = Object.entries(STATUSES).map(([key, status]) => {
+                const count = state.posts.filter(post => statusOf(post) === key).length;
+                const waiting = key === 'pending' && count > 0 && state.status !== 'pending';
+                return `
+                    <button type="button" class="status-tab" data-action="status" data-status="${key}" aria-pressed="${key === state.status}">
+                        <span class="status-tab__label">${waiting ? '<span class="status-tab__dot" aria-hidden="true"></span>' : ''}${status.label}</span>
+                        <span class="status-tab__count">${count}</span>
+                    </button>`;
+            }).join('');
+        }
+
+        function renderQueue() {
+            const status = STATUSES[state.status];
+            const list = visiblePosts();
+            const total = state.posts.filter(post => statusOf(post) === state.status).length;
+
+            document.getElementById('queue-title').textContent = status.label;
+            document.getElementById('queue-count').textContent = state.query.trim()
+                ? `${list.length} of ${total} match`
+                : total > 1 ? `${total} articles, ${status.order}` : total === 1 ? '1 article' : '';
+
+            queueList.innerHTML = list.map(post => {
+                const analysis = analyse(post);
+                const foot = [];
+                if (state.status === 'pending' && waitLabel(post)) foot.push(`<span>${esc(waitLabel(post))}</span>`);
+                if (post.pinned) foot.push('<span>Pinned</span>');
+                if (analysis.issues) foot.push(`<span class="flag">${ICON.warn}${plural(analysis.issues, 'check')} to look at</span>`);
+                if (state.status === 'returned' && post.reviewNote) foot.push(`<span class="queue-item__note">Note: ${esc(post.reviewNote)}</span>`);
+                return `
+                    <li>
+                        <button type="button" class="queue-item" data-action="select" data-id="${esc(post.id)}" aria-current="${String(post.id) === String(state.selectedId)}">
+                            <span class="queue-item__title">${esc(post.title || 'Untitled article')}</span>
+                            <span class="queue-item__meta">
+                                <span class="chip">${esc(categoryLabel(categoryKey(post)))}</span>
+                                <span>${esc(post.author || 'No author')}</span>
+                                <span>${esc(post.date || '')}</span>
+                            </span>
+                            <span class="queue-item__foot">${foot.join('')}</span>
+                        </button>
+                    </li>`;
+            }).join('');
+
+            const empty = document.getElementById('queue-empty');
+            if (list.length) {
+                empty.innerHTML = '';
+            } else if (state.query.trim()) {
+                empty.innerHTML = `
+                    <div class="empty">
+                        <h3>No match in ${esc(status.label)}</h3>
+                        <p>Nothing here has "${esc(state.query.trim())}" in its title, author, source or category.</p>
+                        <button type="button" class="pl-btn pl-btn--ghost" data-action="clear-search">Clear search</button>
+                    </div>`;
+            } else {
+                empty.innerHTML = `<div class="empty"><h3>${status.emptyTitle}</h3><p>${status.emptyBody}</p></div>`;
+            }
+        }
+
+        function markSelected() {
+            queueList.querySelectorAll('.queue-item').forEach(item => {
+                item.setAttribute('aria-current', String(item.dataset.id === String(state.selectedId)));
+            });
+        }
+
+        /* ---------- Review pane ---------- */
+
+        function previewMedia(post) {
+            return post.image
+                ? `<div class="preview__media"><img src="${esc(post.image)}" alt=""></div>`
+                : `<div class="preview__media preview__media--word"><span aria-hidden="true">${esc(categoryLabel(categoryKey(post)))}</span></div>`;
+        }
+
+        function renderChecks(analysis) {
+            const icon = { ok: ICON.check, warn: ICON.warn, block: ICON.block };
+            const prefix = { ok: 'Passed', warn: 'Look at', block: 'Blocking' };
+            const order = { block: 0, warn: 1, ok: 2 };
+            return [...analysis.checks].sort((a, b) => order[a.level] - order[b.level]).map(check => `
+                <li class="is-${check.level}">
+                    ${icon[check.level]}
+                    <strong><span class="visually-hidden">${prefix[check.level]}: </span>${esc(check.label)}</strong>
+                    <span>${esc(check.detail)}</span>
+                </li>`).join('');
+        }
+
+        function renderRail(post, analysis) {
+            const pinnedNow = state.posts.find(other => other.pinned && other !== post);
+            const pinHint = post.pinned
+                ? 'Leads the blog index above the newest posts.'
+                : pinnedNow
+                    ? `Replaces "${pinnedNow.title}" at the top of the blog.`
+                    : 'Leads the blog index above the newest posts.';
+            const history = Array.isArray(post.history) ? [...post.history].reverse() : [];
+            const networks = Array.isArray(post.socialNetworks) ? post.socialNetworks.filter(Boolean) : [];
+
+            return `
+                <aside class="rail" aria-label="Checks and details">
+                    <section id="checks" tabindex="-1">
+                        <h3>Checks <span>${analysis.issues ? `${analysis.issues} to look at` : 'All passed'}</span></h3>
+                        <ul class="checks">${renderChecks(analysis)}</ul>
+                    </section>
+
+                    <section>
+                        <h3>On the blog</h3>
+                        <button type="button" class="setting" role="switch" aria-checked="${Boolean(post.pinned)}" data-action="toggle-pin">
+                            <strong>Pin to the top</strong>
+                            <span class="setting__track" aria-hidden="true"></span>
+                            <small>${esc(pinHint)}</small>
+                        </button>
+                        <button type="button" class="setting" role="switch" aria-checked="${post.allowComments !== false}" data-action="toggle-comments">
+                            <strong>Allow comments</strong>
+                            <span class="setting__track" aria-hidden="true"></span>
+                            <small>Comments are not live on the blog yet. The choice is kept for when they are.</small>
+                        </button>
+                    </section>
+
+                    <section>
+                        <h3>Details</h3>
+                        <dl class="details">
+                            <div><dt>Author</dt><dd>${esc(post.author || 'Not given')}</dd></div>
+                            ${post.moderator ? `<div><dt>Moderator</dt><dd>${esc(post.moderator)}</dd></div>` : ''}
+                            ${post.submittedAt ? `<div><dt>Submitted</dt><dd>${esc(dateAndTime(post.submittedAt))}</dd></div>` : ''}
+                            <div><dt>Publish date</dt><dd>${esc(post.date || 'Not set')}</dd></div>
+                            <div><dt>Address</dt><dd>${post.slug ? esc(postUrl(post)) : 'None'}</dd></div>
+                            ${networks.length ? `<div><dt>Share to</dt><dd>${esc(networks.join(', '))}</dd></div>` : ''}
+                        </dl>
+                    </section>
+
+                    <section>
+                        <h3>History</h3>
+                        ${history.length ? `<ol class="history">${history.map(entry => `
+                            <li>
+                                <strong>${esc(HISTORY_LABELS[entry.action] || entry.action)}</strong>
+                                <time datetime="${esc(entry.at)}">${esc(dateAndTime(entry.at))}</time>
+                                ${entry.note ? `<p>${esc(entry.note)}</p>` : ''}
+                            </li>`).join('')}</ol>` : '<p class="rail__none">No decisions have been recorded for this article.</p>'}
+                    </section>
+                </aside>`;
+        }
+
+        function renderDecision(post, analysis) {
+            const status = statusOf(post);
+            const blocked = analysis.blockers > 0;
+            const quiet = `
+                <div class="decision__group decision__group--quiet">
+                    <button type="button" class="pl-btn pl-btn--ghost" data-action="delete">${ICON.trash}<span>Delete</span></button>
+                    <button type="button" class="pl-btn pl-btn--ghost" data-action="edit">${ICON.edit}<span>Edit</span></button>
+                </div>`;
+            const why = blocked ? '<p class="decision__why" id="decision-why">Fix the blocking check before this can be published.</p>' : '';
+            const describedBy = blocked ? 'disabled aria-describedby="decision-why"' : '';
+            const approve = `<button type="button" class="pl-btn pl-btn--primary" data-action="approve" ${describedBy}><span class="long">Approve and publish</span><span class="short" aria-hidden="true">Approve</span></button>`;
+
+            const actions = {
+                pending: `<button type="button" class="pl-btn pl-btn--ghost" data-action="open-sendback">${ICON.sendBack}Send back</button>${approve}`,
+                returned: approve,
+                published: `<button type="button" class="pl-btn pl-btn--ghost" data-action="unpublish">${ICON.hidden}Unpublish</button>`,
+                unpublished: `<button type="button" class="pl-btn pl-btn--primary" data-action="republish" ${describedBy}>Publish again</button>`
+            };
+
+            if (state.sendBackOpen && status === 'pending') {
+                return `
+                    <form class="sendback" id="sendback-form" novalidate>
+                        <div class="sendback__head">
+                            <label for="sendback-note">What needs to change?</label>
+                            <p>The note is saved with the article and shown under Sent back. Nothing is emailed to the author yet.</p>
+                        </div>
+                        <div class="reasons">
+                            ${Object.keys(SEND_BACK_REASONS).map(reason => `<button type="button" class="reason" data-action="reason" data-reason="${esc(reason)}">${esc(reason)}</button>`).join('')}
+                        </div>
+                        <div class="field">
+                            <textarea id="sendback-note" rows="3" aria-describedby="sendback-error"></textarea>
+                            <p class="field__error" id="sendback-error" hidden>${ICON.warn}Write a short note so the author knows what to fix.</p>
+                        </div>
+                        <div class="sendback__actions">
+                            <button type="button" class="pl-btn pl-btn--ghost" data-action="cancel-sendback">Cancel</button>
+                            <button type="submit" class="pl-btn pl-btn--primary">Send back</button>
+                        </div>
+                    </form>`;
+            }
+
+            return `<div class="decision__bar">${quiet}${why}<div class="decision__group">${actions[status]}</div></div>`;
+        }
+
+        function renderView(post) {
+            const analysis = analyse(post);
+            const status = statusOf(post);
+            const excerpt = String(post.excerpt || '').trim();
+            // Same rule as the post page: an excerpt lifted from the opening of the body is not shown twice.
+            const lede = excerpt && !analysis.text.startsWith(excerpt.slice(0, 60)) ? `<p class="preview__lede">${esc(excerpt)}</p>` : '';
+            const wait = status === 'pending' ? waitLabel(post) : '';
+
+            review.innerHTML = `
+                <div class="review__scroll">
+                    <div class="review__inner">
+                        <div class="review__status">
+                            <button type="button" class="text-btn review__back" data-action="back">${ICON.back}All articles</button>
+                            <span class="status-chip status-chip--${status}">${STATUSES[status].icon}${STATUSES[status].label}</span>
+                            ${wait ? `<span>${esc(wait)}</span>` : ''}
+                            ${analysis.issues ? `<button type="button" class="text-btn" data-action="jump-checks">${plural(analysis.issues, 'check')} to look at</button>` : '<span>All checks passed</span>'}
+                            <span class="spacer"></span>
+                            ${status === 'published' && post.slug ? `<a class="text-btn" href="${esc(postUrl(post))}" target="_blank" rel="noopener">Open on the blog${ICON.external}</a>` : ''}
+                        </div>
+
+                        <div class="review__grid">
+                            <article class="preview">
+                                ${status === 'returned' && post.reviewNote ? `<div class="sent-note"><h3>Note sent back with this article</h3><p>${esc(post.reviewNote)}</p></div>` : ''}
+                                <div class="preview__meta">
+                                    <span class="chip">${esc(categoryLabel(categoryKey(post)))}</span>
+                                    <span>${esc(post.date || 'No date')}</span>
+                                </div>
+                                <h2 class="preview__title" id="review-title" tabindex="-1">${esc(post.title || 'Untitled article')}</h2>
+                                ${lede}
+                                ${previewMedia(post)}
+                                ${BlogMedia.galleryHtml(post.gallery)}
+                                <div class="article-frame"><div class="article-sheet"><div class="article-body">${analysis.html || '<p>This article has no text.</p>'}</div></div></div>
+                            </article>
+                            ${splitter('rail')}
+                            ${renderRail(post, analysis)}
+                        </div>
+                    </div>
+                </div>
+                <div class="decision">${renderDecision(post, analysis)}</div>`;
+            // Watching the frame (preview resized) and the sheet (pictures loading) keeps the fit current.
+            // observe() also reports once straight away, which does the first fit.
+            const frame = review.querySelector('.article-frame');
+            articleFit.disconnect();
+            articleFit.observe(frame);
+            articleFit.observe(frame.firstElementChild);
+        }
+
+        // Shrinks the full-size article sheet to the preview's width; see .article-sheet in the stylesheet.
+        const articleFit = new ResizeObserver(() => {
+            const frame = review.querySelector('.article-frame');
+            if (!frame) return;
+            const sheet = frame.firstElementChild;
+            const scale = Math.min(1, frame.clientWidth / sheet.offsetWidth);
+            sheet.style.transform = `scale(${scale})`;
+            frame.style.height = `${sheet.offsetHeight * scale}px`;
+        });
+
+        function renderEdit(post) {
+            const categories = [...new Set([...Object.keys(CATEGORY_LABELS), categoryKey(post)].filter(Boolean))];
+            const isoDate = post.publishDate || (postTime(post) ? new Date(postTime(post) - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10) : '');
+            editImage = post.image || '';
+
+            review.innerHTML = `
+                <div class="review__scroll">
+                    <div class="review__inner">
+                        <form class="edit" id="edit-form" novalidate>
+                            <h2 class="edit__heading" id="review-title" tabindex="-1">${post === draft ? 'New article' : 'Edit article'}</h2>
+
+                            <div class="field">
+                                <label for="edit-title">Title</label>
+                                <input id="edit-title" name="title" type="text" maxlength="255" value="${esc(post.title)}" aria-describedby="edit-title-error">
+                                <p class="field__error" id="edit-title-error" hidden>${ICON.warn}Give the article a title.</p>
+                            </div>
+
+                            <div class="field">
+                                <label for="edit-excerpt">Excerpt</label>
+                                <textarea id="edit-excerpt" name="excerpt" rows="3" aria-describedby="edit-excerpt-hint">${esc(post.excerpt)}</textarea>
+                                <p class="field__hint" id="edit-excerpt-hint">Shown on blog cards and under the headline. <span id="edit-excerpt-count"></span></p>
+                            </div>
+
+                            <div class="edit__row">
+                                <div class="field">
+                                    <label for="edit-category">Category</label>
+                                    <select id="edit-category" name="category">
+                                        ${categories.map(key => `<option value="${esc(key)}" ${key === categoryKey(post) ? 'selected' : ''}>${esc(categoryLabel(key))}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="edit-author">Author</label>
+                                    <input id="edit-author" name="author" type="text" maxlength="100" value="${esc(post.author)}">
+                                </div>
+                                <div class="field">
+                                    <label for="edit-date">Publish date</label>
+                                    <input id="edit-date" name="publishDate" type="date" value="${esc(isoDate)}">
+                                </div>
+                                <div class="field">
+                                    <label for="edit-source">Source name</label>
+                                    <input id="edit-source" name="sourceName" type="text" maxlength="100" value="${esc(post.sourceName)}" aria-describedby="edit-source-hint">
+                                    <p class="field__hint" id="edit-source-hint">Optional. Shown as "Source: ..." on the blog.</p>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <span class="field__label" id="edit-image-label">Main image</span>
+                                <div class="edit__image">
+                                    <div class="edit__thumb" id="edit-thumb"></div>
+                                    <input class="visually-hidden" id="edit-image" type="file" accept="image/*" aria-labelledby="edit-image-label">
+                                    <label class="pl-btn pl-btn--ghost" for="edit-image">Choose image</label>
+                                    <button type="button" class="pl-btn pl-btn--ghost" id="edit-image-remove" data-action="remove-image">Remove</button>
+                                </div>
+                                <p class="field__hint" id="edit-image-hint">Shown on blog cards and at the top of the article. Large photos are shrunk for you.</p>
+                            </div>
+
+                            <div class="field">
+                                <span class="field__label">More photos</span>
+                                <div id="edit-gallery"></div>
+                                <p class="field__hint">Optional. Shown as thumbnails under the main image. To place a picture inside the text, use the picture button above the article.</p>
+                            </div>
+
+                            <div class="field">
+                                <span class="field__label" id="edit-body-label">Article</span>
+                                <div class="editor">
+                                    <div class="editor__toolbar" role="toolbar" aria-label="Formatting">
+                                        <select aria-label="Text style" data-command="formatBlock">
+                                            <option value="P">Paragraph</option>
+                                            <option value="H2">Heading</option>
+                                            <option value="H3">Subheading</option>
+                                            <option value="BLOCKQUOTE">Quote</option>
+                                        </select>
+                                        <button type="button" data-command="bold" aria-label="Bold"><strong>B</strong></button>
+                                        <button type="button" data-command="italic" aria-label="Italic"><em>I</em></button>
+                                        <button type="button" data-command="insertUnorderedList" aria-label="Bulleted list">${ICON.bullets}</button>
+                                        <button type="button" data-command="insertOrderedList" aria-label="Numbered list">${ICON.numbers}</button>
+                                        <button type="button" data-action="open-link" aria-label="Add link" aria-expanded="false" aria-controls="editor-link">${ICON.link}</button>
+                                        <button type="button" data-action="insert-image" aria-label="Insert picture at the cursor" title="Insert picture at the cursor">${ICON.picture}</button>
+                                        <button type="button" data-command="undo" aria-label="Undo">${ICON.undo}</button>
+                                        <button type="button" data-command="redo" aria-label="Redo">${ICON.redo}</button>
+                                        <span class="spacer"></span>
+                                        <button type="button" data-action="toggle-html" aria-pressed="false">HTML</button>
+                                    </div>
+                                    <div class="editor__link" id="editor-link" hidden>
+                                        <input type="url" id="editor-link-url" placeholder="https://" aria-label="Link address" aria-describedby="editor-link-error">
+                                        <button type="button" class="pl-btn pl-btn--ghost" data-action="apply-link">Add link</button>
+                                        <button type="button" class="pl-btn pl-btn--ghost" data-action="close-link">Cancel</button>
+                                        <p class="field__error" id="editor-link-error" hidden>${ICON.warn}Enter a full address starting with https://</p>
+                                    </div>
+                                    <div class="editor__content article-body" id="edit-body" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="edit-body-label" aria-describedby="edit-body-error">${BlogMedia.prepare(analyse(post).html)}</div>
+                                    <input class="visually-hidden" id="edit-insert-image" type="file" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+                                    <textarea class="editor__source" id="edit-source-html" aria-label="Article HTML" spellcheck="false" hidden></textarea>
+                                </div>
+                                <p class="field__error" id="edit-insert-error" hidden></p>
+                                <p class="field__error" id="edit-body-error" hidden>${ICON.warn}The article needs some text.</p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="decision">
+                    <div class="decision__bar">
+                        <p class="decision__why" id="edit-state">No changes yet.</p>
+                        <div class="decision__group">
+                            <button type="button" class="pl-btn pl-btn--ghost" data-action="cancel-edit">Cancel</button>
+                            <button type="submit" form="edit-form" class="pl-btn pl-btn--primary">${post === draft ? 'Add article' : 'Save changes'}</button>
+                        </div>
+                    </div>
+                </div>`;
+
+            editGallery = BlogMedia.galleryEditor(document.getElementById('edit-gallery'), { onChange: markDirty });
+            editGallery.items = post.gallery;
+            sourcePictures = [];
+            updateEditThumb();
+            updateExcerptCount();
+        }
+
+        function renderReview() {
+            const post = selectedPost();
+            if (!post) {
+                state.mode = 'view';
+                review.innerHTML = `
+                    <div class="review__scroll">
+                        <div class="review__inner">
+                            <div class="empty">
+                                <h3>${state.posts.length ? 'Choose an article to review' : 'There are no articles yet'}</h3>
+                                <p>${state.posts.length ? 'Pick one from the list to read it as blog visitors will, run through its checks and decide what happens next.' : 'Articles sent in from the blog\'s New post form will be listed here.'}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                return;
+            }
+            if (state.mode === 'edit') {
+                renderEdit(post);
+            } else {
+                renderView(post);
+            }
+        }
+
+        function syncUrl() {
+            const params = new URLSearchParams({ status: state.status });
+            const post = selectedPost();
+            if (post?.slug) params.set('post', post.slug);
+            history.replaceState(null, '', `${location.pathname}?${params}`);
+        }
+
+        function render() {
+            if (state.selectedId !== null && !selectedPost()) state.selectedId = null;
+            renderStatusNav();
+            renderQueue();
+            renderReview();
+            syncUrl();
+        }
+
+        function focusReview() {
+            const target = document.getElementById('review-title') || document.querySelector('.status-tab[aria-pressed="true"]');
+            target?.focus({ preventScroll: true });
+            review.querySelector('.review__scroll')?.scrollTo({ top: 0 });
+            if (phone.matches) window.scrollTo({ top: 0 });
+        }
+
+        /* ---------- Toast and confirm ---------- */
+
+        const toastRegion = document.getElementById('toast-region');
+        let toastTimer = 0;
+        let toastUndo = null;
+
+        function clearToast() {
+            clearTimeout(toastTimer);
+            toastUndo = null;
+            toastRegion.innerHTML = '';
+        }
+
+        function toast(message, { undo = null, error = false } = {}) {
+            clearToast();
+            toastUndo = undo;
+            toastRegion.innerHTML = `
+                <div class="toast">
+                    ${error ? ICON.warn : ''}
+                    <span>${esc(message)}</span>
+                    ${undo ? '<button type="button" class="toast__undo" data-action="toast-undo">Undo</button>' : ''}
+                    <button type="button" data-action="toast-close" aria-label="Dismiss message">${ICON.x}</button>
+                </div>`;
+            // An error stays until it is dismissed.
+            if (!error) toastTimer = setTimeout(clearToast, undo ? 10000 : 5000);
+        }
+
+        const confirmBox = document.getElementById('confirm');
+
+        function confirmDialog({ title, body, confirmLabel, cancelLabel = 'Cancel' }) {
+            return new Promise(resolve => {
+                document.getElementById('confirm-title').textContent = title;
+                document.getElementById('confirm-body').textContent = body;
+                document.getElementById('confirm-ok').textContent = confirmLabel;
+                document.getElementById('confirm-cancel').textContent = cancelLabel;
+                confirmBox.returnValue = '';
+                confirmBox.addEventListener('close', () => resolve(confirmBox.returnValue === 'confirm'), { once: true });
+                confirmBox.showModal();
+            });
+        }
+
+        // Leaving an edit with unsaved changes always asks first.
+        async function leaveEdit() {
+            if (state.mode !== 'edit' || !state.dirty) return true;
+            const post = selectedPost();
+            return confirmDialog({
+                title: 'Discard your changes?',
+                body: `Your edits to "${post?.title || 'this article'}" have not been saved.`,
+                confirmLabel: 'Discard changes',
+                cancelLabel: 'Keep editing'
+            });
+        }
+
+        /* ---------- Edit form ---------- */
+
+        function markDirty() {
+            state.dirty = true;
+            const label = document.getElementById('edit-state');
+            if (label) label.textContent = 'You have unsaved changes.';
+        }
+
+        function updateExcerptCount() {
+            const field = document.getElementById('edit-excerpt');
+            const count = document.getElementById('edit-excerpt-count');
+            if (field && count) count.textContent = `${field.value.trim().length} characters; aim for 180 or fewer.`;
+        }
+
+        function updateEditThumb() {
+            const thumb = document.getElementById('edit-thumb');
+            if (!thumb) return;
+            thumb.innerHTML = editImage ? `<img src="${esc(editImage)}" alt="Current image">` : 'No image';
+            document.getElementById('edit-image-remove').hidden = !editImage;
+        }
+
+        function setFieldError(inputId, errorId, invalid) {
+            const input = document.getElementById(inputId);
+            document.getElementById(errorId).hidden = !invalid;
+            if (invalid) {
+                input.setAttribute('aria-invalid', 'true');
+            } else {
+                input.removeAttribute('aria-invalid');
+            }
+            return invalid;
+        }
+
+        // In the HTML view a stored picture would be hundreds of thousands of characters, so it is shown as "stored-picture-1".
+        function setAsidePictures(html) {
+            sourcePictures = [];
+            return html.replace(/data:image\/[^"'\s)]+/g, picture => `stored-picture-${sourcePictures.push(picture)}`);
+        }
+
+        function restorePictures(html) {
+            return html.replace(/stored-picture-(\d+)/g, (name, number) => sourcePictures[number - 1] || name);
+        }
+
+        function editorHtmlMode() {
+            return !document.getElementById('edit-source-html').hidden;
+        }
+
+        function saveEdit() {
+            const post = selectedPost();
+            const form = document.getElementById('edit-form');
+            const data = new FormData(form);
+            const title = data.get('title').trim();
+            const rawBody = editorHtmlMode() ? restorePictures(document.getElementById('edit-source-html').value) : document.getElementById('edit-body').innerHTML;
+            const body = sanitize(BlogMedia.tidy(rawBody));
+            const hasBody = Boolean(body.body.textContent.trim() || body.body.querySelector('img'));
+
+            const titleMissing = setFieldError('edit-title', 'edit-title-error', !title);
+            const bodyMissing = setFieldError(editorHtmlMode() ? 'edit-source-html' : 'edit-body', 'edit-body-error', !hasBody);
+            if (titleMissing) {
+                document.getElementById('edit-title').focus();
+                return;
+            }
+            if (bodyMissing) {
+                document.getElementById(editorHtmlMode() ? 'edit-source-html' : 'edit-body').focus();
+                return;
+            }
+
+            const isNew = post === draft;
+            const saved = commit(() => {
+                post.title = title;
+                post.excerpt = data.get('excerpt').trim();
+                post.category = data.get('category');
+                post.author = data.get('author').trim();
+                post.content = body.html;
+                post.image = editImage;
+                // An emptied gallery is saved as an empty list, so a sample post's photos do not come back.
+                post.gallery = editGallery.items;
+                const source = data.get('sourceName').trim();
+                if (source) {
+                    post.sourceName = source;
+                } else {
+                    delete post.sourceName;
+                }
+                const publishDate = data.get('publishDate');
+                if (publishDate) {
+                    post.publishDate = publishDate;
+                    post.date = shortDate(new Date(`${publishDate}T00:00:00`).getTime());
+                }
+                if (isNew) {
+                    const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'article';
+                    let slug = base;
+                    for (let n = 2; state.posts.some(other => other.slug === slug); n++) slug = `${base}-${n}`;
+                    post.slug = slug;
+                    record(post, 'added');
+                    state.posts.push(post);
+                } else {
+                    record(post, 'edited');
+                }
+            }, isNew ? `"${title}" is in Needs review. Approve it to publish.` : 'Changes saved.');
+            if (saved && isNew) draft = null;
+        }
+
+        /* ---------- Actions ---------- */
+
+        function selectPost(id) {
+            state.selectedId = id;
+            state.mode = 'view';
+            state.dirty = false;
+            state.sendBackOpen = false;
+            markSelected();
+            renderReview();
+            syncUrl();
+            if (phone.matches) {
+                desk.dataset.view = 'detail';
+                focusReview();
+            } else {
+                review.querySelector('.review__scroll')?.scrollTo({ top: 0 });
+            }
+        }
+
+        function exportBackup() {
+            const blob = new Blob([JSON.stringify(state.posts, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `pepperlabs-blog-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            toast(`Backup of ${plural(state.posts.length, 'article')} downloaded.`);
+        }
+
+        const actions = {
+            async status(element) {
+                if (!(await leaveEdit())) return;
+                state.status = element.dataset.status;
+                state.mode = 'view';
+                state.dirty = false;
+                state.sendBackOpen = false;
+                state.selectedId = phone.matches ? null : (visiblePosts()[0]?.id ?? null);
+                render();
+                document.querySelector('.status-tab[aria-pressed="true"]')?.focus();
+            },
+
+            async select(element) {
+                if (String(element.dataset.id) === String(state.selectedId) && !phone.matches) return;
+                if (!(await leaveEdit())) return;
+                selectPost(byId(element.dataset.id)?.id ?? null);
+            },
+
+            async back() {
+                if (!(await leaveEdit())) return;
+                state.mode = 'view';
+                state.dirty = false;
+                desk.dataset.view = 'list';
+                renderReview();
+                queueList.querySelector('[aria-current="true"]')?.focus();
+            },
+
+            'clear-search'() {
+                state.query = '';
+                searchInput.value = '';
+                renderQueue();
+                searchInput.focus();
+            },
+
+            'jump-checks'() {
+                const checks = document.getElementById('checks');
+                checks.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+                checks.focus({ preventScroll: true });
+            },
+
+            approve() {
+                const post = selectedPost();
+                commit(() => {
+                    post.content = analyse(post).html;
+                    post.status = 'published';
+                    delete post.reviewNote;
+                    record(post, 'approved');
+                }, `"${post.title}" is published.`, { advanceFrom: post.id });
+            },
+
+            republish() {
+                const post = selectedPost();
+                commit(() => {
+                    post.content = analyse(post).html;
+                    post.status = 'published';
+                    record(post, 'republished');
+                }, `"${post.title}" is published again.`, { advanceFrom: post.id });
+            },
+
+            unpublish() {
+                const post = selectedPost();
+                commit(() => {
+                    post.status = 'unpublished';
+                    post.pinned = false;
+                    record(post, 'unpublished');
+                }, `"${post.title}" is off the blog.`, { advanceFrom: post.id });
+            },
+
+            'open-sendback'() {
+                state.sendBackOpen = true;
+                renderReview();
+                document.getElementById('sendback-note').focus();
+            },
+
+            'cancel-sendback'() {
+                state.sendBackOpen = false;
+                renderReview();
+                review.querySelector('[data-action="open-sendback"]')?.focus();
+            },
+
+            reason(element) {
+                const note = document.getElementById('sendback-note');
+                const line = SEND_BACK_REASONS[element.dataset.reason];
+                if (!note.value.includes(line)) note.value = note.value.trim() ? `${note.value.trim()}\n${line}` : line;
+                setFieldError('sendback-note', 'sendback-error', false);
+                note.focus();
+            },
+
+            async delete() {
+                const post = selectedPost();
+                const confirmed = await confirmDialog({
+                    title: `Delete "${post.title || 'this article'}"?`,
+                    body: 'It is removed from this browser for good. To take it off the blog but keep it, unpublish it instead.',
+                    confirmLabel: 'Delete article'
+                });
+                if (!confirmed) return;
+                commit(() => {
+                    state.posts = state.posts.filter(other => other !== post);
+                }, `"${post.title}" was deleted.`, { advanceFrom: post.id });
+            },
+
+            async 'new-article'() {
+                if (!(await leaveEdit())) return;
+                const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                draft = {
+                    id: Math.max(0, ...state.posts.map(post => Number(post.id) || 0)) + 1,
+                    title: '',
+                    excerpt: '',
+                    category: '',
+                    author: '',
+                    content: '',
+                    image: '',
+                    gallery: [],
+                    publishDate: today,
+                    date: shortDate(Date.now()),
+                    status: 'pending',
+                    submittedAt: new Date().toISOString()
+                };
+                state.status = 'pending';
+                state.selectedId = draft.id;
+                state.sendBackOpen = false;
+                render();
+                actions.edit();
+                if (phone.matches) desk.dataset.view = 'detail';
+            },
+
+            edit() {
+                state.mode = 'edit';
+                state.dirty = false;
+                state.sendBackOpen = false;
+                renderReview();
+                review.querySelector('.review__scroll').scrollTo({ top: 0 });
+                document.getElementById('edit-title').focus();
+            },
+
+            async 'cancel-edit'() {
+                if (!(await leaveEdit())) return;
+                state.mode = 'view';
+                state.dirty = false;
+                if (selectedPost() === draft) {
+                    draft = null;
+                    state.selectedId = null;
+                    desk.dataset.view = 'list';
+                    render();
+                } else {
+                    renderReview();
+                }
+                focusReview();
+            },
+
+            'toggle-pin'() {
+                const post = selectedPost();
+                const pin = !post.pinned;
+                commit(() => {
+                    // The blog leads with one pinned post, so pinning this one releases the other.
+                    if (pin) state.posts.forEach(other => { if (other.pinned) other.pinned = false; });
+                    post.pinned = pin;
+                    record(post, pin ? 'pinned' : 'unpinned');
+                }, pin ? 'Pinned to the top of the blog.' : 'Unpinned.');
+                review.querySelector('[data-action="toggle-pin"]')?.focus({ preventScroll: true });
+            },
+
+            'toggle-comments'() {
+                const post = selectedPost();
+                const allow = post.allowComments === false;
+                commit(() => {
+                    post.allowComments = allow;
+                    record(post, allow ? 'comments-on' : 'comments-off');
+                }, allow ? 'Comments allowed on this article.' : 'Comments turned off for this article.');
+                review.querySelector('[data-action="toggle-comments"]')?.focus({ preventScroll: true });
+            },
+
+            'remove-image'() {
+                editImage = '';
+                document.getElementById('edit-image').value = '';
+                updateEditThumb();
+                markDirty();
+            },
+
+            'toggle-html'(element) {
+                const visual = document.getElementById('edit-body');
+                const source = document.getElementById('edit-source-html');
+                const toHtml = source.hidden;
+                if (toHtml) {
+                    source.value = setAsidePictures(visual.innerHTML.trim());
+                } else {
+                    visual.innerHTML = BlogMedia.prepare(sanitize(restorePictures(source.value)).html);
+                }
+                source.hidden = !toHtml;
+                visual.hidden = toHtml;
+                element.setAttribute('aria-pressed', String(toHtml));
+                document.getElementById('editor-link').hidden = true;
+                review.querySelectorAll('.editor__toolbar [data-command], .editor__toolbar [data-action="open-link"], .editor__toolbar [data-action="insert-image"]').forEach(control => { control.disabled = toHtml; });
+                (toHtml ? source : visual).focus();
+            },
+
+            'insert-image'() {
+                document.getElementById('edit-insert-image').click();
+            },
+
+            'open-link'(element) {
+                const selection = getSelection();
+                const editor = document.getElementById('edit-body');
+                savedRange = selection.rangeCount && editor.contains(selection.anchorNode) ? selection.getRangeAt(0).cloneRange() : null;
+                document.getElementById('editor-link').hidden = false;
+                element.setAttribute('aria-expanded', 'true');
+                document.getElementById('editor-link-url').focus();
+            },
+
+            'close-link'() {
+                document.getElementById('editor-link').hidden = true;
+                document.getElementById('editor-link-url').value = '';
+                document.getElementById('editor-link-error').hidden = true;
+                const opener = review.querySelector('[data-action="open-link"]');
+                opener.setAttribute('aria-expanded', 'false');
+                opener.focus();
+            },
+
+            'apply-link'() {
+                const url = document.getElementById('editor-link-url').value.trim();
+                if (setFieldError('editor-link-url', 'editor-link-error', !/^https?:\/\/\S+$/i.test(url) && !url.startsWith('/'))) return;
+                const editor = document.getElementById('edit-body');
+                editor.focus();
+                if (savedRange) {
+                    const selection = getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(savedRange);
+                }
+                if (getSelection().isCollapsed) {
+                    document.execCommand('insertHTML', false, `<a href="${esc(url)}">${esc(url)}</a>`);
+                } else {
+                    document.execCommand('createLink', false, url);
+                }
+                markDirty();
+                actions['close-link']();
+                editor.focus();
+            },
+
+            export: exportBackup,
+
+            'toast-undo'() {
+                const undo = toastUndo;
+                clearToast();
+                undo?.();
+            },
+
+            'toast-close': clearToast
+        };
+
+        document.addEventListener('click', event => {
+            const element = event.target.closest('[data-action]');
+            if (element && !element.disabled) actions[element.dataset.action]?.(element);
+        });
+
+        /* ---------- Other events ---------- */
+
+        searchInput.addEventListener('input', () => {
+            state.query = searchInput.value;
+            renderQueue();
+        });
+
+        // Up and Down walk the list; Enter or Space opens the article in focus.
+        queueList.addEventListener('keydown', event => {
+            if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+            const items = [...queueList.querySelectorAll('.queue-item')];
+            const current = items.indexOf(document.activeElement);
+            if (current < 0) return;
+            event.preventDefault();
+            const target = event.key === 'Home' ? 0
+                : event.key === 'End' ? items.length - 1
+                : Math.max(0, Math.min(items.length - 1, current + (event.key === 'ArrowDown' ? 1 : -1)));
+            items[target].focus();
+        });
+
+        review.addEventListener('submit', event => {
+            event.preventDefault();
+            if (event.target.id === 'edit-form') {
+                saveEdit();
+                return;
+            }
+            if (event.target.id === 'sendback-form') {
+                const note = document.getElementById('sendback-note').value.trim();
+                if (setFieldError('sendback-note', 'sendback-error', !note)) {
+                    document.getElementById('sendback-note').focus();
+                    return;
+                }
+                const post = selectedPost();
+                commit(() => {
+                    post.status = 'returned';
+                    post.reviewNote = note;
+                    post.pinned = false;
+                    record(post, 'returned', note);
+                }, `"${post.title}" was sent back.`, { advanceFrom: post.id });
+            }
+        });
+
+        review.addEventListener('input', event => {
+            if (!event.target.closest('#edit-form') || event.target.id === 'editor-link-url') return;
+            markDirty();
+            if (event.target.id === 'edit-excerpt') updateExcerptCount();
+        });
+
+        review.addEventListener('change', event => {
+            if (event.target.id === 'edit-image') {
+                const file = event.target.files[0];
+                const hint = document.getElementById('edit-image-hint');
+                if (!file) return;
+                BlogMedia.shrink(file).then(shrunk => {
+                    editImage = shrunk;
+                    hint.textContent = 'Shown on blog cards and at the top of the article. Large photos are shrunk for you.';
+                    updateEditThumb();
+                    markDirty();
+                }).catch(error => {
+                    event.target.value = '';
+                    hint.textContent = error.message;
+                });
+                return;
+            }
+            // Pictures chosen from the toolbar go into the article where the cursor was.
+            if (event.target.id === 'edit-insert-image') {
+                const error = document.getElementById('edit-insert-error');
+                error.hidden = true;
+                BlogMedia.insertImages(document.getElementById('edit-body'), [...event.target.files])
+                    .then(markDirty)
+                    .catch(problem => {
+                        error.textContent = problem.message;
+                        error.hidden = false;
+                    })
+                    .finally(() => { event.target.value = ''; });
+                return;
+            }
+            if (event.target.dataset.command === 'formatBlock') {
+                document.getElementById('edit-body').focus();
+                document.execCommand('formatBlock', false, event.target.value);
+                markDirty();
+            }
+        });
+
+        // Toolbar buttons must not take the selection away from the text they act on.
+        review.addEventListener('mousedown', event => {
+            if (event.target.closest('.editor__toolbar button')) event.preventDefault();
+        });
+
+        review.addEventListener('click', event => {
+            const control = event.target.closest('.editor__toolbar button[data-command]');
+            if (!control || control.disabled) return;
+            document.getElementById('edit-body').focus();
+            document.execCommand(control.dataset.command, false, null);
+            markDirty();
+        });
+
+        review.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && state.sendBackOpen) {
+                actions['cancel-sendback']();
+            } else if (event.key === 'Enter' && event.target.id === 'editor-link-url') {
+                event.preventDefault();
+                actions['apply-link']();
+            }
+        });
+
+        window.addEventListener('beforeunload', event => {
+            if (state.mode === 'edit' && state.dirty) event.preventDefault();
+        });
+
+        // A post submitted from the blog in another tab shows up here without a reload.
+        window.addEventListener('storage', event => {
+            if (event.key !== STORAGE_KEY || state.mode === 'edit') return;
+            loadPosts();
+            render();
+            toast('The article list was updated from another tab.');
+        });
+
+        /* ---------- Adjustable panes ---------- */
+
+        // Dragging a divider gives the list or the rail a set width; the article in the middle takes the rest.
+        // direction is which way the pane grows as its divider moves right.
+        const PANES_KEY = 'blog_admin_panes';
+        const PANES = {
+            queue: { property: '--queue-w', target: '.queue', label: 'Resize the article list', initial: 320, min: 240, max: 560, direction: 1 },
+            rail: { property: '--rail-w', target: '.rail', label: 'Resize checks and details', initial: 240, min: 220, max: 480, direction: -1 }
+        };
+        const paneWidths = {};
+
+        function splitter(name) {
+            const pane = PANES[name];
+            return `<div class="splitter splitter--${name}" role="separator" tabindex="0" aria-orientation="vertical" aria-label="${pane.label}" aria-valuemin="${pane.min}" aria-valuemax="${pane.max}" aria-valuenow="${paneWidths[name] ?? pane.initial}" data-pane="${name}" title="Drag to resize. Double-click to reset."></div>`;
+        }
+
+        // A width of null puts the pane back to the size the stylesheet gives it.
+        function setPane(name, width) {
+            const pane = PANES[name];
+            if (width === null) {
+                delete paneWidths[name];
+                desk.style.removeProperty(pane.property);
+            } else {
+                paneWidths[name] = Math.round(Math.max(pane.min, Math.min(pane.max, width)));
+                desk.style.setProperty(pane.property, `${paneWidths[name]}px`);
+            }
+            desk.querySelector(`.splitter--${name}`)?.setAttribute('aria-valuenow', paneWidths[name] ?? pane.initial);
+        }
+
+        function savePanes() {
+            try {
+                localStorage.setItem(PANES_KEY, JSON.stringify(paneWidths));
+            } catch (error) { /* The widths still hold until the page is closed. */ }
+        }
+
+        function paneWidth(name) {
+            return desk.querySelector(PANES[name].target).getBoundingClientRect().width;
+        }
+
+        desk.addEventListener('pointerdown', event => {
+            const handle = event.target.closest('.splitter');
+            if (!handle || event.button !== 0) return;
+            event.preventDefault();
+            const name = handle.dataset.pane;
+            const startX = event.clientX;
+            const startWidth = paneWidth(name);
+            const move = moved => setPane(name, startWidth + (moved.clientX - startX) * PANES[name].direction);
+
+            handle.setPointerCapture(event.pointerId);
+            handle.classList.add('is-dragging');
+            desk.classList.add('is-resizing');
+            handle.addEventListener('pointermove', move);
+            handle.addEventListener('lostpointercapture', () => {
+                handle.removeEventListener('pointermove', move);
+                handle.classList.remove('is-dragging');
+                desk.classList.remove('is-resizing');
+                savePanes();
+            }, { once: true });
+        });
+
+        desk.addEventListener('dblclick', event => {
+            const handle = event.target.closest('.splitter');
+            if (!handle) return;
+            setPane(handle.dataset.pane, null);
+            savePanes();
+        });
+
+        // Left and Right move a focused divider; Home puts the pane back to its starting width.
+        desk.addEventListener('keydown', event => {
+            const handle = event.target.closest('.splitter');
+            if (!handle || !['ArrowLeft', 'ArrowRight', 'Home'].includes(event.key)) return;
+            event.preventDefault();
+            const name = handle.dataset.pane;
+            const step = (event.key === 'ArrowRight' ? 16 : -16) * PANES[name].direction;
+            setPane(name, event.key === 'Home' ? null : paneWidth(name) + step);
+            savePanes();
+        });
+
+        try {
+            const saved = JSON.parse(localStorage.getItem(PANES_KEY)) || {};
+            Object.keys(PANES).forEach(name => {
+                if (Number.isFinite(saved[name])) setPane(name, saved[name]);
+            });
+        } catch (error) { /* No saved widths, so the panes start at their usual sizes. */ }
+        desk.querySelector('.queue').insertAdjacentHTML('afterend', splitter('queue'));
+
+        /* ---------- Start ---------- */
+
+        loadPosts();
+        (() => {
+            const params = new URLSearchParams(location.search);
+            const linked = state.posts.find(post => post.slug && post.slug === params.get('post'));
+            if (linked) {
+                state.status = statusOf(linked);
+                state.selectedId = linked.id;
+                desk.dataset.view = 'detail';
+            } else {
+                const hasPending = state.posts.some(post => statusOf(post) === 'pending');
+                state.status = params.get('status') in STATUSES ? params.get('status') : hasPending ? 'pending' : 'published';
+                state.selectedId = phone.matches ? null : (visiblePosts()[0]?.id ?? null);
+            }
+            render();
+        })();
+    </script>
+</body>
+</html>
