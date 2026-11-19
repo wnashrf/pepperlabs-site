@@ -1,0 +1,205 @@
+:root {
+  --paper: #fffaf7;
+  --cream: #fff4f0;
+  --ink: #241a1b;
+  --muted: #716164;
+  --red: #d9342a;
+  --deep: #2a0b09;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+}
+
+* { box-sizing: border-box; }
+html { min-width: 320px; scroll-behavior: smooth; }
+body { min-width: 320px; margin: 0; overflow-x: hidden; background: var(--cream); }
+body::before { position: fixed; z-index: 20; inset: 0; pointer-events: none; content: ""; opacity: .11; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E"); }
+a { color: inherit; text-decoration: none; }
+img { display: block; width: 100%; }
+.site-page { display: none; min-height: calc(100vh - 82px); }
+.site-page.is-active { display: block; animation: surreal-in .55s ease both; }
+@keyframes surreal-in { from { opacity: 0; transform: translateY(14px) rotate(-.3deg); } to { opacity: 1; transform: none; } }
+
+.surreal-header { position: sticky; z-index: 30; top: 0; display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 20px; padding: 0 clamp(20px, 5vw, 76px); border-bottom: 1px solid rgb(42 11 9 / 13%); background: rgb(255 244 240 / 91%); backdrop-filter: blur(14px); }
+.surreal-brand { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 19px; font-weight: 800; letter-spacing: -.08em; }
+.surreal-brand span { font-weight: 400; }
+.surreal-brand i { align-self: flex-start; margin: -5px 0 0 5px; color: var(--red); font-size: 21px; font-style: normal; }
+.surreal-nav { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 34px); font-size: 11px; font-weight: 700; }
+.surreal-nav a { transition: color .18s ease, transform .18s ease; }
+.surreal-nav a:hover,.surreal-nav a[aria-current="page"] { color: var(--red); }
+.surreal-nav__contact { padding: 12px 16px; border-radius: 50px 50px 50px 8px; background: var(--red); color: #fff; }
+.surreal-nav__contact span { padding-left: 12px; }
+.surreal-main { width: min(1320px, 100%); margin: 0 auto; padding: 0 clamp(20px, 4vw, 58px); }
+.surreal-kicker { display: flex; align-items: center; gap: 10px; margin: 0 0 24px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .17em; text-transform: uppercase; }
+.surreal-kicker span { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+.surreal-cover { position: relative; display: grid; min-height: min(800px, calc(100vh - 76px)); grid-template-columns: 1.05fr .95fr; align-items: center; gap: 48px; padding: 72px 2vw 86px; }
+.surreal-cover::before { position: absolute; top: 14%; right: 12%; width: min(42vw, 490px); aspect-ratio: 1; border: 1px solid rgb(217 52 42 / 28%); border-radius: 44% 56% 61% 39% / 49% 38% 62% 51%; content: ""; transform: rotate(26deg); }
+.surreal-cover::after { position: absolute; top: 22%; right: 21%; width: min(26vw, 310px); aspect-ratio: 1; border-radius: 50%; background: rgb(217 52 42 / 10%); content: ""; }
+.surreal-cover__copy,.surreal-cover__image { position: relative; z-index: 1; }
+.surreal-cover__copy { padding-left: 2vw; }
+.surreal-cover h1,.surreal-about h1,.surreal-expertise h1,.surreal-impact h1,.surreal-work h1,.surreal-blog h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(62px, 8.7vw, 122px); font-weight: 400; letter-spacing: -.085em; line-height: .82; }
+.surreal-cover h1 em,.surreal-about h1 em,.surreal-expertise h1 em,.surreal-impact h1 em,.surreal-work h1 em,.surreal-blog h1 em { color: var(--red); font-weight: 400; }
+.surreal-intro { max-width: 390px; margin: 28px 0; color: var(--muted); font-size: 16px; line-height: 1.7; }
+.surreal-link { display: inline-flex; align-items: center; gap: 22px; padding-bottom: 8px; border-bottom: 1px solid var(--red); color: var(--red); font-size: 12px; font-weight: 800; }
+.surreal-link span { font-size: 17px; }
+.surreal-cover__image { width: min(100%, 550px); margin: 22px 4% 0 auto; padding: 12px; border: 1px solid rgb(42 11 9 / 17%); border-radius: 47% 53% 10px 10px; background: var(--paper); transform: rotate(2deg); }
+.surreal-cover__image::before { position: absolute; z-index: -1; top: -18px; right: -24px; bottom: 30px; left: 30px; border: 1px solid rgb(217 52 42 / 37%); border-radius: 49% 51% 10px 10px; content: ""; }
+.surreal-cover__image img { height: clamp(270px, 39vw, 460px); border-radius: 47% 53% 7px 7px; object-fit: cover; filter: saturate(.72); }
+.surreal-cover__image figcaption { display: flex; justify-content: space-between; padding: 12px 5px 2px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.surreal-cover__orbit { position: absolute; z-index: 2; top: 17%; right: 4%; display: flex; align-items: center; gap: 8px; color: var(--red); font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; transform: rotate(8deg); }
+.surreal-cover__orbit b { color: var(--deep); }
+.surreal-cover__foot { position: absolute; right: 2vw; bottom: 24px; left: 2vw; display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid rgb(42 11 9 / 18%); color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+
+.surreal-about,.surreal-expertise,.surreal-impact,.surreal-work,.surreal-blog { padding: 78px 2vw 96px; }
+.surreal-about__layout { display: grid; grid-template-columns: .75fr 1.1fr 1fr; align-items: center; gap: 32px; }
+.surreal-about__number { color: transparent; font-family: Georgia,serif; font-size: clamp(140px,25vw,320px); letter-spacing: -.13em; line-height: .7; -webkit-text-stroke: 2px var(--red); transform: rotate(-10deg); }
+.surreal-about__copy h1 { font-size: clamp(58px,7vw,92px); }
+.surreal-about__copy p { max-width: 470px; color: var(--muted); font-size: 14px; line-height: 1.8; }
+.surreal-about__image { position: relative; margin: 0; transform: rotate(2deg); }
+.surreal-about__image img { height: clamp(240px,32vw,390px); border: 10px solid var(--paper); border-radius: 48% 52% 6px 6px; object-fit: cover; box-shadow: 0 18px 50px rgb(42 11 9 / 14%); }
+.surreal-about__image figcaption { margin-top: 10px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+
+.surreal-expertise { position: relative; overflow: hidden; background: #fae7e1; }
+.surreal-expertise h1,.surreal-impact h1,.surreal-blog h1 { font-size: clamp(58px,8vw,108px); }
+.surreal-expertise__intro { margin: 22px 0 46px; color: var(--muted); }
+.surreal-circles { display: grid; grid-template-columns: repeat(3,1fr); align-items: center; gap: 14px; }
+.surreal-circle { display: flex; min-height: 320px; flex-direction: column; justify-content: center; padding: 48px; border-radius: 47% 53% 50% 50% / 43% 41% 59% 57%; }
+.surreal-circle--one { background: var(--red); color: #fff; transform: rotate(-5deg) translateY(20px); }
+.surreal-circle--two { background: #f7d8ce; transform: rotate(4deg) translateY(-18px); }
+.surreal-circle--three { background: var(--deep); color: #fff; transform: rotate(-3deg) translateY(12px); }
+.surreal-circle span { font-size: 9px; font-weight: 800; letter-spacing: .16em; }
+.surreal-circle h2 { margin: 20px 0 10px; font-family: Georgia,serif; font-size: clamp(23px,3vw,34px); font-weight: 400; letter-spacing: -.04em; line-height: 1.05; }
+.surreal-circle p { max-width: 250px; margin: 0; font-size: 12px; line-height: 1.7; opacity: .78; }
+
+.surreal-impact { position: relative; overflow: hidden; background: var(--red); color: #fff; }
+.surreal-impact::after { position: absolute; top: 2%; right: -13%; width: 48vw; aspect-ratio: 1; border: 1px solid rgb(255 255 255 / 27%); border-radius: 50%; content: ""; }
+.surreal-impact .surreal-kicker { color: rgb(255 255 255 / 75%); }
+.surreal-impact .surreal-kicker span { background: #fff; }
+.surreal-impact h1 em { color: var(--deep); }
+.surreal-impact__lead { max-width: 470px; margin: 22px 0 48px; color: rgb(255 255 255 / 83%); line-height: 1.7; }
+.surreal-stats { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3,1fr); gap: 26px; }
+.surreal-stats article { display: flex; min-height: 220px; flex-direction: column; justify-content: center; padding: 22px; border: 1px solid rgb(255 255 255 / 58%); border-radius: 48% 52% 50% 50%; text-align: center; transform: rotate(-4deg); }
+.surreal-stats article:nth-child(2) { border-radius: 50% 43% 54% 46%; background: var(--cream); color: var(--ink); transform: rotate(5deg) translateY(18px); }
+.surreal-stats article:nth-child(3) { border-radius: 42% 58% 44% 56%; transform: rotate(-2deg) translateY(-8px); }
+.surreal-stats strong { font-family: Georgia,serif; font-size: clamp(35px,5.5vw,68px); font-weight: 400; letter-spacing: -.07em; }
+.surreal-stats sup { font-size: .5em; }
+.surreal-stats span { margin-top: 8px; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.surreal-impact__note { position: relative; z-index: 1; margin: 50px 0 0; font-family: Georgia,serif; font-size: 20px; font-style: italic; }
+
+.surreal-work { position: relative; min-height: 620px; overflow: hidden; background: #f5ded7; }
+.surreal-work h1 { position: relative; z-index: 1; font-size: clamp(62px,9vw,122px); }
+.surreal-work__shape { position: absolute; top: 8%; right: 4%; width: min(44vw,520px); aspect-ratio: 1; border-radius: 50% 50% 44% 56%; background: var(--red); opacity: .12; transform: rotate(-21deg); }
+.surreal-work__bottom { position: relative; z-index: 1; display: flex; max-width: 900px; align-items: end; justify-content: space-between; gap: 28px; margin-top: 55px; }
+.surreal-work__bottom p { max-width: 330px; color: var(--muted); line-height: 1.7; }
+.surreal-work__button { padding: 18px 24px; border-radius: 50px 50px 50px 8px; background: var(--red); color: #fff; font-size: 12px; font-weight: 800; }
+.surreal-work__button span { padding-left: 25px; }
+.surreal-work__email { position: absolute; bottom: 28px; color: var(--muted); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+
+.surreal-blog { background: #fcf1ec; }
+.surreal-blog__grid { display: grid; grid-template-columns: 1.25fr 1fr 1fr; align-items: center; gap: 22px; margin: 42px 0 36px; }
+.surreal-story { position: relative; min-height: 300px; padding: 30px; border-radius: 48% 52% 12px 12px; background: #f1d8d0; transform: rotate(2deg); }
+.surreal-story--feature { padding: 14px; background: #fff; transform: rotate(-2deg) translateY(12px); }
+.surreal-story--feature img { height: 170px; border-radius: 48% 52% 6px 6px; object-fit: cover; }
+.surreal-story--feature p,.surreal-story > p { margin: 20px 0 8px; color: var(--red); font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.surreal-story h2 { font-family: Georgia,serif; font-size: 25px; font-weight: 400; letter-spacing: -.03em; line-height: 1.07; }
+.surreal-story a { position: absolute; right: 24px; bottom: 24px; color: var(--red); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.surreal-story--red { background: var(--red); color: #fff; transform: rotate(-3deg) translateY(20px); }
+.surreal-story--red > p,.surreal-story--red a { color: #fff; }
+.surreal-story__mark { position: absolute; top: 18px; right: 22px; color: rgb(217 52 42 / 45%); font-family: Georgia,serif; font-size: 48px; }
+.surreal-footer { display: flex; min-height: 88px; align-items: center; justify-content: space-between; gap: 18px; padding: 18px clamp(20px,5vw,76px); border-top: 1px solid rgb(42 11 9 / 14%); color: var(--muted); font-size: 10px; }
+
+@media (max-width: 760px) {
+  .surreal-header { align-items: flex-start; flex-direction: column; gap: 10px; padding-block: 14px; }
+  .surreal-nav { width: 100%; gap: 16px; overflow-x: auto; padding-bottom: 3px; white-space: nowrap; }
+  .surreal-nav__contact { padding: 9px 13px; }
+  .surreal-main { padding-inline: 20px; }
+  .surreal-cover { min-height: 0; grid-template-columns: 1fr; gap: 26px; padding: 48px 0 74px; }
+  .surreal-cover__copy { padding-left: 0; }
+  .surreal-cover h1 { font-size: clamp(60px,16vw,92px); }
+  .surreal-cover__image { width: 82%; margin: 8px auto 10px 6%; }
+  .surreal-cover__image img { height: 300px; }
+  .surreal-cover__orbit { top: 40%; right: 0; font-size: 7px; }
+  .surreal-cover__foot { right: 0; left: 0; }
+  .surreal-about,.surreal-expertise,.surreal-impact,.surreal-work,.surreal-blog { padding: 55px 0 74px; }
+  .surreal-about__layout { grid-template-columns: 1fr; gap: 12px; }
+  .surreal-about__number { font-size: 160px; }
+  .surreal-about__image { width: 82%; margin: 15px auto 0; }
+  .surreal-about__image img { height: 270px; }
+  .surreal-circles,.surreal-stats,.surreal-blog__grid { grid-template-columns: 1fr; gap: 24px; }
+  .surreal-circle { min-height: 260px; margin-inline: 4%; padding: 40px; }
+  .surreal-circle--two { margin-left: 14%; }
+  .surreal-circle--three { margin-right: 12%; }
+  .surreal-stats article { min-height: 190px; }
+  .surreal-work { min-height: 650px; }
+  .surreal-work__bottom { align-items: flex-start; flex-direction: column; }
+  .surreal-story,.surreal-story--feature,.surreal-story--red { min-height: 260px; transform: none; }
+  .surreal-footer { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .site-page.is-active { animation: none; }
+  *,*::before,*::after { transition-duration: .01ms !important; }
+}
+
+.surreal-home-story,.surreal-home-pillars,.surreal-home-projects,.surreal-home-voices,.surreal-home-partnership,.surreal-home-partners,.surreal-home-cta { grid-column: 1 / -1; position: relative; padding: 82px clamp(20px,5vw,68px); }
+.surreal-home-story { display: grid; grid-template-columns: .85fr 1.15fr; align-items: center; gap: 8%; margin: 48px -2vw 0; background: var(--paper); }
+.surreal-home-story__image { position: relative; transform: rotate(-3deg); }
+.surreal-home-story__image img { height: 330px; border: 10px solid white; object-fit: cover; }
+.surreal-home-story__image > span { position: absolute; right: -15px; bottom: 20px; padding: 10px 14px; background: var(--red); color: white; font-size: 8px; font-weight: 800; letter-spacing: .12em; }
+.surreal-home-story__copy h2,.surreal-home-heading h2,.surreal-home-projects h2,.surreal-home-voices h2,.surreal-home-partnership h2,.surreal-home-partners h2,.surreal-home-cta h2 { margin: 0; font-family: Georgia,serif; font-size: clamp(42px,6vw,76px); font-weight: 400; letter-spacing: -.07em; line-height: .96; }
+.surreal-home-story__copy h2 em,.surreal-home-heading h2 em,.surreal-home-projects h2 em,.surreal-home-voices h2 em,.surreal-home-partnership h2 em,.surreal-home-cta h2 em { color: var(--red); font-weight: 400; }
+.surreal-home-story__copy > p:not(.surreal-kicker) { max-width: 550px; margin: 22px 0; color: var(--muted); font-size: 13px; line-height: 1.85; }
+.surreal-home-story__stamp { position: absolute; right: 7%; top: 14%; display: grid; width: 78px; height: 78px; align-content: center; border: 1px solid var(--red); border-radius: 50%; color: var(--red); font-family: Georgia,serif; font-size: 30px; text-align: center; transform: rotate(12deg); }
+.surreal-home-story__stamp small { font-family: "DM Sans",sans-serif; font-size: 7px; font-weight: 800; letter-spacing: .12em; }
+.surreal-home-pillars { padding-inline: 2vw; background: #fae7e1; }
+.surreal-home-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 36px; }
+.surreal-home-pillars__grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+.surreal-home-pillars__grid article { min-height: 245px; padding: 30px; border-radius: 48% 52% 12px 12px; background: var(--red); color: white; transform: rotate(-2deg); }
+.surreal-home-pillars__grid article:nth-child(2) { border-radius: 12px 12px 48% 52%; background: #f2d2c8; color: var(--ink); transform: rotate(2deg) translateY(20px); }
+.surreal-home-pillars__grid article:nth-child(3) { border-radius: 52% 48% 12px 12px; background: var(--deep); transform: rotate(-1deg); }
+.surreal-home-pillars__grid article > span,.surreal-home-projects__grid article > span { font-size: 8px; font-weight: 800; letter-spacing: .15em; }
+.surreal-home-pillars__grid h3,.surreal-home-projects__grid h3 { margin: 43px 0 12px; font-family: Georgia,serif; font-size: 24px; font-weight: 400; line-height: 1.06; }
+.surreal-home-pillars__grid p,.surreal-home-projects__grid p { margin: 0; font-size: 11px; line-height: 1.7; opacity: .8; }
+.surreal-home-projects { background: var(--paper); }
+.surreal-home-projects > h2 { max-width: 820px; }
+.surreal-home-projects__intro { max-width: 510px; margin: 20px 0 38px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.surreal-home-projects__grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.surreal-home-projects__grid article { min-height: 250px; padding: 22px; border: 1px solid rgb(42 11 9 / 15%); border-radius: 44% 44% 10px 10px; background: #f4ded6; transform: rotate(2deg); }
+.surreal-home-projects__grid article:nth-child(2n) { border-radius: 10px 10px 44% 44%; background: var(--red); color: white; transform: rotate(-2deg) translateY(14px); }
+.surreal-home-projects__grid article:nth-child(3) { background: var(--deep); color: white; transform: rotate(1deg) translateY(-8px); }
+.surreal-home-projects__grid h3 { margin-top: 40px; }
+.surreal-home-voices { background: #fff4f0; }
+.surreal-home-voices h2 { max-width: 800px; }
+.surreal-home-voices__grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 38px; }
+.surreal-home-voices__grid article { position: relative; min-height: 280px; padding: 26px; border: 1px solid rgb(42 11 9 / 14%); border-radius: 50% 50% 10px 10px; background: white; }
+.surreal-home-voices__grid article:nth-child(2) { transform: translateY(22px) rotate(2deg); }
+.surreal-home-voices__grid article:nth-child(3) { transform: rotate(-2deg); }
+.surreal-home-voices__grid article > span { color: var(--red); font-family: Georgia,serif; font-size: 50px; line-height: .8; }
+.surreal-home-voices__grid blockquote { margin: 8px 0 24px; font-family: Georgia,serif; font-size: 15px; line-height: 1.55; }
+.surreal-home-voices__grid article > p { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 10px; }
+.surreal-home-voices__grid img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.surreal-home-voices__grid small { display: block; margin-top: 4px; color: var(--muted); font-size: 8px; font-weight: 400; }
+.surreal-home-partnership { background: #f2d2c8; }
+.surreal-home-partnership > p:not(.surreal-kicker),.surreal-home-cta > p { max-width: 430px; margin: 20px 0 26px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.surreal-home-partners { text-align: center; }
+.surreal-home-partners .surreal-kicker { justify-content: center; }
+.surreal-home-partners > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 34px; }
+.surreal-home-partners > div span { padding: 17px 24px; border: 1px solid rgb(42 11 9 / 18%); border-radius: 50%; color: var(--muted); font-family: Georgia,serif; font-size: 16px; }
+.surreal-home-cta { background: var(--red); color: white; }
+.surreal-home-cta > span { display: block; margin-bottom: 28px; font-size: 8px; font-weight: 800; letter-spacing: .16em; }
+.surreal-home-cta h2 em { color: var(--deep); }
+.surreal-home-cta > p { color: rgb(255 255 255 / 78%); }
+.surreal-home-cta > a { display: inline-flex; gap: 20px; padding: 14px 18px; border: 1px solid white; font-size: 10px; font-weight: 800; }
+
+@media (max-width: 760px) {
+  .surreal-home-story,.surreal-home-pillars,.surreal-home-projects,.surreal-home-voices,.surreal-home-partnership,.surreal-home-partners,.surreal-home-cta { padding: 56px 20px; }
+  .surreal-home-story { grid-template-columns: 1fr; gap: 34px; margin: 34px 0 0; }
+  .surreal-home-story__image { width: 84%; }
+  .surreal-home-story__image img { height: 250px; }
+  .surreal-home-story__stamp { top: 38%; right: 8%; }
+  .surreal-home-heading { align-items: flex-start; flex-direction: column; }
+  .surreal-home-pillars__grid,.surreal-home-projects__grid,.surreal-home-voices__grid { grid-template-columns: 1fr; gap: 20px; }
+  .surreal-home-pillars__grid article,.surreal-home-pillars__grid article:nth-child(2),.surreal-home-pillars__grid article:nth-child(3),.surreal-home-projects__grid article,.surreal-home-projects__grid article:nth-child(2n),.surreal-home-projects__grid article:nth-child(3),.surreal-home-voices__grid article:nth-child(2),.surreal-home-voices__grid article:nth-child(3) { min-height: 220px; transform: none; }
+  .surreal-home-pillars__grid h3,.surreal-home-projects__grid h3 { margin-top: 30px; }
+}

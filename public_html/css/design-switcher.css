@@ -1,0 +1,68 @@
+.design-switcher {
+  position: fixed;
+  top: auto;
+  left: auto;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: max-content;
+  height: auto;
+  max-width: calc(100vw - 32px);
+  transform: none;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgb(27 26 26 / 10%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 8px 28px rgb(27 26 26 / 18%);
+  color: #1b1a1a;
+  font: 600 12px/1.2 "DM Sans", "Segoe UI", sans-serif;
+  backdrop-filter: blur(14px);
+}
+
+.design-switcher__label {
+  padding: 0 6px;
+}
+
+.design-switcher__option {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.design-switcher__option:hover,
+.design-switcher__option:focus-visible {
+  background: rgb(217 52 42 / 12%);
+  outline: none;
+}
+
+.design-switcher__option[aria-current="page"] {
+  background: #d9342a;
+  color: #fff;
+}
+
+.design-switcher__option:disabled {
+  color: #9c9693;
+  cursor: not-allowed;
+}
+
+.design-switcher__option:disabled:hover {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .design-switcher__option {
+    transition: none;
+  }
+}
