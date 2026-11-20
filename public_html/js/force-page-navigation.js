@@ -28,8 +28,28 @@
       var destination = new URL(link.href, window.location.href);
       if (
         destination.origin !== window.location.origin ||
+        link.classList.contains("design-switcher__option")
+      ) {
+        return;
+      }
+
+      if (
+        document.documentElement.getAttribute("data-design") === "7" &&
+        [
+          "/",
+          "/index.html",
+          "/who-we-are",
+          "/our-expertise",
+          "/our-impact",
+          "/work-with-us",
+        ].indexOf(destination.pathname) !== -1
+      ) {
+        destination.searchParams.set("design", "7");
+      }
+
+      if (
         destination.pathname === window.location.pathname &&
-          destination.search === window.location.search
+        destination.search === window.location.search
       ) {
         return;
       }

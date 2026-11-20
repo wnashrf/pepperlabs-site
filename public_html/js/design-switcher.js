@@ -5,12 +5,28 @@
   var activeDesign = {
     "/": "1",
     "/index.html": "1",
+    "/who-we-are": "1",
+    "/our-expertise": "1",
+    "/our-impact": "1",
+    "/work-with-us": "1",
     "/design-2.html": "2",
     "/design-3.html": "3",
     "/design-4.html": "4",
     "/design-5.html": "5",
     "/design-6.html": "6",
+    "/design-8.html": "8",
   }[path];
+  if (
+    (path === "/" ||
+      path === "/index.html" ||
+      path === "/who-we-are" ||
+      path === "/our-expertise" ||
+      path === "/our-impact" ||
+      path === "/work-with-us") &&
+    new URLSearchParams(window.location.search).get("design") === "7"
+  ) {
+    activeDesign = "7";
+  }
   if (!activeDesign) {
     return;
   }
@@ -61,6 +77,18 @@
       name: "Futuristic design",
       href: "/design-6.html",
       active: activeDesign === "6",
+    },
+    {
+      number: "7",
+      name: "Crimson and yellow design",
+      href: "/?design=7",
+      active: activeDesign === "7",
+    },
+    {
+      number: "8",
+      name: "Impact engine design",
+      href: "/design-8.html",
+      active: activeDesign === "8",
     },
   ].forEach(function (option) {
     var link = document.createElement("a");

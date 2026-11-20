@@ -2,6 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      if (new URLSearchParams(window.location.search).get("design") === "7") {
+        document.documentElement.setAttribute("data-design", "7");
+      }
+    </script>
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
@@ -59,18 +64,20 @@
     <link rel="stylesheet" href="/css/who-we-are.css?v=20261102-homepage-who-we-are" />
     <link rel="stylesheet" href="/css/ai-pintar-dasar.css?v=20261029-red-product-theme-1" />
     <link rel="stylesheet" href="/css/testimonials.css?v=20261029-testimonial-horizontal-panel-slide-36" />
-    <link rel="stylesheet" href="/css/design-switcher.css?v=20261119-editorial-design" />
+    <link rel="stylesheet" href="/css/design-switcher.css?v=20261120-design-seven" />
+    <link rel="stylesheet" href="/css/design-7.css?v=20261120-palette" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script defer src="/js/force-page-navigation.js?v=20261102-full-navigation"></script>
+    <script defer src="/js/force-page-navigation.js?v=20261120-design-seven-theme"></script>
     <script defer src="/assets/nav-ai-dropdown.js?v=20261015-navbar-order-fix"></script>
     <script defer src="/assets/expanded-cards.js?v=20261021-expanded-cards-v2"></script>
     <script defer src="/js/hero.js?v=20261102-homepage-hero"></script>
+    <script src="/js/design-seven-visual.js?v=20261120-3d-particle-theme" defer></script>
     <script defer src="/js/who-we-are.js?v=20261102-homepage-who-we-are"></script>
     <script src="/js/ai-pintar-dasar.js?v=20261029-product-details-modal-2" defer></script>
     <script src="/js/testimonials.js?v=20261029-testimonial-horizontal-panel-slide-36" defer></script>
-    <script src="/js/design-switcher.js?v=20261119-unique-six-designs" defer></script>
+    <script src="/js/design-switcher.js?v=20261120-design-seven" defer></script>
   </body>
 </html>

@@ -61,6 +61,21 @@
   background: transparent;
 }
 
+html[data-design="7"] .design-switcher {
+  border-color: rgb(131 22 19 / 18%);
+}
+
+html[data-design="7"] .design-switcher__option:hover,
+html[data-design="7"] .design-switcher__option:focus-visible {
+  background: rgb(254 237 101 / 55%);
+  color: #831613;
+}
+
+html[data-design="7"] .design-switcher__option[aria-current="page"] {
+  background: #e13a26;
+  color: #feed65;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .design-switcher__option {
     transition: none;

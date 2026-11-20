@@ -1,0 +1,496 @@
+html[data-design="7"] {
+  color-scheme: light;
+  --color-primary-100: #fff9c9;
+  --color-primary-200: #feed65;
+  --color-primary-300: #f7db45;
+  --color-primary-400: #efc52f;
+  --color-primary-500: #feed65;
+  --color-primary-600: #d7bd43;
+  --color-primary-700: #b19a32;
+  --color-primary-800: #897625;
+  --color-primary-900: #5e501a;
+  --color-secondary-100: #f9d8d5;
+  --color-secondary-200: #f2b1a9;
+  --color-secondary-300: #ec8a7b;
+  --color-secondary-400: #e9654d;
+  --color-secondary-500: #e13a26;
+  --color-secondary-600: #b92f20;
+  --color-secondary-700: #831613;
+  --color-secondary-800: #5c100e;
+  --color-secondary-900: #3a0b09;
+}
+
+html[data-design="7"] .pl-hero {
+  --pl-accent: #e13a26;
+  --pl-ink: #831613;
+  --pl-muted: #6f2a22;
+  --pl-hairline: rgb(131 22 19 / 22%);
+  --pl-stat-line: rgb(131 22 19 / 18%);
+  --pl-soft: #fff9c9;
+}
+
+html[data-design="7"] .pl-hero .pl-typewriter {
+  background: #831613;
+  color: #feed65;
+}
+
+html[data-design="7"] .pl-hero .pl-typewriter-kicker {
+  color: #fff9c9;
+}
+
+html[data-design="7"] .pl-hero .pl-typewriter-plus {
+  color: #feed65;
+}
+
+html[data-design="7"] .ww-section {
+  --ww-accent: #e13a26;
+  --ww-logo-red: #e13a26;
+  --ww-logo-orange: #feed65;
+  --ww-logo-dark-orange: #d7bd43;
+  --ww-logo-light-orange: #fff9c9;
+  --ww-ink: #831613;
+  --ww-muted: #6f2a22;
+  --ww-hairline: rgb(131 22 19 / 20%);
+  --ww-warm: #fff9e0;
+  --ww-eyebrow: #831613;
+}
+
+html[data-design="7"] .apd-section {
+  --apd-ink: #831613;
+  --apd-muted: #6f2a22;
+  --apd-red: #e13a26;
+  --apd-red-dark: #831613;
+  --apd-line: rgb(131 22 19 / 20%);
+  background:
+    radial-gradient(ellipse 65% 50% at 50% 48%, rgb(225 58 38 / 9%) 0%, transparent 58%),
+    radial-gradient(ellipse 45% 35% at 12% 82%, rgb(254 237 101 / 22%) 0%, transparent 55%),
+    #fffdf2;
+}
+
+html[data-design="7"] .apd-glow--one,
+html[data-design="7"] .apd-glow--two {
+  background: rgb(225 58 38 / 12%);
+}
+
+html[data-design="7"] .pl-history-section--who {
+  --pl-ink: #831613;
+}
+
+html[data-design="7"] .pl-history-section--who::before {
+  background:
+    linear-gradient(to top, var(--pl-ink) 4%, transparent 42%),
+    linear-gradient(90deg, rgb(131 22 19 / 95%) 0%, rgb(131 22 19 / 80%) 45%, rgb(131 22 19 / 60%) 100%);
+}
+
+html[data-design="7"] .pl-history-section--who .pl-history-year,
+html[data-design="7"] .pl-history-section--who .pl-history-period {
+  color: #feed65;
+}
+
+html[data-design="7"],
+html[data-design="7"] body {
+  background: #080608;
+  color: #fff3cc;
+}
+
+html[data-design="7"] #root > div.bg-white {
+  background: #080608 !important;
+}
+
+html[data-design="7"] #root .header-section {
+  width: min(1080px, calc(100% - 32px)) !important;
+  margin: 8px auto 0;
+  border: 1px solid rgb(254 237 101 / 20%) !important;
+  background: rgb(8 6 8 / 92%) !important;
+  color: #feed65 !important;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 42%);
+  backdrop-filter: blur(18px);
+}
+
+html[data-design="7"] #root .header-section .Container {
+  width: 100% !important;
+  padding-right: 18px;
+  padding-left: 18px;
+}
+
+html[data-design="7"] #root .header-section a,
+html[data-design="7"] #root .header-section button {
+  color: #feed65 !important;
+}
+
+html[data-design="7"] #root .header-section img {
+  filter: grayscale(1) brightness(0) invert(1);
+}
+
+html[data-design="7"] #root .header-section a[href="/work-with-us"] {
+  min-height: 40px;
+  padding: 8px 18px;
+  border: 1px solid #feed65;
+  background: #feed65;
+  color: #831613 !important;
+}
+
+html[data-design="7"] #root .header-section .pl-ai-nav-menu {
+  border: 1px solid rgb(254 237 101 / 20%);
+  background: #17090c;
+}
+
+html[data-design="7"] #root .header-section .pl-ai-nav-menu a {
+  background: transparent;
+  color: #fff3cc !important;
+}
+
+html[data-design="7"] #root .header-section .pl-ai-nav-menu a:hover {
+  color: #feed65 !important;
+}
+
+html[data-design="7"] .pl-hero {
+  position: relative;
+  display: block;
+  height: clamp(500px, calc(100svh - 150px), 820px);
+  min-height: 500px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 70% 65%, rgb(131 22 19 / 34%), transparent 58%),
+    radial-gradient(ellipse at 10% 12%, rgb(225 58 38 / 12%), transparent 44%),
+    rgb(8 6 8 / 48%);
+  color: #fff3cc;
+}
+
+html[data-design="7"] .pl-hero .pl-brand {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background:
+    radial-gradient(ellipse at 60% 70%, rgb(225 58 38 / 14%), transparent 46%),
+    linear-gradient(120deg, rgb(21 16 9 / 48%) 0%, rgb(8 6 8 / 40%) 50%, rgb(16 6 9 / 46%) 100%);
+}
+
+html[data-design="7"] .pl-hero .pl-glow,
+html[data-design="7"] .pl-hero .pl-mark,
+html[data-design="7"] .pl-hero .pl-typewriter {
+  display: none;
+}
+
+html[data-design="7"] .pl-hero .pl-panel {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  overflow: visible;
+}
+
+html[data-design="7"] .pl-hero .pl-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+html[data-design="7"] .pl-hero .pl-label {
+  position: absolute;
+  top: 28px;
+  left: clamp(20px, 3vw, 48px);
+  z-index: 3;
+  margin: 0;
+  color: #feed65;
+  font-size: 11px;
+  letter-spacing: .16em;
+}
+
+html[data-design="7"] .pl-hero .pl-label-dot {
+  box-shadow: 0 0 16px rgb(225 58 38 / 88%);
+}
+
+html[data-design="7"] .pl-hero .pl-title {
+  position: absolute;
+  top: clamp(88px, 13vh, 142px);
+  left: clamp(20px, 2vw, 34px);
+  z-index: 2;
+  width: min(75%, 940px);
+  margin: 0;
+  color: #fff8df;
+  font-size: clamp(66px, 10.2vw, 146px);
+  font-weight: 400;
+  letter-spacing: -.075em;
+  line-height: .8;
+  text-shadow: 0 4px 38px rgb(8 6 8 / 55%);
+}
+
+html[data-design="7"] .pl-hero .pl-title-line {
+  overflow: visible;
+}
+
+html[data-design="7"] .pl-hero .pl-title-line + .pl-title-line {
+  margin-top: .13em;
+}
+
+html[data-design="7"] .pl-hero .pl-title-accent {
+  color: #feed65;
+}
+
+html[data-design="7"] .pl-hero .pl-description {
+  position: absolute;
+  bottom: 138px;
+  left: clamp(20px, 3vw, 48px);
+  z-index: 3;
+  width: min(430px, 45%);
+  margin: 0;
+  color: rgb(255 243 204 / 86%);
+  font-size: clamp(14px, 1.2vw, 17px);
+  line-height: 1.6;
+}
+
+html[data-design="7"] .pl-hero .pl-actions {
+  position: absolute;
+  right: clamp(20px, 3vw, 48px);
+  bottom: 140px;
+  z-index: 3;
+  justify-content: flex-end;
+  margin: 0;
+}
+
+html[data-design="7"] .pl-hero .pl-button {
+  min-height: 52px;
+  border-color: #feed65;
+  border-radius: 0;
+  background: #feed65;
+  color: #831613;
+}
+
+html[data-design="7"] .pl-hero .pl-button:hover {
+  border-color: #e13a26;
+  background: #e13a26;
+  color: #fff3cc;
+}
+
+html[data-design="7"] .pl-hero .pl-text-link {
+  color: #feed65;
+}
+
+html[data-design="7"] .pl-hero .pl-stats {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  gap: clamp(12px, 4vw, 56px);
+  padding: 18px clamp(20px, 3vw, 48px) 20px;
+  border-top: 1px solid rgb(254 237 101 / 24%);
+  background: linear-gradient(90deg, rgb(8 6 8 / 72%), rgb(8 6 8 / 30%));
+}
+
+html[data-design="7"] .pl-hero .pl-stat-number {
+  color: #feed65;
+  font-size: clamp(22px, 3vw, 36px);
+}
+
+html[data-design="7"] .pl-hero .pl-stat-label {
+  color: rgb(255 243 204 / 68%);
+}
+
+html[data-design="7"] #root .ww-section,
+html[data-design="7"] #root #who-we-are-original,
+html[data-design="7"] #root #our-expertise,
+html[data-design="7"] #root #our-expertise-original,
+html[data-design="7"] #root #our-brands,
+html[data-design="7"] #root .apd-section,
+html[data-design="7"] #root .project,
+html[data-design="7"] #root .pl-history-section {
+  background-color: rgb(11 8 10 / 78%) !important;
+  color: #fff3cc !important;
+}
+
+html[data-design="7"] #root .ww-section {
+  background:
+    radial-gradient(ellipse at 78% 45%, rgb(131 22 19 / 30%), transparent 52%),
+    rgb(11 8 10 / 70%) !important;
+}
+
+html[data-design="7"] #root #our-expertise,
+html[data-design="7"] #root #our-brands,
+html[data-design="7"] #root .project,
+html[data-design="7"] #root .pl-history-section {
+  border-top: 1px solid rgb(254 237 101 / 16%);
+}
+
+html[data-design="7"] #root .ww-section h1,
+html[data-design="7"] #root .ww-section h2,
+html[data-design="7"] #root .ww-section h3,
+html[data-design="7"] #root #our-expertise h1,
+html[data-design="7"] #root #our-expertise h2,
+html[data-design="7"] #root #our-brands h1,
+html[data-design="7"] #root #our-brands h2,
+html[data-design="7"] #root .apd-section h1,
+html[data-design="7"] #root .apd-section h2,
+html[data-design="7"] #root .project h1,
+html[data-design="7"] #root .project h2,
+html[data-design="7"] #root .pl-history-section h1,
+html[data-design="7"] #root .pl-history-section h2,
+html[data-design="7"] #root .pl-history-section h3 {
+  color: #feed65 !important;
+}
+
+html[data-design="7"] #root .ww-section p,
+html[data-design="7"] #root #our-expertise p,
+html[data-design="7"] #root #our-brands p,
+html[data-design="7"] #root .apd-section p,
+html[data-design="7"] #root .project p,
+html[data-design="7"] #root .pl-history-section p {
+  color: rgb(255 243 204 / 80%);
+}
+
+html[data-design="7"] #root .ec-card,
+html[data-design="7"] #root .ec-card__trigger,
+html[data-design="7"] #root .ec-card__content {
+  border-color: rgb(254 237 101 / 25%) !important;
+  background-color: rgb(19 8 11 / 88%) !important;
+  color: #fff3cc !important;
+}
+
+html[data-design="7"] #root .ec-card__trigger:hover,
+html[data-design="7"] #root .ec-card__trigger[aria-expanded="true"] {
+  background-color: #831613 !important;
+  color: #feed65 !important;
+}
+
+html[data-design="7"] #root .apd-section {
+  background:
+    radial-gradient(ellipse at 50% 48%, rgb(225 58 38 / 18%), transparent 52%),
+    linear-gradient(145deg, rgb(16 9 11 / 70%), rgb(8 6 8 / 70%) 70%) !important;
+}
+
+html[data-design="7"] #root .pl-history-section,
+html[data-design="7"] #root .pl-history-section--who {
+  --pl-ink: #831613;
+  background:
+    radial-gradient(ellipse at 80% 60%, rgb(225 58 38 / 22%), transparent 55%),
+    rgb(11 8 10 / 78%) !important;
+  color: #fff3cc !important;
+}
+
+html[data-design="7"] #root .pl-history-section--who::before {
+  background:
+    linear-gradient(to top, #0b080a 4%, transparent 42%),
+    linear-gradient(90deg, rgb(8 6 8 / 94%) 0%, rgb(131 22 19 / 70%) 55%, rgb(8 6 8 / 42%) 100%);
+}
+
+html[data-design="7"] #root footer {
+  border-top: 1px solid rgb(254 237 101 / 20%);
+  background-color: rgb(8 6 8 / 78%) !important;
+  color: #fff3cc !important;
+}
+
+html[data-design="7"] #root footer h1,
+html[data-design="7"] #root footer h2,
+html[data-design="7"] #root footer h3,
+html[data-design="7"] #root footer h4,
+html[data-design="7"] #root footer a:hover {
+  color: #feed65 !important;
+}
+
+html[data-design="7"] .design-switcher {
+  border-color: rgb(254 237 101 / 22%);
+  background: rgb(8 6 8 / 88%);
+  color: #fff3cc;
+}
+
+html[data-design="7"] .design-switcher__option[aria-current="page"] {
+  background: #e13a26;
+  color: #feed65;
+}
+
+#root .pl-particle-scene {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+#root .pl-particle-scene > .pl-particle-canvas {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: .8;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 12px rgb(225 58 38 / 26%));
+}
+
+#root .pl-particle-scene > *:not(.pl-particle-canvas) {
+  position: relative;
+  z-index: 1;
+}
+
+html[data-design="7"] #root .pl-particle-scroll {
+  overflow: visible;
+}
+
+html[data-design="7"] #root .pl-particle-scroll > .pl-particle-canvas {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: .68;
+}
+
+@media (max-width: 760px) {
+  html[data-design="7"] #root .header-section {
+    width: calc(100% - 20px) !important;
+    margin-top: 8px;
+  }
+
+  html[data-design="7"] .pl-hero {
+    height: calc(100svh - 92px);
+    min-height: 620px;
+  }
+
+  html[data-design="7"] .pl-hero .pl-title {
+    top: 96px;
+    width: 96%;
+    font-size: clamp(58px, 16vw, 92px);
+    font-family: "DM Sans", Arial, Helvetica, sans-serif;
+  }
+
+  html[data-design="7"] .pl-hero .pl-description {
+    right: 20px;
+    bottom: 160px;
+    width: auto;
+  }
+
+  html[data-design="7"] .pl-hero .pl-actions {
+    right: auto;
+    bottom: 94px;
+    left: 20px;
+  }
+
+  html[data-design="7"] .pl-hero .pl-stats {
+    gap: 8px;
+    padding: 14px 14px 16px;
+  }
+
+  html[data-design="7"] .pl-hero .pl-stat-number {
+    font-size: clamp(16px, 5vw, 23px);
+  }
+
+  html[data-design="7"] .pl-hero .pl-stat-label {
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-design="7"] .pl-particle-canvas {
+    opacity: .55;
+  }
+}
