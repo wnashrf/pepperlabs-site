@@ -109,7 +109,7 @@
     }
     var sections = root.querySelectorAll("section");
     for (var index = 0; index < sections.length; index += 1) {
-      if (sections[index].classList.contains("pl-hero")) {
+      if (sections[index].classList.contains("pl-hero") || sections[index].classList.contains("pl-legacy-hero-shell")) {
         continue;
       }
       var heading = sections[index].querySelector("h1");
@@ -129,16 +129,13 @@
     var template = document.createElement("template");
     template.innerHTML = markup.trim();
     var hero = template.content.firstElementChild;
-    existingHero.replaceWith(hero);
+    existingHero.classList.add("pl-legacy-hero-shell");
+    existingHero.appendChild(hero);
     activateHero(hero);
     return true;
   }
 
   function initialize() {
-    if (window.location.pathname !== "/" && window.location.pathname !== "/index.html") {
-      return;
-    }
-
     fetch("/partials/hero.html?v=20261026-work-overlay-3")
       .then(function (response) {
         if (!response.ok) {
@@ -152,14 +149,10 @@
           throw new Error("Homepage application root was not found");
         }
         var observer = new MutationObserver(function () {
-          if (mountHero(markup)) {
-            observer.disconnect();
-          }
+          mountHero(markup);
         });
         observer.observe(root, { childList: true, subtree: true });
-        if (mountHero(markup)) {
-          observer.disconnect();
-        }
+        mountHero(markup);
       })
       .catch(function (error) {
         console.error("Unable to initialize the Pepper Labs hero.", error);

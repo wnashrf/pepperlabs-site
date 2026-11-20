@@ -17,6 +17,14 @@
   font-family: "DM Sans", Arial, Helvetica, sans-serif;
 }
 
+.pl-legacy-hero-shell {
+  display: contents !important;
+}
+
+.pl-legacy-hero-shell > :not(.pl-hero) {
+  display: none !important;
+}
+
 .pl-hero *,
 .pl-hero *::before,
 .pl-hero *::after {

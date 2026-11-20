@@ -63,10 +63,10 @@
 
   function findOldSection(root) {
     var section = root.querySelector("#who-we-are");
-    return section && !section.classList.contains("ww-section") ? section : null;
+    return section && !section.classList.contains("ww-section") && !section.classList.contains("ww-legacy-section-shell") ? section : null;
   }
 
-  function mountSection(markup, root, observer) {
+  function mountSection(markup, root) {
     var oldSection = findOldSection(root);
     if (!oldSection) {
       return false;
@@ -79,20 +79,15 @@
       throw new Error("The Who We Are partial did not return its expected section");
     }
 
-    oldSection.replaceWith(section);
-    if (observer) {
-      observer.disconnect();
-    }
+    section.removeAttribute("id");
+    oldSection.classList.add("ww-legacy-section-shell");
+    oldSection.appendChild(section);
     revealSection(section);
     return true;
   }
 
   function initialize() {
-    if (window.location.pathname !== "/" && window.location.pathname !== "/index.html") {
-      return;
-    }
-
-    fetch("partials/who-we-are.php")
+    fetch("/partials/who-we-are.php")
       .then(function (response) {
         if (!response.ok) {
           throw new Error("Who We Are partial request failed with status " + response.status);
@@ -101,7 +96,7 @@
       })
       .then(function (markup) {
         if (markup.indexOf("<?php") !== -1) {
-          return fetch("partials/who-we-are-preview.html")
+          return fetch("/partials/who-we-are-preview.html")
             .then(function (response) {
               if (!response.ok) {
                 throw new Error("Who We Are preview request failed with status " + response.status);
@@ -119,10 +114,10 @@
         }
 
         var observer = new MutationObserver(function () {
-          mountSection(markup, root, observer);
+          mountSection(markup, root);
         });
         observer.observe(root, { childList: true, subtree: true });
-        mountSection(markup, root, observer);
+        mountSection(markup, root);
       })
       .catch(function (error) {
         console.error("Unable to initialize the Who We Are section.", error);

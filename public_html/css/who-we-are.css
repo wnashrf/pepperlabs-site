@@ -16,6 +16,14 @@
   font-family: "DM Sans", Arial, Helvetica, sans-serif;
 }
 
+.ww-legacy-section-shell {
+  display: contents !important;
+}
+
+.ww-legacy-section-shell > :not(.ww-section) {
+  display: none !important;
+}
+
 .ww-section *,
 .ww-section *::before,
 .ww-section *::after {
