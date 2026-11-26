@@ -198,13 +198,12 @@ function applyTime(t) {
 }
 
 /* ---------- photos (cover-fit, same as design 9) ---------- */
-var fronts = [], NEAR_ONE = 0.9999;
+var fronts = [];
 function pumpPhotos() {
   if (pendingUploads.length) {                      // at most one upload per frame
     var job = pendingUploads.shift(), f = fronts[job.i], tex = makeTex(app.graphicsDevice, job.src, true);
     var ar = job.src.width / job.src.height, a = f.aspect, fc = job.focus, tile = new pc.Vec2(1, 1), off = new pc.Vec2(0, 0);
     if (ar > a) { tile.x = a / ar; off.x = (1 - tile.x) * fc[0]; } else { tile.y = ar / a; off.y = (1 - tile.y) * fc[1]; }
-    if (tile.x === 1 && tile.y === 1) tile.x = NEAR_ONE;   // keep the warmed-up shader variant
     var m = f.front;
     m.diffuseMap = tex; m.emissiveMap = tex;
     m.diffuseMapTiling = tile; m.diffuseMapOffset = off; m.emissiveMapTiling = tile; m.emissiveMapOffset = off;
@@ -230,42 +229,13 @@ function pumpPhotos() {
 function photosDone() { for (var i = 0; i < 5; i++) if (photoState[i] !== 2) return false; return true; }
 function requestRender() { if (app) app.renderNextFrame = true; }
 
-// Frame pacing: render a frame only when the GPU has finished the previous one (WebGL2 fence).
-// Without it, frames issued while the canvas is hidden (warm-up, held bud) and on a slow GPU
-// queue up, and the GPU then works off the whole queue in one visible freeze of a second or
-// more. A frame skipped here is one the GPU could not have shown in time anyway.
-// seek() (tests, tools) switches pacing off and renders on demand.
-var gate = null, gating = true, canFence = false;
-function gateFrame() {
-  if (!gating) return;
-  var gl = app.graphicsDevice.gl;
-  if (seekT !== null) {
-    gating = false;
-    if (gate) { gl.deleteSync(gate); gate = null; }
-    app.renderNextFrame = true;
-    return;
-  }
-  if (done) return;                                   // finished: render only on request
-  app.autoRender = false;
-  if (gate && gl.getSyncParameter(gate, gl.SYNC_STATUS) !== gl.SIGNALED) { app.renderNextFrame = false; return; }
-  if (gate) { gl.deleteSync(gate); gate = null; }
-  app.renderNextFrame = true;
-}
-function fenceFrame() {
-  if (!gating) return;
-  var gl = app.graphicsDevice.gl;
-  gate = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-  gl.flush();
-}
-
 function onUpdate() {
   if (paused) return;
-  gateFrame();
   pumpPhotos();
   var t = seekT !== null ? seekT : Math.min(8, Math.max(0, bloomRef.clock()));
   applyTime(t);
   if (seekT !== null || (t >= 8 && photosDone() && !pendingUploads.length)) {
-    if (seekT === null && !done) { done = true; app.renderNextFrame = true; }   // final pose drawn once
+    if (seekT === null) done = true;
     app.autoRender = false;
   }
 }
@@ -274,9 +244,7 @@ function onUpdate() {
 var tmpV = new pc.Vec3(), tmpW = new pc.Vec3(), tmpN = new pc.Vec3();
 function toStage(wt, x, y, z, cw, ch) {
   tmpV.set(x, y, z); wt.transformPoint(tmpV, tmpW); cam.camera.worldToScreen(tmpW, tmpV);
-  // the 2D renderer scales the 1280x720 space by height and centres it, like this camera's vertical fov
-  var k = 720 / ch;
-  return [Math.round(((tmpV.x - cw / 2) * k + 640) * 10) / 10, Math.round(tmpV.y * k * 10) / 10, tmpV.z];
+  return [Math.round(tmpV.x * 1280 / cw * 10) / 10, Math.round(tmpV.y * 720 / ch * 10) / 10, tmpV.z];
 }
 function hull48(pts, cx, cy, a0) {
   var best = [], i, j;
@@ -334,17 +302,15 @@ function exportBaked() {
 }
 
 /* ---------- init ---------- */
-var STEM_TOP = -0.4, STEM_LEN = 2.2, stamenTop = [0, 0.5, 0], colors, redCanvas, greyCanvas;
-// CPU-only preparation (no GL): its own task so it never adds to the app-creation task
-function prepData() {
+var STEM_TOP = -0.4, STEM_LEN = 2.2, stamenTop = [0, 0.5, 0];
+function build(device) {
   var H = D.header;
   qBud.set(H.qBud[0], H.qBud[1], H.qBud[2], H.qBud[3]); qOpen.set(H.qOpen[0], H.qOpen[1], H.qOpen[2], H.qOpen[3]);
   layer = H.layer;
   flower = prepSet(D.sphC, D.sphO, D.nrmC, D.nrmO, H);
   calyx = prepSet(D.calyxSphC, D.calyxSphO, D.calyxNrmC, D.calyxNrmO, H);
   progTab = new Float32Array(flower.n); delayTab = new Float32Array(flower.n); petalOf = new Uint8Array(flower.n);
-  colors = new Uint8Array(flower.n * 4);
-  var r = rand(13), stMax = 0, i;
+  var colors = new Uint8Array(flower.n * 4), r = rand(13), stMax = 0, i;
   for (i = 0; i < flower.n; i++) { delayTab[i] = D.delay[i] / 255; petalOf[i] = D.part[i] & 7; if (petalOf[i] === 5) stMax = Math.max(stMax, flower.rO[i]); }
   for (i = 0; i < flower.n; i++) {                       // stamen colours: red column, yellow pollen, dark-red stigma tips
     if (petalOf[i] !== 5) continue;
@@ -355,11 +321,7 @@ function prepData() {
     colors[i * 4] = c[0]; colors[i * 4 + 1] = c[1]; colors[i * 4 + 2] = c[2];
     if (h > 0.99) { stamenTop = [flower.rO[i] * Math.sin(flower.fO[i]) * Math.cos(flower.tO[i]), flower.rO[i] * Math.cos(flower.fO[i]), flower.rO[i] * Math.sin(flower.fO[i]) * Math.sin(flower.tO[i])]; }
   }
-  redCanvas = redTexture(); greyCanvas = greyTexture();
-}
-function build(device) {
-  var H = D.header, i;
-  var red = makeTex(device, redCanvas, true), grey = makeTex(device, greyCanvas, true);
+  var red = makeTex(device, redTexture(), true), grey = makeTex(device, greyTexture(), true);
   var backMat = stdMat({ diffuseMap: red, diffuseMapUv: 1, diffuse: new pc.Color(0.8, 0.74, 0.74), emissiveMap: red, emissiveMapUv: 1, emissive: new pc.Color(0.15, 0.14, 0.14),
     specular: new pc.Color(0.12, 0.1, 0.1), gloss: 0.45, cull: pc.CULLFACE_NONE, twoSidedLighting: true });
   var throatMat = stdMat({ diffuse: new pc.Color(0.22, 0.02, 0.03), emissive: new pc.Color(0.12, 0.01, 0.015), specular: new pc.Color(0.1, 0.05, 0.05), gloss: 0.4, cull: pc.CULLFACE_NONE });
@@ -376,10 +338,7 @@ function build(device) {
   for (i = 0; i < 5; i++) {
     var fp = makePart(device, flower, D["idxFront" + i], D.uv0, D.uv1, null);
     var front = stdMat({ diffuseMap: grey, diffuse: new pc.Color(0.4, 0.4, 0.4), emissiveMap: grey, emissive: new pc.Color(0.65, 0.65, 0.65),
-      specular: new pc.Color(0.04, 0.04, 0.04), gloss: 0.3, cull: pc.CULLFACE_BACK,
-      // non-identity from the start: the cover-fit photo then reuses the shader variant compiled
-      // during warm-up instead of compiling a new one in the middle of the bloom
-      diffuseMapTiling: new pc.Vec2(NEAR_ONE, 1), emissiveMapTiling: new pc.Vec2(NEAR_ONE, 1) });
+      specular: new pc.Color(0.04, 0.04, 0.04), gloss: 0.3, cull: pc.CULLFACE_BACK });
     var redO = stdMat({ diffuseMap: red, diffuseMapUv: 1, diffuse: new pc.Color(0.8, 0.74, 0.74), emissiveMap: red, emissiveMapUv: 1, emissive: new pc.Color(0.15, 0.14, 0.14),
       specular: new pc.Color(0.12, 0.1, 0.1), gloss: 0.45, blendType: pc.BLEND_NORMAL, opacity: 1, depthWrite: false, cull: pc.CULLFACE_BACK });
     var miF = new pc.MeshInstance(fp.mesh, front), miR = new pc.MeshInstance(fp.mesh, redO);
@@ -403,33 +362,17 @@ function build(device) {
   group.addChild(stem); stem.setLocalPosition(0, STEM_TOP - STEM_LEN / 2, 0); stem.setLocalScale(0.075, STEM_LEN, 0.075);
 }
 
-// Init runs as a chain of short tasks, each after the next 2D frame has painted, so the 2D bloom
-// keeps moving between them: decode, CPU prep, app creation, scene build, then a shader warm-up
-// that waits for KHR_parallel_shader_compile instead of blocking on the first draw.
-function steps(list) {
-  var k = 0;
-  (function next() {
-    if (k >= list.length) return;
-    requestAnimationFrame(function () {
-      setTimeout(function () {
-        try { list[k++](); next(); } catch (err) { console.warn("design-10 WebGL init failed", err); fallback(); }
-      }, 0);
-    });
-  })();
-}
 export function init(canvas, bloom) {
   bloomRef = bloom; stage = bloom.stage;
   assetPromise.then(function (buf) {
-    performance.mark("d10gl-asset-ready");
-    steps([
-      function () { D = decode(buf); prepData(); performance.mark("d10gl-prep-done"); },
-      function () { createApp(canvas); },
-      function () { build(app.graphicsDevice); performance.mark("d10gl-build-done"); },
-      function () { start(bloom); }
-    ]);
+    try {
+      performance.mark("d10gl-asset-ready");
+      D = decode(buf);
+      start(canvas, bloom);
+    } catch (err) { console.warn("design-10 WebGL init failed", err); fallback(); }
   }, function (err) { console.warn("design-10 asset failed", err); fallback(); });
 }
-function createApp(canvas) {
+function start(canvas, bloom) {
   performance.mark("d10gl-app-start");
   var mobile = innerWidth < 700;
   app = new pc.Application(canvas, { graphicsDeviceOptions: { antialias: true, alpha: false, preferWebGl2: true, powerPreference: "high-performance" } });
@@ -450,43 +393,10 @@ function createApp(canvas) {
     shadowResolution: mobile ? 512 : 1024, shadowType: pc.SHADOW_PCF3_32F, normalOffsetBias: 0.05, shadowBias: 0.2, shadowDistance: 30 });
   light.setEulerAngles(50, -30, 0);
   app.root.addChild(light);
-  performance.mark("d10gl-app-end"); performance.measure("d10gl-app-create", "d10gl-app-start", "d10gl-app-end");
-}
 
-// Warm-up: the hidden canvas renders with async shader activation, so draws whose program is
-// still linking are skipped rather than stalling the main thread. When every shader used in a
-// frame is linked, the next fully drawn frame attaches.
-function warmUp(onReady) {
-  var device = app.graphicsDevice, origSet = device.setShader, seen = new Set(), lastSize = -1, frames = 0;
-  var parallel = !!device.extParallelShaderCompile;
-  performance.mark(parallel ? "d10gl-parallel-compile" : "d10gl-sync-compile");
-  device.setShader = function (s) { if (s) seen.add(s); return origSet.call(device, s, parallel); };
-  var quiet = 0;
-  function check() {
-    frames++;
-    var ready = true;
-    seen.forEach(function (s) { if (!s.ready && !s.failed) ready = false; });
-    // photos that have already downloaded are uploaded here too, and two more frames let the
-    // GPU finish those uploads, so none of that work lands in the moving bloom
-    var uploading = pendingUploads.length > 0 || photoState.indexOf(1) >= 0;
-    quiet = uploading ? 0 : quiet + 1;
-    if ((ready && seen.size && seen.size === lastSize && frames >= 2 && quiet >= 2) || frames > 240) {
-      delete device.setShader;   // back to the prototype method
-      if (device.setShader !== origSet) device.setShader = origSet;
-      performance.mark("d10gl-warm-done"); performance.measure("d10gl-warm-up", "d10gl-build-done", "d10gl-warm-done");
-      app.once("frameend", onReady);
-      return;
-    }
-    lastSize = seen.size;
-    app.once("frameend", check);
-  }
-  app.once("frameend", check);
-}
+  build(device);
 
-function start(bloom) {
-  canFence = gating = typeof app.graphicsDevice.gl.fenceSync === "function";
   app.on("update", onUpdate);
-  app.on("frameend", fenceFrame);
   if (window.ResizeObserver) new ResizeObserver(function () {
     var r = stage.getBoundingClientRect(); app.resizeCanvas(Math.max(1, r.width), Math.max(1, r.height)); requestRender();
   }).observe(stage);
@@ -498,12 +408,13 @@ function start(bloom) {
   });
 
   applyTime(Math.min(8, Math.max(0, bloom.clock())));
-  warmUp(function () {
+  performance.mark("d10gl-app-end"); performance.measure("d10gl-app-create", "d10gl-app-start", "d10gl-app-end");
+  app.once("frameend", function () {
     try {
       performance.mark("d10gl-first-frame"); performance.measure("d10gl-first-frame", "d10gl-app-start", "d10gl-first-frame");
       var api = {
         seek: function (t) { seekT = Math.min(8, Math.max(0, +t || 0)); app.autoRender = false; applyTime(seekT); pumpPhotos(); app.renderNextFrame = true; },
-        play: function () { seekT = null; done = false; gating = canFence; app.autoRender = !paused; },
+        play: function () { seekT = null; done = false; app.autoRender = !paused; },
         time: function () { return curT; },
         isRunning: function () { return !!app.autoRender && !done && seekT === null; },
         exportBaked: exportBaked,

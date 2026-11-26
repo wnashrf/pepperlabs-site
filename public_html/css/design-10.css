@@ -305,16 +305,12 @@ a {
   opacity: 0;
 }
 
-/* Handover: the 3D frame dissolves in over the 2D one, which stays fully opaque underneath
-   until the dissolve is done, so the white page never shows through mid-fade. */
 .bloom-stage.is-webgl .bloom-canvas {
   opacity: 1;
-  transition: opacity 0.45s ease-in-out;
 }
 
 .bloom-stage.is-webgl .bloom-canvas2d {
   opacity: 0;
-  transition: opacity 0s linear 0.45s;
 }
 
 .bloom-hero__footer {
