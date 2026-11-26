@@ -7,8 +7,8 @@
     "ai-pintar-dasar": {
       title: "AI Pintar Dasar",
       copy:
-        "Search approved policy sources, connect evidence across documents, and turn research into clear policy briefs for government teams.",
-      tags: ["Policy research", "Evidence discovery", "Policy briefs"],
+        "Search approved policy sources, connect evidence across documents, and turn research into clear policy briefs for government teams. Hai Fahim is a policy research assistant that helps you discover evidence and write policy briefs faster.",
+      tags: ["Policy research", "Evidence discovery", "Policy briefs", "Hai Fahim"],
     },
     "product-2": {
       title: "AI Pintar Dokumen",
