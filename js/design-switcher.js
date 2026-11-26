@@ -19,6 +19,8 @@
     "/public_html/design-5.html": "5",
     "/public_html/design-6.html": "6",
     "/public_html/design-8.html": "8",
+    "/public_html/design-9.html": "9",
+    "/public_html/design-10.html": "10",
   }[path];
   if (!pathDesign && appPaths.indexOf(path) === -1) {
     return;
@@ -37,6 +39,8 @@
     { number: "6", name: "Futuristic design", href: "/public_html/design-6.html" },
     { number: "7", name: "Crimson and yellow design", href: "/?design=7" },
     { number: "8", name: "Impact engine design", href: "/public_html/design-8.html" },
+    { number: "9", name: "Hibiscus design", href: "/public_html/design-9.html" },
+    { number: "10", name: "3D hibiscus design", href: "/public_html/design-10.html" },
   ];
   var switcher = document.createElement("div");
   switcher.className = "design-switcher";
