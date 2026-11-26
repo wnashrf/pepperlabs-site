@@ -17,3 +17,28 @@ DirectorySlash Off
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ index.html [L]
 </IfModule>
+# Design 9: always revalidate so visitors get the latest version without clearing cache.
+<IfModule mod_headers.c>
+  <FilesMatch "^(design-9\.html|design-9\.css|design-9-bloom\.js|design-9-webgl\.js)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+# Design 9: gzip the vendored PlayCanvas engine (2.9 MB raw, about 750 KB gzipped).
+# Its versioned folder never changes, so normal caching is fine.
+<IfModule mod_deflate.c>
+  <FilesMatch "^playcanvas\.min\.js$">
+    SetOutputFilter DEFLATE
+  </FilesMatch>
+</IfModule>
+# Design 10: always revalidate so visitors get the latest page, scripts and 3D model without clearing cache.
+<IfModule mod_headers.c>
+  <FilesMatch "^(design-10\.html|design-10\.css|design-10-bloom\.js|design-10-webgl\.js|hibiscus-flower\.bin)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+# Design 10: gzip the baked hibiscus model (about 560 KB raw).
+<IfModule mod_deflate.c>
+  <FilesMatch "^hibiscus-flower\.bin$">
+    SetOutputFilter DEFLATE
+  </FilesMatch>
+</IfModule>

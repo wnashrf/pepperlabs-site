@@ -15,6 +15,8 @@
     "/design-5.html": "5",
     "/design-6.html": "6",
     "/design-8.html": "8",
+    "/design-9.html": "9",
+    "/design-10.html": "10",
   }[path];
   if (
     (path === "/" ||
@@ -55,24 +57,6 @@
       active: activeDesign === "2",
     },
     {
-      number: "3",
-      name: "Editorial design",
-      href: "/design-3.html",
-      active: activeDesign === "3",
-    },
-    {
-      number: "4",
-      name: "Surreal design",
-      href: "/design-4.html",
-      active: activeDesign === "4",
-    },
-    {
-      number: "5",
-      name: "Isometric design",
-      href: "/design-5.html",
-      active: activeDesign === "5",
-    },
-    {
       number: "6",
       name: "Futuristic design",
       href: "/design-6.html",
@@ -89,6 +73,18 @@
       name: "Impact engine design",
       href: "/design-8.html",
       active: activeDesign === "8",
+    },
+    {
+      number: "9",
+      name: "Hibiscus bloom design",
+      href: "/design-9.html",
+      active: activeDesign === "9",
+    },
+    {
+      number: "10",
+      name: "Hibiscus 3D model design",
+      href: "/design-10.html",
+      active: activeDesign === "10",
     },
   ].forEach(function (option) {
     var link = document.createElement("a");

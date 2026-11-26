@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-design="10">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta
+      name="description"
+      content="We design and run impact programmes with government, corporate and community partners, from entrepreneur training and social enterprise to Dapur Digital kitchens and AI-ready Malaysia."
+    />
+    <title>Pepper Labs - Skills, digital tools and AI for communities</title>
+    <!-- ================= EDIT HERO PETAL PHOTOS HERE =================
+         5 petals, in order: upper-left, upper-right, right, bottom, left.
+         src: any local path (/images/...) or full https:// URL, any size or aspect ratio.
+              The photo fills the whole inner face of its petal, edge to edge.
+         focus (optional): [x, y] from 0 to 1, which part of the photo to keep centred.
+         alt: short description of the photo, used for screen readers.
+         label: one word, used in the accessible description of the flower.
+         After changing any photo, bump PEPPER_BLOOM_VERSION so visitors get the new ones.
+         The 3D bloom lives in /js/design-10-webgl.js and the fallback in /js/design-10-bloom.js;
+         you never need to touch those files to change a photo.
+    ================================================================== -->
+    <script>
+      window.PEPPER_BLOOM_VERSION = "20261127-obj2";
+      window.PEPPER_BLOOM_PETALS = [
+        { src: "/images/timeline/2026-08-ai-ready-malaysia.jpg", label: "AI", alt: "Pepper Labs speaker at the AI-Ready Malaysia event" },
+        { src: "/images/timeline/2026-08-rakyat-digital-mou.jpg", label: "Digital", alt: "Pepper Labs and MyDigital Corporation signing an MoU" },
+        { src: "/images/timeline/2025-dapur-digital-expands.jpg", label: "Community", alt: "Dapur Digital community kitchen team" },
+        { src: "/images/timeline/2021-2022-cloud-kitchen-launch.jpg", label: "Enterprise", alt: "Launch of the Pepper Labs cloud kitchen social enterprise" },
+        { src: "/images/timeline/2019-capacity-building.jpg", label: "Learning", alt: "Capacity-building workshop for women entrepreneurs" }
+      ];
+    </script>
+    <script>
+      (function () {
+        var v = window.PEPPER_BLOOM_VERSION, list = window.PEPPER_BLOOM_PETALS || [], out = [], i, s, img;
+        for (i = 0; i < 5; i += 1) {
+          s = list[i] && typeof list[i].src === "string" ? list[i].src : "";
+          img = null;
+          if (s) { img = new Image(); img.decoding = "async"; img.src = s.charAt(0) === "/" ? s + (s.indexOf("?") < 0 ? "?" : "&") + "v=" + v : s; }
+          out.push(img);
+        }
+        window.PEPPER_BLOOM_PRELOAD = out;
+        // design 10: start the 3D model download now; /js/design-10-webgl.js reuses this promise
+        if (typeof window.WebGL2RenderingContext === "function" && window.fetch) {
+          window.PEPPER_BLOOM_MODEL = fetch("/assets/design-10/hibiscus-flower.bin?v=" + encodeURIComponent(v)).then(function (r) {
+            if (!r.ok) { throw new Error("design-10 model HTTP " + r.status); }
+            return r.arrayBuffer();
+          });
+          window.PEPPER_BLOOM_MODEL.catch(function () {});
+        }
+      })();
+    </script>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/css/design-switcher.css?v=20261125-design-nine" />
+    <link rel="stylesheet" href="/css/design-10.css?v=20261127-obj2" />
+    <link rel="modulepreload" href="/js/vendor/playcanvas-2.24.3/playcanvas.min.js" />
+    <link rel="modulepreload" href="/js/design-10-webgl.js?v=20261127-obj2" />
+    <script defer src="/js/design-switcher.js?v=20261125-design-nine"></script>
+    <script defer src="/js/design-10-bloom.js?v=20261127-obj2"></script>
+  </head>
+  <body class="design-nine">
+    <header class="bloom-header">
+      <a class="bloom-brand" href="/" aria-label="Pepper Labs home">
+        <span class="bloom-brand__mark">P</span>
+        <span>PEPPER LABS</span>
+      </a>
+      <nav class="bloom-nav" aria-label="Main navigation">
+        <a href="#approach">Our approach</a>
+        <a href="#people">People &amp; impact</a>
+        <a class="bloom-nav__contact" href="/work-with-us">Work with us <span aria-hidden="true">&rarr;</span></a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="bloom-hero" id="home" aria-labelledby="bloom-title">
+        <div class="bloom-hero__topline">
+          <span>PEOPLE / ENTERPRISE / AI</span>
+          <span>KUALA LUMPUR, MALAYSIA</span>
+        </div>
+
+        <div class="bloom-hero__layout">
+          <div class="bloom-copy">
+            <p class="bloom-eyebrow"><span></span> Pepper Labs &middot; Impact strategy for Malaysia</p>
+            <h1 id="bloom-title">Skills, digital tools and AI that help communities <em>grow.</em></h1>
+            <p class="bloom-copy__lead">
+              We design and run impact programmes with government, corporate and community partners,
+              from entrepreneur training and social enterprise to Dapur Digital kitchens and AI-ready Malaysia.
+            </p>
+            <div class="bloom-actions">
+              <a class="bloom-button" href="#approach">See what we do <span aria-hidden="true">&rarr;</span></a>
+              <a class="bloom-text-link" href="/work-with-us">Work with us</a>
+            </div>
+            <p class="bloom-copy__proof">Learning &middot; Digital &middot; AI &middot; Enterprise &middot; Community</p>
+          </div>
+
+          <figure class="bloom-figure">
+            <div class="bloom-stage" role="img" aria-label="A red hibiscus bud from the 3D model opens into five petals, each showing a Pepper Labs programme photo">
+              <!-- Hibiscus bloom: WebGL in /js/design-10-webgl.js (OBJ model, /assets/design-10/hibiscus-flower.bin), animated 2D fallback in /js/design-10-bloom.js.
+                   Photos come from window.PEPPER_BLOOM_PETALS in the <head>. -->
+              <canvas class="bloom-canvas2d" aria-hidden="true"></canvas>
+              <canvas class="bloom-canvas" aria-hidden="true"></canvas>
+            </div>
+          </figure>
+        </div>
+
+        <div class="bloom-hero__footer">
+          <span><i></i> A brighter future is built together</span>
+          <a href="#approach">Scroll to explore <span aria-hidden="true">&darr;</span></a>
+          <span>LEARN &rarr; DIGITAL &rarr; AI</span>
+        </div>
+      </section>
+
+      <section class="bloom-approach" id="approach" aria-labelledby="approach-title">
+        <div class="bloom-section-heading">
+          <p class="bloom-eyebrow"><span></span> The transformation</p>
+          <h2 id="approach-title">Good systems should help<br /><em>people flourish.</em></h2>
+        </div>
+        <div class="bloom-steps">
+          <article id="people">
+            <span>01 / PEOPLE</span>
+            <h3>Build confidence through learning.</h3>
+            <p>Students and communities gain practical skills to participate in a changing digital world.</p>
+          </article>
+          <article>
+            <span>02 / ENTERPRISE</span>
+            <h3>Make everyday work easier.</h3>
+            <p>Entrepreneurs move from paperwork to useful digital processes that support sustainable growth.</p>
+          </article>
+          <article>
+            <span>03 / AI</span>
+            <h3>Put helpful technology to work.</h3>
+            <p>Human-centred AI turns information into clearer decisions, better services and new opportunities.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bloom-footer">
+      <span>PEPPER LABS / IMPACT STRATEGY</span>
+      <span>People, skills and technology for shared progress.</span>
+      <a href="/work-with-us">Let's work together <span aria-hidden="true">&rarr;</span></a>
+    </footer>
+  </body>
+</html>
